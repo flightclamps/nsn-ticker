@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>NSN LIVE Scores & Leaders — Signature Edition</title>
+<title>NSN SPORTS — Live & Final Scores + News</title>
 
 <style>
   html, body {
@@ -22,7 +22,7 @@
     border-top: 3px solid #1E88E5;
     border-bottom: 3px solid #1E88E5;
     box-shadow: 0 0 14px #1E88E5;
-    animation: fadeIn 1.2s ease forwards;
+    animation: fadeIn 1s ease forwards;
   }
 
   .logo-box {
@@ -63,15 +63,15 @@
   .track {
     position: absolute;
     white-space: nowrap;
-    font-size: 18px;
+    font-size: 22px;          /* bigger text */
     font-weight: 600;
     color: white;
     padding-left: 100%;
-    animation: scroll 250s linear infinite;
+    animation: scroll 280s linear infinite;  /* extra slow scroll */
   }
 
   .item {
-    margin-right: 90px;
+    margin-right: 70px;        /* tight-ish spacing */
   }
 
   .label {
@@ -115,45 +115,52 @@
   // ================================
   // SETTINGS
   // ================================
-  const proxy = "https://api.allorigins.win/raw?url=";
-  const REFRESH_MS = 180000; // 3 min data refresh
+  const proxyBase = "https://api.allorigins.win/raw?url="; // easy proxy
+  const REFRESH_MS = 60000; // refresh data ~every 60s for live scores
 
-  // Live scoreboards (FINAL games only)
+  // Scoreboards – NBA, NFL, NHL, Intl Soccer (EPL)
   const scoreboardSources = [
     {
       label: "NBA",
-      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard")
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard"
+      )
+    },
+    {
+      label: "NFL",
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+      )
     },
     {
       label: "NHL",
-      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard")
-    },
-    {
-      label: "MLB",
-      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard")
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard"
+      )
     },
     {
       label: "INTL",
-      // Example: EPL – change league code if you want MLS etc.
-      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard")
+      // Premier League; change eng.1 if you want a different league
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard"
+      )
     }
   ];
 
-  // News feeds for college football + general (optional; still useful)
+  // College football + general news – news only, no scores
   const newsFeeds = [
-    { label: "CFB",   url: proxy + encodeURIComponent("https://www.espn.com/espn/rss/ncf/news") },
-    { label: "ESPN",  url: proxy + encodeURIComponent("https://www.espn.com/espn/rss/news") },
-    { label: "CBS",   url: proxy + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
-    { label: "YAHOO", url: proxy + encodeURIComponent("https://sports.yahoo.com/rss/") }
+    { label: "CFB",   url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/ncf/news") },
+    { label: "ESPN",  url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/news") },
+    { label: "CBS",   url: proxyBase + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
+    { label: "YAHOO", url: proxyBase + encodeURIComponent("https://sports.yahoo.com/rss/") }
   ];
 
-  // High-value static lines
-  const valueLines = [
-    { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!" },
-    { label: "NSN", text: "NBA • NHL • MLB • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS" },
+  // High-value static lines – pro, no corny questions
+  const staticLines = [
+    { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!!!" },
+    { label: "NSN", text: "NBA • NFL • NHL • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS • NO COMMERCIALS" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
-    { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
-    { label: "NSN", text: "LIVE SCORES • FINAL BOXSCORES • SPREADS • GAME LEADERS" }
+    { label: "NSN", text: "LIVE SCORES • FINAL BOXSCORES • SPREADS • HEADLINES" }
   ];
 
   const track = document.getElementById("track");
@@ -165,59 +172,18 @@
     track.appendChild(span);
   }
 
-  // --------------------------------
-  // Helper: build game leaders string
-  // --------------------------------
-  function buildLeadersText(comp) {
-    // ESPN sometimes exposes leaders per competition or per team;
-    // we try both, but keep it short.
-    let leaderBits = [];
-
-    // competition-wide leaders
-    if (comp.leaders && Array.isArray(comp.leaders)) {
-      comp.leaders.slice(0, 2).forEach(cat => {
-        try {
-          const catName = cat.shortDisplayName || cat.displayName || "";
-          const first = cat.leaders && cat.leaders[0];
-          if (!first) return;
-          const athlete = first.athlete && first.athlete.displayName || "";
-          const val = first.displayValue || first.value || "";
-          if (catName && athlete && val) {
-            leaderBits.push(`${catName}: ${athlete} ${val}`);
-          }
-        } catch {}
-      });
+  // Build spread / odds text if available
+  function buildSpreadText(comp) {
+    if (comp.odds && comp.odds[0] && comp.odds[0].details) {
+      return " | " + comp.odds[0].details; // e.g. "BOS -3.5"
     }
-
-    // fall back to competitor leaders if comp.leaders missing
-    if (leaderBits.length === 0 && comp.competitors) {
-      comp.competitors.forEach(c => {
-        if (!c.leaders) return;
-        c.leaders.slice(0,1).forEach(cat => {
-          try {
-            const catName = cat.shortDisplayName || cat.displayName || "";
-            const first = cat.leaders && cat.leaders[0];
-            if (!first) return;
-            const athlete = first.athlete && first.athlete.displayName || "";
-            const val = first.displayValue || first.value || "";
-            if (catName && athlete && val) {
-              leaderBits.push(`${c.team && (c.team.abbreviation || c.team.shortDisplayName || c.team.name) || "TEAM"} ${catName}: ${athlete} ${val}`);
-            }
-          } catch {}
-        });
-      });
-    }
-
-    if (leaderBits.length === 0) return "";
-    return " | LEADERS: " + leaderBits.join(" • ");
+    return "";
   }
 
-  // --------------------------------
-  // LIVE SCOREBOARDS (FINAL ONLY)
-  // --------------------------------
+  // LIVE + FINAL SCORES + SPREAD
   async function addScoreboards() {
     for (const src of scoreboardSources) {
-      let addedForLeague = false;
+      let added = false;
 
       try {
         const res = await fetch(src.url);
@@ -230,8 +196,18 @@
             if (!comp || !comp.competitors || comp.competitors.length < 2) return;
 
             const status = ev.status && ev.status.type || {};
-            const isFinal = status.completed || (status.description && status.description.toLowerCase().includes("final"));
-            if (!isFinal) return; // FINAL ONLY
+            const desc = (status.description || "").toLowerCase();
+            const isFinal = status.completed || desc.includes("final");
+            const isInProgress = desc.includes("quarter") ||
+                                 desc.includes("half") ||
+                                 desc.includes("period") ||
+                                 desc.includes("st") || desc.includes("nd") ||
+                                 desc.includes("rd") || desc.includes("th") ||
+                                 desc.includes("in progress") ||
+                                 desc.includes("live");
+
+            // Only show games that have started (live) or finished (final)
+            if (!isFinal && !isInProgress) return;
 
             const c1 = comp.competitors[0];
             const c2 = comp.competitors[1];
@@ -242,42 +218,36 @@
             const s1 = c1.score || "0";
             const s2 = c2.score || "0";
 
-            let spreadText = "";
-            if (comp.odds && comp.odds[0] && comp.odds[0].details) {
-              spreadText = " | " + comp.odds[0].details; // e.g. "BOS -3.5"
-            }
+            const statusShort = status.shortDetail || status.description || (isFinal ? "Final" : "Live");
+            const spreadText = buildSpreadText(comp);
 
-            const leadersText = buildLeadersText(comp);
-            const statusShort = status.shortDetail || status.description || "Final";
-
-            const line = `${t1} ${s1} • ${t2} ${s2} (${statusShort})${spreadText}${leadersText}`;
-            add(src.label + " FINAL", line);
-            addedForLeague = true;
-          } catch (errEvent) {
-            console.log("Event parse error", errEvent);
+            const stateLabel = isFinal ? "FINAL" : "LIVE";
+            const line = `${t1} ${s1} • ${t2} ${s2} (${statusShort})${spreadText}`;
+            add(src.label + " " + stateLabel, line);
+            added = true;
+          } catch (errEv) {
+            console.log("Error parsing event", src.label, errEv);
           }
         });
       } catch (err) {
         console.log("Scoreboard fetch failed for", src.label, err);
       }
 
-      // If nothing added for this league, drop a useful info line
-      if (!addedForLeague) {
+      // Fallback info if nothing added for that league
+      if (!added) {
         const fallback = {
-          "NBA":  "NBA FINALS • SCOREBOARD • STANDINGS • TOP PERFORMERS ACROSS THE LEAGUE",
-          "NHL":  "NHL FINALS • SCOREBOARD • STREAKS • POINTS AND GOALIE FORM",
-          "MLB":  "MLB FINALS • RUNS • DIVISION RACES • HOT BATS AND ARMS",
-          "INTL": "INTERNATIONAL FOOTBALL FINALS • LEAGUE ACTION • TABLE SHIFTS • FORM WATCH"
-        }[src.label] || "LATEST RESULTS AND LEADERS";
+          "NBA":  "NBA SCOREBOARD • FINALS AND LIVE ACTION • STANDINGS • FORM WATCH",
+          "NFL":  "NFL SCOREBOARD • FINALS AND LIVE DRIVES • DIVISION RACES • PLAYOFF PICTURE",
+          "NHL":  "NHL SCOREBOARD • FINALS AND LIVE • POINTS • GOALIE FORM • STREAKS",
+          "INTL": "INTERNATIONAL FOOTBALL SCOREBOARD • LEAGUE TABLE SHIFTS • FORM AND RESULTS"
+        }[src.label] || "LATEST RESULTS AND RANKINGS";
 
         add(src.label + " INFO", fallback);
       }
     }
   }
 
-  // --------------------------------
-  // COLLEGE FOOTBALL + GENERAL NEWS
-  // --------------------------------
+  // COLLEGE FOOTBALL + GENERAL NEWS ONLY
   async function addNews() {
     const parser = new DOMParser();
 
@@ -303,32 +273,30 @@
 
       if (!gotAny) {
         const fallback = {
-          "CFB":   "COLLEGE FOOTBALL HEADLINES • RANKINGS • COACHING MOVES • TRANSFER PORTAL",
-          "ESPN":  "TOP SPORTS STORIES • RUMORS • ANALYSIS FROM AROUND THE LEAGUES",
+          "CFB":   "COLLEGE FOOTBALL HEADLINES • RANKINGS • TRANSFER PORTAL • COACHING MOVES",
+          "ESPN":  "TOP SPORTS STORIES • RUMORS • BREAKING UPDATES",
           "CBS":   "CBS SPORTS WIRES • GAME RECAPS • POWER RANKINGS • TRADE TALK",
-          "YAHOO": "TRENDING SPORTS STORIES • PLAYER BUZZ • CONTRACT AND TRADE RUMORS"
+          "YAHOO": "TRENDING STORIES • PLAYER BUZZ • CONTRACT AND TRADE RUMORS"
         }[feed.label] || "LATEST SPORTS HEADLINES";
+
         add(feed.label + " INFO", fallback);
       }
     }
   }
 
-  // --------------------------------
-  // BUILD / REFRESH TICKER
-  // --------------------------------
   async function buildTicker() {
     track.innerHTML = "";
 
-    // Static core NSN lines
-    valueLines.forEach(v => add(v.label, v.text));
+    // Core NSN static lines (club, song requests, no commercials)
+    staticLines.forEach(v => add(v.label, v.text));
 
-    // Live scoreboards with FINAL only + spreads + leaders
+    // Live + final scores with spreads
     await addScoreboards();
 
-    // News (CFB + general)
+    // College football + general news
     await addNews();
 
-    // Duplicate for seamless loop
+    // Duplicate content for seamless looping
     const clones = Array.from(track.children).map(n => n.cloneNode(true));
     clones.forEach(c => track.appendChild(c));
   }
@@ -339,4 +307,5 @@
 
 </body>
 </html>
+
 
