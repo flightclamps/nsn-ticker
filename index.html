@@ -1,102 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>NSN Pro Animated Ticker</title>
+<meta charset="UTF-8" />
+<title>NSN SPORTS Ticker — Signature Edition</title>
 
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #0a0a0a;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
+/* ================================
+   GLOBAL
+================================ */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0a0a0a;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
 
-  /* --- Ticker Wrapper --- */
-  .ticker-wrapper {
-    width: 100vw;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    background: #0a0a0a;
-    border-top: 3px solid #1E88E5;
-    border-bottom: 3px solid #1E88E5;
-    box-shadow: 0 0 10px #1E88E5;
-    animation: fadeIn 1.2s ease forwards;
-  }
+/* ================================
+   TICKER WRAPPER
+================================ */
+.ticker-wrapper {
+  width: 100vw;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  background: #0a0a0a;
+  border-top: 3px solid #1E88E5;
+  border-bottom: 3px solid #1E88E5;
+  box-shadow: 0 0 14px #1E88E5;
+  animation: fadeIn 1.2s ease forwards;
+}
 
-  /* --- Logo Box --- */
-  .logo-box {
-    width: 280px;
-    height: 100%;
-    background: linear-gradient(145deg, #1E88E5, #1669b9);
-    border-right: 3px solid white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    animation: slideIn 1.2s ease forwards;
-  }
+/* ================================
+   LOGO / BRAND BOX
+================================ */
+.logo-box {
+  width: 300px;
+  height: 100%;
+  background: linear-gradient(135deg, #1E88E5, #0f5ea8);
+  border-right: 3px solid #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: slideIn 1s ease forwards;
+}
 
-  .logo-main {
-    color: white;
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    text-shadow: 0 0 6px rgba(255,255,255,0.5);
-  }
+.logo-main {
+  color: white;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(255,255,255,0.5);
+}
 
-  .logo-sub {
-    margin-top: 3px;
-    font-size: 11px;
-    color: white;
-    font-weight: 600;
-    opacity: 0.9;
-  }
+.logo-sub {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  opacity: 0.85;
+}
 
-  /* --- Ticker Track --- */
-  .track-wrapper {
-    flex: 1;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-  }
+/* ================================
+   SCROLLING TRACK
+================================ */
+.track-wrapper {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
 
-  .track {
-    position: absolute;
-    white-space: nowrap;
-    font-size: 18px;
-    font-weight: 600;
-    color: white;
-    padding-left: 100%;
-    animation: scroll 250s linear infinite;
-  }
+.track {
+  position: absolute;
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  padding-left: 100%;
+  animation: scroll 250s linear infinite;
+}
 
-  /* --- Animation Keyframes --- */
-  @keyframes scroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-100%); }
-  }
+/* ================================
+   ITEMS
+================================ */
+.item {
+  margin-right: 90px;
+}
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+.label {
+  color: #FFC107;
+  font-weight: 900;
+  margin-right: 10px;
+  text-shadow: 0 0 6px rgba(255,255,255,0.3);
+}
 
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-30px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
+/* ================================
+   ANIMATIONS
+================================ */
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
 
-  /* --- Items --- */
-  .item { margin-right: 100px; }
-  .label {
-    color: #FFC107;
-    font-weight: 900;
-    margin-right: 10px;
-    text-shadow: 0 0 6px rgba(255,255,255,0.4);
-  }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 
@@ -115,8 +131,8 @@
 
 <script>
 /* ===========================================================
-   NEWS FEEDS VIA PROXY (AUTO REFRESH)
-   =========================================================== */
+   LIVE NEWS PROXY FEEDS (Auto-refresh)
+=========================================================== */
 const proxy = "https://api.allorigins.win/raw?url=";
 
 const newsFeeds = [
@@ -127,8 +143,8 @@ const newsFeeds = [
 ];
 
 /* ===========================================================
-   FINAL SCORES (Only finals, manually updated)
-   =========================================================== */
+   FINAL SCORES (EDIT THESE ANYTIME)
+=========================================================== */
 const finalScores = [
   { label: "NBA FINAL", text: "CLIPPERS 118 • CELTICS 121" },
   { label: "NBA FINAL", text: "KINGS 110 • SPURS 123" },
@@ -145,11 +161,11 @@ const finalScores = [
 ];
 
 /* ===========================================================
-   HIGH-VALUE STATIC LINES (Professional only)
-   =========================================================== */
+   STATIC HIGH-VALUE LINES
+=========================================================== */
 const valueLines = [
   { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!" },
-  { label: "NSN", text: "TRENDING ACROSS SPORTS • INJURIES • TRADES • POWER RANKINGS • HOT STREAKS" },
+  { label: "NSN", text: "TRENDING • TRADES • INJURIES • POWER RANKINGS • HOT STREAKS" },
   { label: "NSN", text: "NBA • NHL • MLB • INTERNATIONAL SOCCER • COLLEGE FOOTBALL NEWS" },
   { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
   { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
@@ -158,16 +174,15 @@ const valueLines = [
 
 const track = document.getElementById("track");
 
+/* Add items to track */
 function add(label, text) {
-  let span = document.createElement("span");
+  const span = document.createElement("span");
   span.className = "item";
   span.innerHTML = `<span class="label">${label}</span>${text}`;
   track.appendChild(span);
 }
 
-/* ===========================================================
-   LOAD NEWS (auto-refreshes each rebuild)
-   =========================================================== */
+/* Load news from proxies */
 async function addNews() {
   const parser = new DOMParser();
 
@@ -183,19 +198,17 @@ async function addNews() {
       });
 
     } catch {
-      add(feed.label + " INFO", "LATEST UPDATES FROM " + feed.label.toUpperCase());
+      add(feed.label + " INFO", "LATEST FROM " + feed.label.toUpperCase());
     }
   }
 }
 
-/* ===========================================================
-   REBUILD TICKER EACH CYCLE
-   =========================================================== */
+/* Build ticker */
 async function buildTicker() {
   track.innerHTML = "";
 
-  valueLines.forEach(v => add(v.label, v.text));
-  finalScores.forEach(s => add(s.label, s.text));
+  valueLines.forEach(x => add(x.label, x.text));
+  finalScores.forEach(x => add(x.label, x.text));
   await addNews();
 
   const clones = [...track.children].map(n => n.cloneNode(true));
@@ -204,9 +217,10 @@ async function buildTicker() {
 
 buildTicker();
 
-/* Refresh every scroll cycle (250 seconds) */
+/* Auto-refresh every 250 seconds */
 setInterval(buildTicker, 250000);
 </script>
 
 </body>
 </html>
+
