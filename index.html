@@ -1,148 +1,309 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>NSN SPORTS — Live & Final Scores + News</title>
 <title>NSN SPORTS — Final Scores & News</title>
 
 <style>
   html, body {
-@@ -67,11 +67,11 @@
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  .ticker-wrapper {
+    width: 100vw;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    background: #0a0a0a;
+    border-top: 3px solid #1E88E5;
+    border-bottom: 3px solid #1E88E5;
+    box-shadow: 0 0 14px #1E88E5;
+  }
+
+  .logo-box {
+    width: 300px;
+    height: 100%;
+    background: linear-gradient(135deg, #1E88E5, #0f5ea8);
+    border-right: 3px solid #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .logo-main {
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .logo-sub {
+    margin-top: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    opacity: 0.85;
+  }
+
+  .track-wrapper {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .track {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 22px;
     font-weight: 600;
     color: white;
     padding-left: 100%;
-    animation: scroll 280s linear infinite;  /* extra slow scroll */
-    animation: scroll 280s linear infinite;  /* slow scroll like ESPN bottom bar */
+    animation: scroll 250s linear infinite; /* fixed 250s */
   }
 
   .item {
-    margin-right: 70px;        /* tight-ish spacing */
-    margin-right: 70px;        /* tighter spacing = dense info */
+    margin-right: 70px;
   }
 
   .label {
-@@ -116,9 +116,9 @@
+    color: #FFC107;
+    font-weight: 900;
+    margin-right: 10px;
+  }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="ticker-wrapper">
+  <div class="logo-box">
+    <div class="logo-main">NSN SPORTS</div>
+    <div class="logo-sub">NotSoNetwork • No Commercials</div>
+  </div>
+
+  <div class="track-wrapper">
+    <div class="track" id="track"></div>
+  </div>
+</div>
+
+<script>
+  // ================================
   // SETTINGS
   // ================================
-  const proxyBase = "https://api.allorigins.win/raw?url="; // easy proxy
-  const REFRESH_MS = 60000; // refresh data ~every 60s for live scores
-  const REFRESH_MS = 120000; // refresh data ~every 2 minutes
+  var proxyBase = "https://api.allorigins.win/raw?url="; // easy proxy
+  var REFRESH_MS = 120000; // refresh data ~every 2 minutes
 
-  // Scoreboards – NBA, NFL, NHL, Intl Soccer (EPL)
-  // Scoreboards – FINAL ONLY (NBA, NFL, NHL, Intl Soccer - EPL)
-  const scoreboardSources = [
+  // FINAL SCORE SOURCES – NBA, NFL, NHL, INTL (EPL)
+  var scoreboardSources = [
     {
       label: "NBA",
-@@ -147,20 +147,21 @@
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard"
+      )
+    },
+    {
+      label: "NFL",
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+      )
+    },
+    {
+      label: "NHL",
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard"
+      )
+    },
+    {
+      label: "INTL",
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard"
+      )
     }
   ];
 
-  // College football + general news – news only, no scores
-  // College football + general news – info only
-  const newsFeeds = [
+  // NEWS SOURCES – CFB + general sports
+  var newsFeeds = [
     { label: "CFB",   url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/ncf/news") },
     { label: "ESPN",  url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/news") },
     { label: "CBS",   url: proxyBase + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
     { label: "YAHOO", url: proxyBase + encodeURIComponent("https://sports.yahoo.com/rss/") }
   ];
 
-  // High-value static lines – pro, no corny questions
-  // High-value static lines – streamer-focused, no corny questions
-  const staticLines = [
+  // STATIC STREAMER / HOOK LINES
+  var staticLines = [
     { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!!!" },
     { label: "NSN", text: "NBA • NFL • NHL • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS • NO COMMERCIALS" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
-    { label: "NSN", text: "LIVE SCORES • FINAL BOXSCORES • SPREADS • HEADLINES" }
     { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
-    { label: "NSN", text: "LIVE SCOREBOARD • FINAL RESULTS • ODDS • HEADLINES • ALL IN ONE BAR" }
+    { label: "NSN", text: "FINAL SCORES • ODDS • HEADLINES • ALL IN ONE TICKER" }
   ];
 
-  const track = document.getElementById("track");
-@@ -180,7 +181,7 @@
+  var track = document.getElementById("track");
+
+  function add(label, text) {
+    var span = document.createElement("span");
+    span.className = "item";
+    span.innerHTML = '<span class="label">' + label + "</span>" + text;
+    track.appendChild(span);
+  }
+
+  function buildSpreadText(comp) {
+    try {
+      if (comp.odds && comp.odds[0] && comp.odds[0].details) {
+        return " | " + comp.odds[0].details; // e.g. "BOS -3.5"
+      }
+    } catch (e) {}
     return "";
   }
 
-  // LIVE + FINAL SCORES + SPREAD
-  // FINAL SCORES ONLY + SPREAD (NBA / NFL / NHL / INTL)
+  // FINAL SCORES ONLY
   async function addScoreboards() {
-    for (const src of scoreboardSources) {
-      let added = false;
-@@ -198,16 +199,7 @@
-            const status = ev.status && ev.status.type || {};
-            const desc = (status.description || "").toLowerCase();
-            const isFinal = status.completed || desc.includes("final");
-            const isInProgress = desc.includes("quarter") ||
-                                 desc.includes("half") ||
-                                 desc.includes("period") ||
-                                 desc.includes("st") || desc.includes("nd") ||
-                                 desc.includes("rd") || desc.includes("th") ||
-                                 desc.includes("in progress") ||
-                                 desc.includes("live");
+    for (var i = 0; i < scoreboardSources.length; i++) {
+      var src = scoreboardSources[i];
+      var added = false;
 
-            // Only show games that have started (live) or finished (final)
-            if (!isFinal && !isInProgress) return;
-            if (!isFinal) return; // FINAL ONLY
+      try {
+        var res = await fetch(src.url);
+        var data = await res.json();
+        var events = data.events || [];
 
-            const c1 = comp.competitors[0];
-            const c2 = comp.competitors[1];
-@@ -218,12 +210,11 @@
-            const s1 = c1.score || "0";
-            const s2 = c2.score || "0";
+        for (var j = 0; j < events.length; j++) {
+          var ev = events[j];
+          try {
+            var comp = ev.competitions && ev.competitions[0];
+            if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
 
-            const statusShort = status.shortDetail || status.description || (isFinal ? "Final" : "Live");
-            const statusShort = status.shortDetail || status.description || "Final";
-            const spreadText = buildSpreadText(comp);
+            var status = ev.status && ev.status.type ? ev.status.type : {};
+            var desc = (status.description || "").toLowerCase();
+            var isFinal = status.completed || desc.indexOf("final") !== -1;
+            if (!isFinal) continue;
 
-            const stateLabel = isFinal ? "FINAL" : "LIVE";
-            const line = `${t1} ${s1} • ${t2} ${s2} (${statusShort})${spreadText}`;
-            add(src.label + " " + stateLabel, line);
-            add(src.label + " FINAL", line);
+            var c1 = comp.competitors[0];
+            var c2 = comp.competitors[1];
+
+            var t1 = (c1.team && (c1.team.abbreviation || c1.team.shortDisplayName || c1.team.name)) || "TEAM1";
+            var t2 = (c2.team && (c2.team.abbreviation || c2.team.shortDisplayName || c2.team.name)) || "TEAM2";
+
+            var s1 = c1.score || "0";
+            var s2 = c2.score || "0";
+
+            var statusShort = status.shortDetail || status.description || "Final";
+            var spreadText = buildSpreadText(comp);
+
+            add(src.label + " FINAL", t1 + " " + s1 + " • " + t2 + " " + s2 + " (" + statusShort + ")" + spreadText);
             added = true;
           } catch (errEv) {
-            console.log("Error parsing event", src.label, errEv);
-@@ -233,21 +224,21 @@
+            console.log("Error parsing event for", src.label, errEv);
+          }
+        }
+      } catch (err) {
         console.log("Scoreboard fetch failed for", src.label, err);
       }
 
-      // Fallback info if nothing added for that league
-      // Fallback info if no finals found for that league
       if (!added) {
-        const fallback = {
-          "NBA":  "NBA SCOREBOARD • FINALS AND LIVE ACTION • STANDINGS • FORM WATCH",
-          "NFL":  "NFL SCOREBOARD • FINALS AND LIVE DRIVES • DIVISION RACES • PLAYOFF PICTURE",
-          "NHL":  "NHL SCOREBOARD • FINALS AND LIVE • POINTS • GOALIE FORM • STREAKS",
-          "INTL": "INTERNATIONAL FOOTBALL SCOREBOARD • LEAGUE TABLE SHIFTS • FORM AND RESULTS"
-          "NBA":  "NBA FINAL SCORES • STANDINGS • FORM AND STREAK WATCH",
-          "NFL":  "NFL FINAL SCORES • DIVISION RACES • PLAYOFF PICTURE",
-          "NHL":  "NHL FINAL SCORES • POINTS • GOALIE FORM • STREAKS",
-          "INTL": "INTERNATIONAL FOOTBALL FINALS • TABLE SHIFTS • TITLE AND RELEGATION RACES"
-        }[src.label] || "LATEST RESULTS AND RANKINGS";
-
+        var fallback = "";
+        if (src.label === "NBA") {
+          fallback = "NBA FINAL SCORES • STANDINGS • FORM AND STREAK WATCH";
+        } else if (src.label === "NFL") {
+          fallback = "NFL FINAL SCORES • DIVISION RACES • PLAYOFF PICTURE";
+        } else if (src.label === "NHL") {
+          fallback = "NHL FINAL SCORES • POINTS • GOALIE FORM • STREAKS";
+        } else if (src.label === "INTL") {
+          fallback = "INTERNATIONAL FOOTBALL FINALS • TABLE SHIFTS • TITLE AND RELEGATION RACES";
+        } else {
+          fallback = "LATEST FINAL SCORES AND RANKINGS";
+        }
         add(src.label + " INFO", fallback);
       }
     }
   }
 
-  // COLLEGE FOOTBALL + GENERAL NEWS ONLY
-  // COLLEGE FOOTBALL + GENERAL NEWS / RUMORS ONLY
+  // NEWS ONLY (CFB + general)
   async function addNews() {
-    const parser = new DOMParser();
+    var parser = new DOMParser();
 
-@@ -287,10 +278,10 @@
+    for (var i = 0; i < newsFeeds.length; i++) {
+      var feed = newsFeeds[i];
+      var gotAny = false;
+
+      try {
+        var res = await fetch(feed.url);
+        var text = await res.text();
+        var xml = parser.parseFromString(text, "text/xml");
+        var items = xml.querySelectorAll("item");
+        var limit = Math.min(items.length, 5);
+
+        for (var j = 0; j < limit; j++) {
+          var item = items[j];
+          var titleNode = item.querySelector("title");
+          if (!titleNode) continue;
+          var title = titleNode.textContent;
+          if (!title) continue;
+          add(feed.label + " NEWS", title.trim());
+          gotAny = true;
+        }
+      } catch (err) {
+        console.log("News fetch failed for", feed.label, err);
+      }
+
+      if (!gotAny) {
+        var fallback = "";
+        if (feed.label === "CFB") {
+          fallback = "COLLEGE FOOTBALL HEADLINES • RANKINGS • TRANSFER PORTAL • COACHING MOVES";
+        } else if (feed.label === "ESPN") {
+          fallback = "TOP SPORTS STORIES • RUMORS • BREAKING UPDATES";
+        } else if (feed.label === "CBS") {
+          fallback = "CBS SPORTS WIRES • GAME RECAPS • POWER RANKINGS • TRADE TALK";
+        } else if (feed.label === "YAHOO") {
+          fallback = "TRENDING STORIES • PLAYER BUZZ • CONTRACT AND TRADE RUMORS";
+        } else {
+          fallback = "LATEST SPORTS HEADLINES";
+        }
+        add(feed.label + " INFO", fallback);
+      }
+    }
+  }
+
   async function buildTicker() {
     track.innerHTML = "";
 
-    // Core NSN static lines (club, song requests, no commercials)
-    // Core NSN static lines (stream hooks)
-    staticLines.forEach(v => add(v.label, v.text));
+    // Static streamer hooks
+    for (var i = 0; i < staticLines.length; i++) {
+      add(staticLines[i].label, staticLines[i].text);
+    }
 
-    // Live + final scores with spreads
-    // Final scores with spreads
+    // Scores + news
     await addScoreboards();
+    await addNews();
 
-    // College football + general news
-@@ -308,4 +299,3 @@
+    // Duplicate content so the scroll loops smoothly
+    var children = track.children;
+    var clones = [];
+    for (var j = 0; j < children.length; j++) {
+      clones.push(children[j].cloneNode(true));
+    }
+    for (var k = 0; k < clones.length; k++) {
+      track.appendChild(clones[k]);
+    }
+  }
+
+  buildTicker();
+  setInterval(buildTicker, REFRESH_MS);
+</script>
+
 </body>
 </html>
+
 
 
