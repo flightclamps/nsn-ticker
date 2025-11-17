@@ -2,117 +2,99 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>NSN SPORTS Ticker — Signature Edition</title>
+<title>NSN LIVE Scores & Leaders — Signature Edition</title>
 
 <style>
-/* ================================
-   GLOBAL
-================================ */
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #0a0a0a;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-}
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
 
-/* ================================
-   TICKER WRAPPER
-================================ */
-.ticker-wrapper {
-  width: 100vw;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  background: #0a0a0a;
-  border-top: 3px solid #1E88E5;
-  border-bottom: 3px solid #1E88E5;
-  box-shadow: 0 0 14px #1E88E5;
-  animation: fadeIn 1.2s ease forwards;
-}
+  .ticker-wrapper {
+    width: 100vw;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    background: #0a0a0a;
+    border-top: 3px solid #1E88E5;
+    border-bottom: 3px solid #1E88E5;
+    box-shadow: 0 0 14px #1E88E5;
+    animation: fadeIn 1.2s ease forwards;
+  }
 
-/* ================================
-   LOGO / BRAND BOX
-================================ */
-.logo-box {
-  width: 300px;
-  height: 100%;
-  background: linear-gradient(135deg, #1E88E5, #0f5ea8);
-  border-right: 3px solid #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  animation: slideIn 1s ease forwards;
-}
+  .logo-box {
+    width: 300px;
+    height: 100%;
+    background: linear-gradient(135deg, #1E88E5, #0f5ea8);
+    border-right: 3px solid #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: slideIn 1s ease forwards;
+  }
 
-.logo-main {
-  color: white;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-shadow: 0 0 6px rgba(255,255,255,0.5);
-}
+  .logo-main {
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px rgba(255,255,255,0.5);
+  }
 
-.logo-sub {
-  margin-top: 3px;
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
-  opacity: 0.85;
-}
+  .logo-sub {
+    margin-top: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    opacity: 0.85;
+  }
 
-/* ================================
-   SCROLLING TRACK
-================================ */
-.track-wrapper {
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-}
+  .track-wrapper {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
 
-.track {
-  position: absolute;
-  white-space: nowrap;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  padding-left: 100%;
-  animation: scroll 250s linear infinite;
-}
+  .track {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    padding-left: 100%;
+    animation: scroll 250s linear infinite;
+  }
 
-/* ================================
-   ITEMS
-================================ */
-.item {
-  margin-right: 90px;
-}
+  .item {
+    margin-right: 90px;
+  }
 
-.label {
-  color: #FFC107;
-  font-weight: 900;
-  margin-right: 10px;
-  text-shadow: 0 0 6px rgba(255,255,255,0.3);
-}
+  .label {
+    color: #FFC107;
+    font-weight: 900;
+    margin-right: 10px;
+    text-shadow: 0 0 6px rgba(255,255,255,0.3);
+  }
 
-/* ================================
-   ANIMATIONS
-================================ */
-@keyframes scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
-}
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+  }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-40px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-40px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 
@@ -130,98 +112,231 @@ html, body {
 </div>
 
 <script>
-/* ===========================================================
-   LIVE NEWS PROXY FEEDS (Auto-refresh)
-=========================================================== */
-const proxy = "https://api.allorigins.win/raw?url=";
+  // ================================
+  // SETTINGS
+  // ================================
+  const proxy = "https://api.allorigins.win/raw?url=";
+  const REFRESH_MS = 180000; // 3 min data refresh
 
-const newsFeeds = [
-  { label: "ESPN",  url: proxy + encodeURIComponent("https://www.espn.com/espn/rss/news") },
-  { label: "CBS",   url: proxy + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
-  { label: "YAHOO", url: proxy + encodeURIComponent("https://sports.yahoo.com/rss/") },
-  { label: "SOCCER",url: proxy + encodeURIComponent("http://feeds.bbci.co.uk/sport/football/rss.xml") }
-];
+  // Live scoreboards (FINAL games only)
+  const scoreboardSources = [
+    {
+      label: "NBA",
+      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard")
+    },
+    {
+      label: "NHL",
+      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard")
+    },
+    {
+      label: "MLB",
+      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard")
+    },
+    {
+      label: "INTL",
+      // Example: EPL – change league code if you want MLS etc.
+      url: proxy + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard")
+    }
+  ];
 
-/* ===========================================================
-   FINAL SCORES (EDIT THESE ANYTIME)
-=========================================================== */
-const finalScores = [
-  { label: "NBA FINAL", text: "CLIPPERS 118 • CELTICS 121" },
-  { label: "NBA FINAL", text: "KINGS 110 • SPURS 123" },
-  { label: "NBA FINAL", text: "NETS 129 • WIZARDS 106" },
+  // News feeds for college football + general (optional; still useful)
+  const newsFeeds = [
+    { label: "CFB",   url: proxy + encodeURIComponent("https://www.espn.com/espn/rss/ncf/news") },
+    { label: "ESPN",  url: proxy + encodeURIComponent("https://www.espn.com/espn/rss/news") },
+    { label: "CBS",   url: proxy + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
+    { label: "YAHOO", url: proxy + encodeURIComponent("https://sports.yahoo.com/rss/") }
+  ];
 
-  { label: "NHL FINAL", text: "STARS 5 • FLYERS 1" },
-  { label: "NHL FINAL", text: "BLACKHAWKS 3 • MAPLE LEAFS 2" },
+  // High-value static lines
+  const valueLines = [
+    { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!" },
+    { label: "NSN", text: "NBA • NHL • MLB • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS" },
+    { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
+    { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
+    { label: "NSN", text: "LIVE SCORES • FINAL BOXSCORES • SPREADS • GAME LEADERS" }
+  ];
 
-  { label: "MLB FINAL", text: "DODGERS 6 • PADRES 4" },
-  { label: "MLB FINAL", text: "YANKEES 3 • RAYS 2" },
+  const track = document.getElementById("track");
 
-  { label: "INTL FINAL", text: "BARCELONA 2 • ATLETICO 1" },
-  { label: "INTL FINAL", text: "CHELSEA 1 • ARSENAL 1" }
-];
+  function add(label, text) {
+    const span = document.createElement("span");
+    span.className = "item";
+    span.innerHTML = `<span class="label">${label}</span>${text}`;
+    track.appendChild(span);
+  }
 
-/* ===========================================================
-   STATIC HIGH-VALUE LINES
-=========================================================== */
-const valueLines = [
-  { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!" },
-  { label: "NSN", text: "TRENDING • TRADES • INJURIES • POWER RANKINGS • HOT STREAKS" },
-  { label: "NSN", text: "NBA • NHL • MLB • INTERNATIONAL SOCCER • COLLEGE FOOTBALL NEWS" },
-  { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
-  { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
-  { label: "NSN", text: "NEWS AUTO-UPDATES EVERY SCROLL" }
-];
+  // --------------------------------
+  // Helper: build game leaders string
+  // --------------------------------
+  function buildLeadersText(comp) {
+    // ESPN sometimes exposes leaders per competition or per team;
+    // we try both, but keep it short.
+    let leaderBits = [];
 
-const track = document.getElementById("track");
-
-/* Add items to track */
-function add(label, text) {
-  const span = document.createElement("span");
-  span.className = "item";
-  span.innerHTML = `<span class="label">${label}</span>${text}`;
-  track.appendChild(span);
-}
-
-/* Load news from proxies */
-async function addNews() {
-  const parser = new DOMParser();
-
-  for (let feed of newsFeeds) {
-    try {
-      const res = await fetch(feed.url);
-      const xml = parser.parseFromString(await res.text(), "application/xml");
-      const items = [...xml.querySelectorAll("item")].slice(0, 5);
-
-      items.forEach(i => {
-        let title = i.querySelector("title").textContent.trim();
-        add(feed.label + " NEWS", title);
+    // competition-wide leaders
+    if (comp.leaders && Array.isArray(comp.leaders)) {
+      comp.leaders.slice(0, 2).forEach(cat => {
+        try {
+          const catName = cat.shortDisplayName || cat.displayName || "";
+          const first = cat.leaders && cat.leaders[0];
+          if (!first) return;
+          const athlete = first.athlete && first.athlete.displayName || "";
+          const val = first.displayValue || first.value || "";
+          if (catName && athlete && val) {
+            leaderBits.push(`${catName}: ${athlete} ${val}`);
+          }
+        } catch {}
       });
+    }
 
-    } catch {
-      add(feed.label + " INFO", "LATEST FROM " + feed.label.toUpperCase());
+    // fall back to competitor leaders if comp.leaders missing
+    if (leaderBits.length === 0 && comp.competitors) {
+      comp.competitors.forEach(c => {
+        if (!c.leaders) return;
+        c.leaders.slice(0,1).forEach(cat => {
+          try {
+            const catName = cat.shortDisplayName || cat.displayName || "";
+            const first = cat.leaders && cat.leaders[0];
+            if (!first) return;
+            const athlete = first.athlete && first.athlete.displayName || "";
+            const val = first.displayValue || first.value || "";
+            if (catName && athlete && val) {
+              leaderBits.push(`${c.team && (c.team.abbreviation || c.team.shortDisplayName || c.team.name) || "TEAM"} ${catName}: ${athlete} ${val}`);
+            }
+          } catch {}
+        });
+      });
+    }
+
+    if (leaderBits.length === 0) return "";
+    return " | LEADERS: " + leaderBits.join(" • ");
+  }
+
+  // --------------------------------
+  // LIVE SCOREBOARDS (FINAL ONLY)
+  // --------------------------------
+  async function addScoreboards() {
+    for (const src of scoreboardSources) {
+      let addedForLeague = false;
+
+      try {
+        const res = await fetch(src.url);
+        const data = await res.json();
+        const events = data.events || [];
+
+        events.forEach(ev => {
+          try {
+            const comp = ev.competitions && ev.competitions[0];
+            if (!comp || !comp.competitors || comp.competitors.length < 2) return;
+
+            const status = ev.status && ev.status.type || {};
+            const isFinal = status.completed || (status.description && status.description.toLowerCase().includes("final"));
+            if (!isFinal) return; // FINAL ONLY
+
+            const c1 = comp.competitors[0];
+            const c2 = comp.competitors[1];
+
+            const t1 = c1.team && (c1.team.abbreviation || c1.team.shortDisplayName || c1.team.name) || "TEAM1";
+            const t2 = c2.team && (c2.team.abbreviation || c2.team.shortDisplayName || c2.team.name) || "TEAM2";
+
+            const s1 = c1.score || "0";
+            const s2 = c2.score || "0";
+
+            let spreadText = "";
+            if (comp.odds && comp.odds[0] && comp.odds[0].details) {
+              spreadText = " | " + comp.odds[0].details; // e.g. "BOS -3.5"
+            }
+
+            const leadersText = buildLeadersText(comp);
+            const statusShort = status.shortDetail || status.description || "Final";
+
+            const line = `${t1} ${s1} • ${t2} ${s2} (${statusShort})${spreadText}${leadersText}`;
+            add(src.label + " FINAL", line);
+            addedForLeague = true;
+          } catch (errEvent) {
+            console.log("Event parse error", errEvent);
+          }
+        });
+      } catch (err) {
+        console.log("Scoreboard fetch failed for", src.label, err);
+      }
+
+      // If nothing added for this league, drop a useful info line
+      if (!addedForLeague) {
+        const fallback = {
+          "NBA":  "NBA FINALS • SCOREBOARD • STANDINGS • TOP PERFORMERS ACROSS THE LEAGUE",
+          "NHL":  "NHL FINALS • SCOREBOARD • STREAKS • POINTS AND GOALIE FORM",
+          "MLB":  "MLB FINALS • RUNS • DIVISION RACES • HOT BATS AND ARMS",
+          "INTL": "INTERNATIONAL FOOTBALL FINALS • LEAGUE ACTION • TABLE SHIFTS • FORM WATCH"
+        }[src.label] || "LATEST RESULTS AND LEADERS";
+
+        add(src.label + " INFO", fallback);
+      }
     }
   }
-}
 
-/* Build ticker */
-async function buildTicker() {
-  track.innerHTML = "";
+  // --------------------------------
+  // COLLEGE FOOTBALL + GENERAL NEWS
+  // --------------------------------
+  async function addNews() {
+    const parser = new DOMParser();
 
-  valueLines.forEach(x => add(x.label, x.text));
-  finalScores.forEach(x => add(x.label, x.text));
-  await addNews();
+    for (const feed of newsFeeds) {
+      let gotAny = false;
 
-  const clones = [...track.children].map(n => n.cloneNode(true));
-  clones.forEach(c => track.appendChild(c));
-}
+      try {
+        const res = await fetch(feed.url);
+        const text = await res.text();
+        const xml = parser.parseFromString(text, "application/xml");
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 5);
 
-buildTicker();
+        items.forEach(i => {
+          const titleNode = i.querySelector("title");
+          if (!titleNode) return;
+          const title = titleNode.textContent.trim();
+          add(feed.label + " NEWS", title);
+          gotAny = true;
+        });
+      } catch (err) {
+        console.log("News fetch failed for", feed.label, err);
+      }
 
-/* Auto-refresh every 250 seconds */
-setInterval(buildTicker, 250000);
+      if (!gotAny) {
+        const fallback = {
+          "CFB":   "COLLEGE FOOTBALL HEADLINES • RANKINGS • COACHING MOVES • TRANSFER PORTAL",
+          "ESPN":  "TOP SPORTS STORIES • RUMORS • ANALYSIS FROM AROUND THE LEAGUES",
+          "CBS":   "CBS SPORTS WIRES • GAME RECAPS • POWER RANKINGS • TRADE TALK",
+          "YAHOO": "TRENDING SPORTS STORIES • PLAYER BUZZ • CONTRACT AND TRADE RUMORS"
+        }[feed.label] || "LATEST SPORTS HEADLINES";
+        add(feed.label + " INFO", fallback);
+      }
+    }
+  }
+
+  // --------------------------------
+  // BUILD / REFRESH TICKER
+  // --------------------------------
+  async function buildTicker() {
+    track.innerHTML = "";
+
+    // Static core NSN lines
+    valueLines.forEach(v => add(v.label, v.text));
+
+    // Live scoreboards with FINAL only + spreads + leaders
+    await addScoreboards();
+
+    // News (CFB + general)
+    await addNews();
+
+    // Duplicate for seamless loop
+    const clones = Array.from(track.children).map(n => n.cloneNode(true));
+    clones.forEach(c => track.appendChild(c));
+  }
+
+  buildTicker();
+  setInterval(buildTicker, REFRESH_MS);
 </script>
 
 </body>
 </html>
 
--
