@@ -25,14 +25,16 @@
   }
 
   .logo-box {
-    width: 300px;
+    width: 320px;
     height: 100%;
     background: linear-gradient(135deg, #1E88E5, #0f5ea8);
     border-right: 3px solid #ffffff;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding-left: 14px;
+    box-sizing: border-box;
   }
 
   .logo-main {
@@ -47,7 +49,15 @@
     font-size: 11px;
     font-weight: 600;
     color: white;
-    opacity: 0.85;
+    opacity: 0.9;
+  }
+
+  .logo-powered {
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #e0f2ff;
+    opacity: 0.9;
   }
 
   .track-wrapper {
@@ -92,6 +102,7 @@
   <div class="logo-box">
     <div class="logo-main">NSN SPORTS</div>
     <div class="logo-sub">NotSoNetwork • No Commercials</div>
+    <div class="logo-powered">Powered by ApexGrid Analytics</div>
   </div>
 
   <div class="track-wrapper">
@@ -103,14 +114,14 @@
   /* ======================================
      SETTINGS
   ====================================== */
-  var proxyBase = "https://api.allorigins.win/raw?url=";
+  var proxyBase = "https://api.allorigins.win/raw?url="; // EASY PROXY
   var REFRESH_MS = 120000;   // refresh every 2 mins
-  var SPEED_PPS = 35;        // pixels per second scroll speed
+  var SPEED_PPS  = 35;       // pixels per second (scroll speed)
 
   var track = document.getElementById("track");
 
   /* ======================================
-     SCOREBOARD SOURCES
+     SCOREBOARD SOURCES (FINAL SCORES)
   ====================================== */
   var scoreboardSources = [
     { label: "NFL", url: proxyBase + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard") },
@@ -129,63 +140,67 @@
   ];
 
   /* ======================================
-     SOCIAL BUZZ FALLBACK
-  ====================================== */
-  var socialFallbacks = [
-    "NBA trade buzz heating up across multiple contenders.",
-    "NFL insiders say a major move could be coming soon.",
-    "MLB free agency rumors picking up traction.",
-    "Top soccer clubs preparing for summer transfer window.",
-    "NHL insiders expecting goalie shuffles soon."
-  ];
-
-  /* ======================================
-     STREAM ENGAGEMENT LINES
+     STREAM ENGAGEMENT
   ====================================== */
   var staticLines = [
-    { label: "NSN", text: "WELCOME TO NSN SPORTS • DROP YOUR TEAM IN CHAT" },
+    { label: "NSN", text: "WELCOME TO NSN SPORTS • DROP YOUR FAVORITE TEAM IN CHAT" },
     { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!!!" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
-    { label: "NSN", text: "LIKE THE STREAM & FOLLOW FOR MORE SPORTS" }
+    { label: "NSN", text: "LIKE THE STREAM • FOLLOW FOR MORE • SHARE WITH A FRIEND" },
+    { label: "NSN", text: "ESPN-STYLE TICKER • LIVE SCORES • REAL NEWS • FAN TALK" }
   ];
 
   /* ======================================
-     FAN QUESTIONS (RANDOMIZED EACH REBUILD)
+     FAN QUESTIONS (ROTATING, RARE REPEATS)
   ====================================== */
   var fanQuestions = [
-    "Cowboys fans: Is this the year for real?",
-    "Chiefs fans: What do you rate the WR room right now?",
-    "Bills fans: What’s the missing piece for a title?",
-    "49ers fans: Who is the true MVP of this team?",
-    "Steelers fans: How many wins for Tomlin this year?",
-    "Eagles fans: What’s the biggest need right now?",
-    "Lakers fans: Do you want more shooting or defense?",
-    "Celtics fans: Who is your X-factor for the playoffs?",
-    "Warriors fans: How many elite years does Curry have left?",
-    "Knicks fans: What move do you want next?",
-    "Heat fans: Who defines Heat Culture most?",
-    "Mavs fans: How deep can Luka go this year?",
-    "Spurs fans: What’s Wemby’s ceiling?",
-    "Bruins fans: Are you confident in another deep run?",
-    "Rangers fans: Who is your breakout star?",
-    "Maple Leafs fans: What changes must be made?",
-    "Soccer fans: Who is the best club right now?",
-    "Premier League fans: Who finishes top four?",
-    "CFB fans: Who’s your true #1?",
-    "Texas fans: Is Texas back for real?"
+    "COWBOYS FANS: IS THIS THE YEAR OR ARE YOU STILL WAITING?",
+    "EAGLES FANS: WHAT IS THE BIGGEST NEED RIGHT NOW?",
+    "CHIEFS FANS: HOW DO YOU FEEL ABOUT THE RECEIVER ROOM?",
+    "BILLS FANS: WHAT IS THE MISSING PIECE FOR A TITLE RUN?",
+    "49ERS FANS: WHO IS THE REAL MVP OF THIS TEAM?",
+    "RAVENS FANS: IS THIS THE BEST VERSION OF LAMAR?",
+    "STEELERS FANS: HOW MANY WINS DOES TOMLIN GET THIS SEASON?",
+    "DOLPHINS FANS: DO YOU TRUST THIS OFFENSE IN THE PLAYOFFS?",
+    "PACKERS FANS: ARE YOU ALL-IN ON JORDAN LOVE?",
+    "BEARS FANS: DO YOU BELIEVE IN THE CURRENT QB?",
+    "LAKERS FANS: DO YOU WANT MORE SHOOTING OR DEFENSE?",
+    "CELTICS FANS: WHO IS YOUR X-FACTOR IN THE PLAYOFFS?",
+    "WARRIORS FANS: HOW MANY PRIME YEARS DOES CURRY HAVE LEFT?",
+    "KNICKS FANS: WHAT MOVE DO YOU WANT FROM THE FRONT OFFICE?",
+    "HEAT FANS: WHO FITS HEAT CULTURE THE MOST RIGHT NOW?",
+    "MAVS FANS: HOW FAR CAN LUKA TAKE THIS CORE?",
+    "SPURS FANS: WHAT IS WEMBY’S REALISTIC CEILING?",
+    "BRUINS FANS: CONFIDENT IN ANOTHER DEEP RUN?",
+    "RANGERS FANS: WHO IS YOUR BREAKOUT PLAYER?",
+    "MAPLE LEAFS FANS: WHAT HAS TO CHANGE TO GO DEEP?",
+    "OILERS FANS: IS THIS THE YEAR FOR MCDAVID?",
+    "SOCCER FANS: WHO IS THE BEST CLUB IN THE WORLD RIGHT NOW?",
+    "PREMIER LEAGUE FANS: WHO FINISHES TOP FOUR?",
+    "BARÇA FANS: HOW CONFIDENT ARE YOU IN THE YOUTH CORE?",
+    "REAL MADRID FANS: WHO IS THE MOST UNDERRATED PLAYER?",
+    "CFB FANS: WHO IS YOUR TRUE NO. 1 TEAM?",
+    "TEXAS FANS: IS TEXAS BACK FOR REAL THIS TIME?",
+    "MICHIGAN FANS: WHAT IS THE MINIMUM EXPECTATION NEXT SEASON?",
+    "OHIO STATE FANS: BEAT MICHIGAN OR WIN A TITLE, WHICH MATTERS MORE?",
+    "NFL FANS: WHO IS THE MOST UNDERRATED QB IN THE LEAGUE?",
+    "NBA FANS: WHO IS YOUR DARK HORSE TITLE TEAM?",
+    "NHL FANS: WHICH GOALIE DO YOU TRUST IN GAME 7?"
   ];
 
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
-      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+      var tmp = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
     }
     return a;
   }
 
   /* ======================================
-     ADD ITEM
+     ADD ITEM TO TICKER
   ====================================== */
   function addItem(label, text) {
     var span = document.createElement("span");
@@ -195,18 +210,18 @@
   }
 
   /* ======================================
-     CONSTANT SPEED ENGINE
+     CONSTANT-SPEED SCROLL ENGINE
   ====================================== */
   function applyConstantSpeed() {
     track.style.animationDuration = "0s";
-    void track.offsetWidth;
+    void track.offsetWidth; // reflow
     var totalWidth = track.scrollWidth || 1;
     var timeSeconds = totalWidth / SPEED_PPS;
     track.style.animationDuration = timeSeconds + "s";
   }
 
   /* ======================================
-     SCORES
+     SCORES (FINAL ONLY)
   ====================================== */
   async function addScores() {
     for (var i = 0; i < scoreboardSources.length; i++) {
@@ -220,10 +235,11 @@
 
         for (var j = 0; j < events.length && added < 5; j++) {
           var ev = events[j];
-          var comp = ev.competitions && ev.competitions[0];
+          var compList = ev.competitions || [];
+          var comp = compList[0];
           if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
 
-          var status = ev.status && ev.status.type;
+          var status = ev.status && ev.status.type ? ev.status.type : null;
           var desc = status && status.description ? status.description.toLowerCase() : "";
           var isFinal = status && (status.completed || desc.indexOf("final") !== -1);
           if (!isFinal) continue;
@@ -231,8 +247,8 @@
           var c1 = comp.competitors[0];
           var c2 = comp.competitors[1];
 
-          var t1 = (c1.team && (c1.team.abbreviation || c1.team.shortDisplayName)) || "TEAM1";
-          var t2 = (c2.team && (c2.team.abbreviation || c2.team.shortDisplayName)) || "TEAM2";
+          var t1 = (c1.team && (c1.team.abbreviation || c1.team.shortDisplayName || c1.team.name)) || "TEAM1";
+          var t2 = (c2.team && (c2.team.abbreviation || c2.team.shortDisplayName || c2.team.name)) || "TEAM2";
 
           var s1 = c1.score || "0";
           var s2 = c2.score || "0";
@@ -241,7 +257,7 @@
           added++;
         }
       } catch (err) {
-        console.log("Score error:", src.label);
+        console.log("Score error:", src.label, err);
       }
     }
   }
@@ -254,6 +270,7 @@
 
     for (var i = 0; i < newsFeeds.length; i++) {
       var feed = newsFeeds[i];
+
       try {
         var res = await fetch(feed.url);
         var text = await res.text();
@@ -262,30 +279,25 @@
         var limit = Math.min(items.length, 4);
 
         for (var j = 0; j < limit; j++) {
-          var title = items[j].querySelector("title");
-          if (title) addItem(feed.label + " NEWS", title.textContent.trim());
+          var titleNode = items[j].querySelector("title");
+          if (!titleNode) continue;
+          var title = titleNode.textContent;
+          if (!title) continue;
+          addItem(feed.label + " NEWS", title.trim());
         }
       } catch (err) {
-        console.log("News error:", feed.label);
+        console.log("News error:", feed.label, err);
       }
     }
   }
 
   /* ======================================
-     SOCIAL BUZZ (fallback only)
+     FAN QUESTIONS (RANDOM SLICE)
   ====================================== */
-  function addSocialFallback() {
-    for (var i = 0; i < socialFallbacks.length; i++) {
-      addItem("BUZZ", socialFallbacks[i]);
-    }
-  }
-
-  /* ======================================
-     FAN QUESTIONS
-  ====================================== */
-  function addFanQs() {
+  function addFanQuestions() {
     var shuffled = shuffle(fanQuestions);
-    for (var i = 0; i < 6; i++) {
+    var count = Math.min(8, shuffled.length);
+    for (var i = 0; i < count; i++) {
       addItem("CHAT", shuffled[i]);
     }
   }
@@ -296,18 +308,24 @@
   async function buildTicker() {
     track.innerHTML = "";
 
-    for (var i = 0; i < staticLines.length; i++) addItem(staticLines[i].label, staticLines[i].text);
+    // Stream hooks
+    for (var i = 0; i < staticLines.length; i++) {
+      addItem(staticLines[i].label, staticLines[i].text);
+    }
 
+    // Scores + news + fan talk
     await addScores();
     await addNews();
-
-    addSocialFallback();
-    addFanQs();
+    addFanQuestions();
 
     // duplicate for seamless scroll
     var children = track.children;
-    for (var i = 0; i < children.length; i++) {
-      track.appendChild(children[i].cloneNode(true));
+    var clones = [];
+    for (var k = 0; k < children.length; k++) {
+      clones.push(children[k].cloneNode(true));
+    }
+    for (var m = 0; m < clones.length; m++) {
+      track.appendChild(clones[m]);
     }
 
     applyConstantSpeed();
