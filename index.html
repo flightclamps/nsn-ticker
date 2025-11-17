@@ -33,20 +33,18 @@
     justify-content: center;
     padding-left: 14px;
     box-sizing: border-box;
+    flex-shrink: 0; /* Prevents logo area from shrinking */
   }
-
   .nsn-title {
     font-size: 22px;
     font-weight: 900;
     color: #fff;
     letter-spacing: 0.5px;
   }
-
   .nsn-sub {
     font-size: 11px;
     color: #d6ecff;
   }
-
   .nsn-sponsor {
     font-size: 10px;
     color: #ffe0b2;
@@ -58,22 +56,24 @@
     flex: 1;
     overflow: hidden;
     position: relative;
+    height: 100%; /* Ensure scroll-area has height */
   }
 
   .scroll-track {
     position: absolute;
+    height: 100%; /* Ensure track fills scroll-area height */
     white-space: nowrap;
     font-size: 22px;
     font-weight: 600;
     color: #fff;
-    padding-left: 100%;
     will-change: transform;
-    /* default animation so it always scrolls even if JS doesn't touch duration */
-    animation: scroll 60s linear infinite;
+    display: flex; /* Use flex to vertically center content */
+    align-items: center;
   }
 
   .item {
     margin-right: 70px;
+    flex-shrink: 0; /* Ensures items don't shrink */
   }
 
   .label {
@@ -81,22 +81,14 @@
     font-weight: 900;
     margin-right: 10px;
   }
-
   .label-rumor {
     color: #FF3D00;
   }
-
   .label-live {
     color: #4CAF50;
   }
-
   .label-final {
     color: #FFC107;
-  }
-
-  @keyframes scroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-100%); }
   }
 </style>
 </head>
@@ -119,7 +111,7 @@
   // ==============================
   // SETTINGS / PROXY
   // ==============================
-  const SPEED = 40; // pixels per second
+  const SPEED = 40;                // pixels per second
   const proxyBase = "https://api.allorigins.win/raw?url=";
 
   const track = document.getElementById("track");
@@ -128,6 +120,8 @@
   // ==============================
   // LIVE DATA SOURCES
   // ==============================
+
+  // Scoreboards (ESPN JSON) – core American sports
   const scoreboardSources = [
     { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
     { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
@@ -135,19 +129,15 @@
     { label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
     { label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard" },
     { label: "MLS", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard" }
-  ].map(s => ({
-    label: s.label,
-    url: proxyBase + encodeURIComponent(s.url)
-  }));
+  ].map(s => ({ label: s.label, url: proxyBase + encodeURIComponent(s.url) }));
 
+  // Rankings (AP polls via ESPN – best effort)
   const rankingSources = [
     { label: "CFB AP", url: "https://site.web.api.espn.com/apis/v2/sports/football/college-football/rankings" },
     { label: "CBB AP", url: "https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/rankings" }
-  ].map(s => ({
-    label: s.label,
-    url: proxyBase + encodeURIComponent(s.url)
-  }));
+  ].map(s => ({ label: s.label, url: proxyBase + encodeURIComponent(s.url) }));
 
+  // News feeds (RSS)
   const newsFeeds = [
     "https://www.espn.com/espn/rss/news",
     "https://sports.yahoo.com/rss/",
@@ -155,7 +145,7 @@
   ].map(u => proxyBase + encodeURIComponent(u));
 
   // ==============================
-  // STREAM ENGAGEMENT (TEXT)
+  // STREAM ENGAGEMENT (TEXT ONLY)
   // ==============================
   const engagementLines = [
     "WELCOME TO NSN SPORTS • DROP YOUR FAVORITE TEAM IN CHAT",
@@ -269,7 +259,7 @@
   }
 
   // ==============================
-  // LIVE RANKINGS
+  // LIVE RANKINGS (AP via ESPN)
   // ==============================
   async function addRankings() {
     for (const src of rankingSources) {
@@ -373,7 +363,7 @@
   }
 
   // ==============================
-  // ENGAGEMENT / CHAT PROMPTS
+  // STREAM HOOKS / CHAT PROMPTS
   // ==============================
   function addEngagement() {
     engagementLines.forEach(line => addItem(line, "NSN", ""));
@@ -387,46 +377,78 @@
   // BUILD TICKER CONTENT
   // ==============================
   async function buildTicker() {
-    try {
-      track.innerHTML = "";
+    track.innerHTML = "";
 
-      // 1) Engagement first so ticker is never empty
-      addEngagement();
+    // 1) Engagement + prompts first (so ticker is never empty)
+    addEngagement();
 
-      // 2) Live data
-      await addScores();
-      await addRankings();
-      await addNewsAndRumors();
+    // 2) Live data
+    await addScores();
+    await addRankings();
+    await addNewsAndRumors();
 
-      // 3) Duplicate content for smooth loop
-      const cloneHTML = track.innerHTML;
-      track.innerHTML += cloneHTML;
+    // 3) Duplicate the content for seamless scrolling
+    const originalContent = track.innerHTML;
+    track.innerHTML += originalContent;
+  }
 
-      // 4) Adjust animation duration based on width and SPEED
-      const viewport = scrollArea.clientWidth || window.innerWidth || 1920;
-      const width = track.scrollWidth || viewport;
-      const distance = width; // we're animating from 0 to -100%
-      const duration = distance / SPEED;
-      track.style.animationDuration = duration + "s";
-    } catch (e) {
-      console.log("buildTicker error:", e);
-      // fallback: at least show engagement
-      if (!track.innerHTML) {
-        addEngagement();
+  // ==============================
+  // SCROLL ENGINE (refresh after each full loop)
+  // ==============================
+  async function startTicker() {
+    while (true) {
+      try {
+        await buildTicker();
+      } catch (e) {
+        console.log("buildTicker error:", e);
+        track.innerHTML = "";
+        addEngagement(); // fallback
+        const originalContent = track.innerHTML;
+        track.innerHTML += originalContent;
       }
+
+      // Check if content exists
+      if (track.scrollWidth === 0) {
+          console.warn("Ticker content width is zero. Retrying build in 5s.");
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+      }
+      
+      // The content is duplicated, so the scroll distance for one loop is half the total scrollWidth.
+      const width = track.scrollWidth / 2;
+      
+      // Start position: Off the right edge by the width of the content, so the duplicated content starts showing immediately
+      let offsetX = width; 
+
+      track.style.transform = "translateX(" + offsetX + "px)";
+
+      await new Promise(resolve => {
+        let lastTime = null;
+        function step(timestamp) {
+          if (lastTime === null) lastTime = timestamp;
+          const dt = (timestamp - lastTime) / 1000;
+          lastTime = timestamp;
+
+          // Move left based on SPEED and time delta
+          offsetX -= SPEED * dt;
+          track.style.transform = "translateX(" + offsetX + "px)";
+
+          // Check if the original content has completely scrolled off the screen
+          if (offsetX <= -width) {
+            resolve(); // End the promise, trigger the while loop refresh
+            return;
+          }
+          requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+
+      // loop: after full scroll, go back up and rebuild live data
     }
   }
 
-  // refresh after each full scroll loop
-  function handleAnimationLoop() {
-    buildTicker();
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    // Build first time
-    buildTicker();
-    // Rebuild on each animation cycle (after full scroll)
-    track.addEventListener("animationiteration", handleAnimationLoop);
+  document.addEventListener("DOMContentLoaded", function() {
+    startTicker();
   });
 </script>
 
