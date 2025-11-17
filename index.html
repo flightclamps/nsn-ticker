@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>NSN Pro Animated Ticker</title>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  /* --- Ticker Wrapper --- */
+  .ticker-wrapper {
+    width: 100vw;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    background: #0a0a0a;
+    border-top: 3px solid #1E88E5;
+    border-bottom: 3px solid #1E88E5;
+    box-shadow: 0 0 10px #1E88E5;
+    animation: fadeIn 1.2s ease forwards;
+  }
+
+  /* --- Logo Box --- */
+  .logo-box {
+    width: 280px;
+    height: 100%;
+    background: linear-gradient(145deg, #1E88E5, #1669b9);
+    border-right: 3px solid white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: slideIn 1.2s ease forwards;
+  }
+
+  .logo-main {
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px rgba(255,255,255,0.5);
+  }
+
+  .logo-sub {
+    margin-top: 3px;
+    font-size: 11px;
+    color: white;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+
+  /* --- Ticker Track --- */
+  .track-wrapper {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .track {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    padding-left: 100%;
+    animation: scroll 250s linear infinite;
+  }
+
+  /* --- Animation Keyframes --- */
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* --- Items --- */
+  .item { margin-right: 100px; }
+  .label {
+    color: #FFC107;
+    font-weight: 900;
+    margin-right: 10px;
+    text-shadow: 0 0 6px rgba(255,255,255,0.4);
+  }
+</style>
+</head>
+
+<body>
+
+<div class="ticker-wrapper">
+  <div class="logo-box">
+    <div class="logo-main">NSN SPORTS</div>
+    <div class="logo-sub">NotSoNetwork • No Commercials</div>
+  </div>
+
+  <div class="track-wrapper">
+    <div class="track" id="track"></div>
+  </div>
+</div>
+
+<script>
+/* ===========================================================
+   NEWS FEEDS VIA PROXY (AUTO REFRESH)
+   =========================================================== */
+const proxy = "https://api.allorigins.win/raw?url=";
+
+const newsFeeds = [
+  { label: "ESPN",  url: proxy + encodeURIComponent("https://www.espn.com/espn/rss/news") },
+  { label: "CBS",   url: proxy + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
+  { label: "YAHOO", url: proxy + encodeURIComponent("https://sports.yahoo.com/rss/") },
+  { label: "SOCCER",url: proxy + encodeURIComponent("http://feeds.bbci.co.uk/sport/football/rss.xml") }
+];
+
+/* ===========================================================
+   FINAL SCORES (Only finals, manually updated)
+   =========================================================== */
+const finalScores = [
+  { label: "NBA FINAL", text: "CLIPPERS 118 • CELTICS 121" },
+  { label: "NBA FINAL", text: "KINGS 110 • SPURS 123" },
+  { label: "NBA FINAL", text: "NETS 129 • WIZARDS 106" },
+
+  { label: "NHL FINAL", text: "STARS 5 • FLYERS 1" },
+  { label: "NHL FINAL", text: "BLACKHAWKS 3 • MAPLE LEAFS 2" },
+
+  { label: "MLB FINAL", text: "DODGERS 6 • PADRES 4" },
+  { label: "MLB FINAL", text: "YANKEES 3 • RAYS 2" },
+
+  { label: "INTL FINAL", text: "BARCELONA 2 • ATLETICO 1" },
+  { label: "INTL FINAL", text: "CHELSEA 1 • ARSENAL 1" }
+];
+
+/* ===========================================================
+   HIGH-VALUE STATIC LINES (Professional only)
+   =========================================================== */
+const valueLines = [
+  { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!" },
+  { label: "NSN", text: "TRENDING ACROSS SPORTS • INJURIES • TRADES • POWER RANKINGS • HOT STREAKS" },
+  { label: "NSN", text: "NBA • NHL • MLB • INTERNATIONAL SOCCER • COLLEGE FOOTBALL NEWS" },
+  { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
+  { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
+  { label: "NSN", text: "NEWS AUTO-UPDATES EVERY SCROLL" }
+];
+
+const track = document.getElementById("track");
+
+function add(label, text) {
+  let span = document.createElement("span");
+  span.className = "item";
+  span.innerHTML = `<span class="label">${label}</span>${text}`;
+  track.appendChild(span);
+}
+
+/* ===========================================================
+   LOAD NEWS (auto-refreshes each rebuild)
+   =========================================================== */
+async function addNews() {
+  const parser = new DOMParser();
+
+  for (let feed of newsFeeds) {
+    try {
+      const res = await fetch(feed.url);
+      const xml = parser.parseFromString(await res.text(), "application/xml");
+      const items = [...xml.querySelectorAll("item")].slice(0, 5);
+
+      items.forEach(i => {
+        let title = i.querySelector("title").textContent.trim();
+        add(feed.label + " NEWS", title);
+      });
+
+    } catch {
+      add(feed.label + " INFO", "LATEST UPDATES FROM " + feed.label.toUpperCase());
+    }
+  }
+}
+
+/* ===========================================================
+   REBUILD TICKER EACH CYCLE
+   =========================================================== */
+async function buildTicker() {
+  track.innerHTML = "";
+
+  valueLines.forEach(v => add(v.label, v.text));
+  finalScores.forEach(s => add(s.label, s.text));
+  await addNews();
+
+  const clones = [...track.children].map(n => n.cloneNode(true));
+  clones.forEach(c => track.appendChild(c));
+}
+
+buildTicker();
+
+/* Refresh every scroll cycle (250 seconds) */
+setInterval(buildTicker, 250000);
+</script>
+
+</body>
+</html>
