@@ -12,7 +12,6 @@
     font-family: Arial, sans-serif;
   }
 
-  /* Ticker Container */
   .nsn-bar {
     width: 100vw;
     height: 68px;
@@ -23,7 +22,6 @@
     align-items: center;
   }
 
-  /* Left Logo */
   .nsn-logo {
     width: 280px;
     height: 100%;
@@ -33,6 +31,7 @@
     flex-direction: column;
     justify-content: center;
     padding-left: 12px;
+    box-sizing: border-box;
   }
   .nsn-title {
     font-size: 22px;
@@ -46,11 +45,10 @@
   .nsn-sponsor {
     font-size: 10px;
     color: #f7f7f7;
-    opacity: 0.8;
+    opacity: 0.9;
     margin-top: 3px;
   }
 
-  /* Scroll Track */
   .scroll-area {
     flex: 1;
     overflow: hidden;
@@ -77,7 +75,6 @@
     margin-right: 10px;
   }
 
-  /* Uniform scroll speed */
   @keyframes scroll {
     from { transform: translateX(0); }
     to   { transform: translateX(-100%); }
@@ -100,89 +97,82 @@
 </div>
 
 <script>
-  // ------------------------------
+  // ==============================
   // SETTINGS / PROXY
-  // ------------------------------
-  const proxy = "https://api.allorigins.win/raw?url="; // proxy that worked before
+  // ==============================
+  const SPEED = 38;              // pixels per second
+  const REFRESH_MS = 120000;     // 2 minutes
+  const proxyBase = "https://api.allorigins.win/raw?url=";
+
   const track = document.getElementById("track");
-  const SPEED = 38; // pixels per second
-  const REFRESH_MS = 120000; // 2 min rebuild
 
-  // ------------------------------
-  // FEEDS: NEWS (ESPN / YAHOO / CBS)
-  // ------------------------------
-  const FEEDS = [
-    proxy + encodeURIComponent("https://www.espn.com/espn/rss/news"),
-    proxy + encodeURIComponent("https://sports.yahoo.com/rss/"),
-    proxy + encodeURIComponent("https://www.cbssports.com/rss/headlines/")
+  // ==============================
+  // LIVE DATA SOURCES
+  // ==============================
+
+  // Scoreboards (ESPN JSON)
+  const scoreboardSources = [
+    { label: "NFL", url: proxyBase + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard") },
+    { label: "NBA", url: proxyBase + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard") },
+    { label: "NHL", url: proxyBase + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard") },
+    { label: "SOC", url: proxyBase + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/soccer/scoreboard") },
+    { label: "CFB", url: proxyBase + encodeURIComponent("https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard") }
   ];
 
-  // ------------------------------
-  // ENGAGEMENT LINES
-  // ------------------------------
-  const engagement = [
+  // Rankings (best-effort AP via ESPN)
+  const rankingSources = [
+    { label: "CFB AP", url: proxyBase + encodeURIComponent("https://site.web.api.espn.com/apis/v2/sports/football/college-football/rankings") },
+    { label: "CBB AP", url: proxyBase + encodeURIComponent("https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/rankings") }
+  ];
+
+  // News / Rumors (RSS)
+  const newsFeeds = [
+    proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/news"),
+    proxyBase + encodeURIComponent("https://sports.yahoo.com/rss/"),
+    proxyBase + encodeURIComponent("https://www.cbssports.com/rss/headlines/")
+  ];
+
+  // ==============================
+  // STREAM ENGAGEMENT (OK TO BE STATIC TEXT)
+  // ==============================
+  const engagementLines = [
     "WELCOME TO NSN SPORTS • DROP YOUR FAVORITE TEAM IN CHAT",
-    "LIKE THE STREAM • FOLLOW • SHARE WITH A FRIEND",
-    "SONG REQUESTS: !play Song - Artist",
-    "JOIN THE CLUB FOR 1 COIN!!!!!",
-    "NSN SPECIAL • NO COMMERCIALS • LIVE SPORTS TALK"
+    "🔥 LIKE THE STREAM • HIT FOLLOW • SHARE WITH A FRIEND",
+    "JOIN THE CLUB FOR 1 COIN!!!!! • GET YOUR NAME ON THE BOARD",
+    "SONG REQUESTS: !play Song - Artist • LET CHAT CONTROL THE VIBES",
+    "NO COMMERCIALS • LIVE SPORTS TALK ALL STREAM • STAY LOCKED",
+    "FIRST TIME VIEWER? SAY HI IN CHAT • OG’S DROP YOUR DAY ONE EMOTE"
   ];
 
-  // ------------------------------
-  // TEAM SECTIONS
-  // ------------------------------
-  const teamSections = [
-    "COWBOYS • DROP YOUR SEASON RECORD PREDICTION IN CHAT",
-    "LAKERS • IS THIS ROSTER TITLE-READY OR ONE PIECE AWAY?",
-    "CHIEFS • ARE WE SEEING A TRUE DYNASTY OR ARE TEAMS CATCHING UP?",
+  const teamPrompts = [
+    "COWBOYS • WHAT'S YOUR REAL SEASON RECORD PREDICTION?",
+    "CHIEFS • IS THIS STILL A DYNASTY OR ARE TEAMS CATCHING UP?",
     "EAGLES • WHAT IS THE BIGGEST NEED RIGHT NOW?",
-    "49ERS • WHO IS THE REAL MVP OF THIS TEAM?",
-    "RANGERS (NHL) • WHO IS YOUR CLUTCH PLAYER IN GAME 7?",
-    "MAPLE LEAFS • WHAT HAS TO CHANGE TO GO ON A DEEP RUN?",
+    "49ERS • WHO IS THE TRUE MVP OF THIS ROSTER?",
+    "LAKERS • ARE YOU TITLE READY OR ONE PIECE AWAY?",
+    "CELTICS • WHO IS YOUR X-FACTOR IN THE PLAYOFFS?",
+    "WARRIORS • HOW MANY PRIME YEARS DOES CURRY HAVE LEFT?",
     "MAVS • HOW FAR CAN LUKA TAKE THIS CORE?",
-    "CFB • WHO IS YOUR REAL #1 TEAM RIGHT NOW?",
-    "PREMIER LEAGUE • WHO FINISHES TOP FOUR THIS SEASON?"
+    "CFB • WHO IS YOUR TRUE #1 RIGHT NOW?",
+    "PREMIER LEAGUE • WHO IS YOUR FAVORITE CLUB?"
   ];
 
-  // ------------------------------
-  // FAN QUESTIONS (ROTATING)
-  // ------------------------------
   const fanQuestions = [
-    "COWBOYS FANS: IS THIS THE YEAR OR ARE YOU STILL WAITING?",
-    "EAGLES FANS: WHAT WORRIES YOU MOST ABOUT THIS TEAM?",
-    "CHIEFS FANS: HOW DO YOU FEEL ABOUT THE RECEIVER ROOM?",
-    "BILLS FANS: WHAT IS THE MISSING PIECE FOR A TITLE RUN?",
-    "49ERS FANS: WHO IS THE REAL MVP OF THIS ROSTER?",
-    "RAVENS FANS: IS THIS THE BEST VERSION OF LAMAR?",
-    "STEELERS FANS: HOW MANY WINS DOES TOMLIN GET THIS SEASON?",
-    "DOLPHINS FANS: DO YOU TRUST THIS OFFENSE IN THE PLAYOFFS?",
-    "PACKERS FANS: ARE YOU ALL-IN ON JORDAN LOVE?",
-    "BEARS FANS: DO YOU BELIEVE IN THE CURRENT QB?",
-    "LAKERS FANS: MORE SHOOTING OR MORE DEFENSE?",
-    "CELTICS FANS: WHO IS YOUR X-FACTOR?",
-    "WARRIORS FANS: HOW MANY PRIME YEARS DOES CURRY HAVE LEFT?",
-    "KNICKS FANS: WHAT MOVE DO YOU WANT NEXT?",
-    "HEAT FANS: WHO FITS HEAT CULTURE THE MOST RIGHT NOW?",
-    "MAVS FANS: WHAT IS YOUR REALISTIC PLAYOFF EXPECTATION?",
-    "SPURS FANS: WHAT IS WEMBY’S REALISTIC CEILING?",
+    "NFL FANS: WHO IS THE MOST UNDERRATED QB IN THE LEAGUE?",
+    "NBA FANS: WHO IS YOUR DARK HORSE TITLE TEAM?",
+    "CFB FANS: WHO IS THE MOST OVERHYPED PROGRAM?",
     "SOCCER FANS: WHO IS THE BEST CLUB IN THE WORLD RIGHT NOW?",
     "PREMIER LEAGUE FANS: WHO FINISHES TOP FOUR?",
-    "CFB FANS: WHO IS YOUR TRUE NO. 1 TEAM?",
-    "TEXAS FANS: IS TEXAS BACK FOR REAL THIS TIME?",
-    "MICHIGAN FANS: WHAT IS THE MINIMUM EXPECTATION NEXT SEASON?",
-    "OHIO STATE FANS: BEAT MICHIGAN OR WIN A TITLE, WHICH MATTERS MORE?"
+    "NHL FANS: WHICH GOALIE DO YOU TRUST IN GAME 7?",
+    "COWBOYS FANS: HOW MANY PLAYOFF WINS DO YOU EXPECT?",
+    "LAKERS FANS: MORE SHOOTING OR MORE DEFENSE?",
+    "MAVS FANS: WHAT DOES LUKA NEED AROUND HIM?",
+    "SPURS FANS: WHAT IS WEMBY'S REALISTIC CEILING?"
   ];
 
-  // ------------------------------
+  // ==============================
   // HELPERS
-  // ------------------------------
-  function add(text, label="NSN") {
-    const span = document.createElement("span");
-    span.className = "item";
-    span.innerHTML = `<span class="label">${label}</span>${text}`;
-    track.appendChild(span);
-  }
-
+  // ==============================
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -194,32 +184,140 @@
     return a;
   }
 
-  function addEngagement() {
-    engagement.forEach(line => add(line, "NSN"));
+  function addItem(text, label) {
+    const span = document.createElement("span");
+    span.className = "item";
+    span.innerHTML = '<span class="label">' + label + '</span>' + text;
+    track.appendChild(span);
   }
 
-  function addTeamSections() {
-    teamSections.forEach(text => add(text, "TEAM"));
+  // ==============================
+  // LIVE SCORES (FINAL or IN-PROGRESS)
+  // ==============================
+  async function addScores() {
+    for (const src of scoreboardSources) {
+      try {
+        const res = await fetch(src.url);
+        const data = await res.json();
+        const events = (data && data.events) ? data.events : [];
+        let added = 0;
+
+        for (let i = 0; i < events.length && added < 5; i++) {
+          const ev = events[i];
+          if (!ev || !ev.competitions || ev.competitions.length === 0) continue;
+          const comp = ev.competitions[0];
+          if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
+
+          const statusObj = ev.status && ev.status.type ? ev.status.type : null;
+          const desc = statusObj && statusObj.description ? statusObj.description.toLowerCase() : "";
+          const short = statusObj && statusObj.shortDetail ? statusObj.shortDetail : "";
+          const isFinal = statusObj && (statusObj.completed || desc.indexOf("final") !== -1);
+
+          const c1 = comp.competitors[0];
+          const c2 = comp.competitors[1];
+
+          function getName(c) {
+            if (!c) return "TEAM";
+            if (c.team) {
+              return c.team.abbreviation || c.team.shortDisplayName || c.team.name || "TEAM";
+            }
+            return c.displayName || "TEAM";
+          }
+
+          const t1 = getName(c1);
+          const t2 = getName(c2);
+          const s1 = c1 && c1.score ? c1.score : "0";
+          const s2 = c2 && c2.score ? c2.score : "0";
+
+          const label = isFinal ? (src.label + " FINAL") : (src.label + " LIVE");
+          const extra = short ? " • " + short : "";
+
+          addItem(t1 + " " + s1 + " • " + t2 + " " + s2 + extra, label);
+          added++;
+        }
+      } catch (e) {
+        console.log("Score error:", src.label, e);
+      }
+    }
   }
 
-  function addFanQuestionsRotating() {
-    const shuffled = shuffle(fanQuestions);
-    const slice = shuffled.slice(0, 7); // show up to 7 per loop
-    slice.forEach(q => add(q, "CHAT"));
+  // ==============================
+  // LIVE RANKINGS (AP via ESPN, best-effort)
+  // ==============================
+  async function addRankings() {
+    for (const src of rankingSources) {
+      try {
+        const res = await fetch(src.url);
+        const data = await res.json();
+        let polls = [];
+
+        // Try multiple possible shapes to be safe
+        if (data && Array.isArray(data.rankings)) {
+          polls = data.rankings;
+        } else if (data && Array.isArray(data.items)) {
+          polls = data.items;
+        }
+
+        if (!polls || polls.length === 0) continue;
+
+        const poll = polls[0]; // usually AP Top 25 is first
+        let teams = [];
+
+        if (poll.polls && poll.polls[0] && Array.isArray(poll.polls[0].ranks)) {
+          teams = poll.polls[0].ranks;
+        } else if (Array.isArray(poll.ranks)) {
+          teams = poll.ranks;
+        } else if (Array.isArray(poll.teams)) {
+          teams = poll.teams;
+        }
+
+        if (!teams || teams.length === 0) continue;
+
+        const maxTeams = Math.min(10, teams.length);
+        const parts = [];
+
+        for (let i = 0; i < maxTeams; i++) {
+          const t = teams[i];
+          const rank = t.rank || t.current || (i + 1);
+          let name = "";
+
+          if (t.team) {
+            name = t.team.displayName || t.team.shortDisplayName || t.team.abbreviation || t.team.name || "";
+          } else {
+            name = t.displayName || t.shortDisplayName || t.abbreviation || t.name || "";
+          }
+
+          if (!name) continue;
+          parts.push(rank + ". " + name);
+        }
+
+        if (parts.length > 0) {
+          addItem(parts.join(" • "), src.label);
+        }
+
+      } catch (e) {
+        console.log("Ranking error:", src.label, e);
+      }
+    }
   }
 
-  // ------------------------------
-  // LOAD NEWS + RUMORS
-  // ------------------------------
-  async function loadNewsAndRumors() {
-    const rumorKeywords = ["rumor", "trade", "traded", "free agent", "free agency", "extension", "contract", "linked to", "talks", "interest in"];
+  // ==============================
+  // LIVE NEWS + RUMORS (RSS)
+  // ==============================
+  async function addNewsAndRumors() {
+    const parser = new DOMParser();
+    const rumorKeywords = [
+      "rumor", "rumour", "trade", "traded", "trading",
+      "free agent", "free agency", "extension", "contract",
+      "linked to", "talks", "interest in", "shopping", "signing"
+    ];
 
-    for (const feed of FEEDS) {
+    for (const feed of newsFeeds) {
       try {
         const res = await fetch(feed);
-        const xmlText = await res.text();
-        const xml = new DOMParser().parseFromString(xmlText, "text/xml");
-        const items = [...xml.querySelectorAll("item")].slice(0, 6);
+        const text = await res.text();
+        const xml = parser.parseFromString(text, "text/xml");
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 6);
 
         items.forEach(it => {
           const titleNode = it.querySelector("title");
@@ -227,55 +325,71 @@
           const title = titleNode.textContent ? titleNode.textContent.trim() : "";
           if (!title) return;
 
-          const tLower = title.toLowerCase();
+          const lower = title.toLowerCase();
           let isRumor = false;
-          for (const kw of rumorKeywords) {
-            if (tLower.includes(kw)) {
+          for (let i = 0; i < rumorKeywords.length; i++) {
+            if (lower.indexOf(rumorKeywords[i]) !== -1) {
               isRumor = true;
               break;
             }
           }
 
           if (isRumor) {
-            add(title, "RUMOR");
+            addItem(title, "RUMOR");
           } else {
-            add(title, "NEWS");
+            addItem(title, "NEWS");
           }
         });
-
-      } catch (err) {
-        console.log("News fetch error:", err);
-        add("LIVE SPORTS HEADLINES TEMPORARILY UNAVAILABLE", "NEWS");
+      } catch (e) {
+        console.log("News error:", feed, e);
       }
     }
   }
 
-  // ------------------------------
+  // ==============================
+  // STREAM HOOKS / CHAT PROMPTS
+  // ==============================
+  function addEngagement() {
+    engagementLines.forEach(line => addItem(line, "NSN"));
+    teamPrompts.forEach(p => addItem(p, "TEAM"));
+
+    const shuffled = shuffle(fanQuestions);
+    const slice = shuffled.slice(0, 6);
+    slice.forEach(q => addItem(q, "CHAT"));
+  }
+
+  // ==============================
   // BUILD TICKER
-  // ------------------------------
-  async function build() {
+  // ==============================
+  async function buildTicker() {
     track.innerHTML = "";
 
-    // order: stream hooks → team sections → real news/rumors → fan questions
+    // 1) Engagement first so ticker is never empty
     addEngagement();
-    addTeamSections();
-    await loadNewsAndRumors();
-    addFanQuestionsRotating();
 
-    // duplicate for seamless loop
+    // 2) Live scores
+    await addScores();
+
+    // 3) Live rankings
+    await addRankings();
+
+    // 4) Live news + auto-tagged rumors
+    await addNewsAndRumors();
+
+    // Duplicate content for seamless loop
     const cloneHTML = track.innerHTML;
     track.innerHTML += cloneHTML;
 
-    // constant-speed scroll
+    // Constant-speed scroll
     setTimeout(() => {
-      const width = track.scrollWidth;
+      const width = track.scrollWidth || 1;
       const duration = width / SPEED;
       track.style.animationDuration = duration + "s";
     }, 80);
   }
 
-  build();
-  setInterval(build, REFRESH_MS);
+  document.addEventListener("DOMContentLoaded", buildTicker);
+  setInterval(buildTicker, REFRESH_MS);
 </script>
 
 </body>
