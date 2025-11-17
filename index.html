@@ -63,15 +63,17 @@
   .track {
     position: absolute;
     white-space: nowrap;
-    font-size: 22px;          /* bigger text */
+    font-size: 22px;          /* big text */
     font-weight: 600;
     color: white;
     padding-left: 100%;
-    animation: scroll 280s linear infinite;  /* slow scroll like ESPN bottom bar */
+    animation-name: scroll;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
   }
 
   .item {
-    margin-right: 70px;        /* tighter spacing = dense info */
+    margin-right: 70px;       /* dense info, still spaced */
   }
 
   .label {
@@ -117,6 +119,7 @@
   // ================================
   const proxyBase = "https://api.allorigins.win/raw?url="; // easy proxy
   const REFRESH_MS = 120000; // refresh data ~every 2 minutes
+  const PIXELS_PER_SECOND = 40; // adjust this number to make it slower/faster
 
   // Scoreboards – FINAL ONLY (NBA, NFL, NHL, Intl Soccer - EPL)
   const scoreboardSources = [
@@ -161,7 +164,7 @@
     { label: "NSN", text: "NBA • NFL • NHL • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS • NO COMMERCIALS" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
     { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
-    { label: "NSN", text: "LIVE SCOREBOARD • FINAL RESULTS • ODDS • HEADLINES • ALL IN ONE BAR" }
+    { label: "NSN", text: "FINAL SCORES • ODDS • HEADLINES • ALL IN ONE TICKER" }
   ];
 
   const track = document.getElementById("track");
@@ -275,6 +278,18 @@
     }
   }
 
+  function setConsistentSpeed() {
+    // Reset animation so changes apply cleanly
+    track.style.animationDuration = "0s";
+    // Force reflow
+    void track.offsetWidth;
+
+    const width = track.scrollWidth || 1;
+    const seconds = width / PIXELS_PER_SECOND;
+
+    track.style.animationDuration = seconds + "s";
+  }
+
   async function buildTicker() {
     track.innerHTML = "";
 
@@ -290,6 +305,9 @@
     // Duplicate content for seamless looping
     const clones = Array.from(track.children).map(n => n.cloneNode(true));
     clones.forEach(c => track.appendChild(c));
+
+    // After content is in, set a consistent scroll speed
+    setConsistentSpeed();
   }
 
   buildTicker();
@@ -298,4 +316,5 @@
 
 </body>
 </html>
+
 
