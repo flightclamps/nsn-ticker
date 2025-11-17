@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>NSN SPORTS — Final Scores & News</title>
+<title>NSN SPORTS — Advanced Ticker</title>
 
 <style>
   html, body {
@@ -64,7 +64,7 @@
     font-weight: 600;
     color: white;
     padding-left: 100%;
-    animation: scroll 250s linear infinite; /* fixed 250s */
+    animation: scroll 250s linear infinite; /* 250s fixed scroll */
   }
 
   .item {
@@ -104,7 +104,7 @@
   var proxyBase = "https://api.allorigins.win/raw?url="; // easy proxy
   var REFRESH_MS = 120000; // refresh data ~every 2 minutes
 
-  // FINAL SCORE SOURCES – NBA, NFL, NHL, INTL (EPL)
+  // FINAL SCORE SOURCES – NBA, NFL, NHL, CFB, INTL (EPL)
   var scoreboardSources = [
     {
       label: "NBA",
@@ -125,6 +125,12 @@
       )
     },
     {
+      label: "CFB",
+      url: proxyBase + encodeURIComponent(
+        "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard"
+      )
+    },
+    {
       label: "INTL",
       url: proxyBase + encodeURIComponent(
         "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard"
@@ -140,13 +146,21 @@
     { label: "YAHOO", url: proxyBase + encodeURIComponent("https://sports.yahoo.com/rss/") }
   ];
 
+  // “X/Twitter” style feeds via RSS-type proxies (Woj, Schefter, SportsCenter, B/R)
+  var socialFeeds = [
+    { label: "WOJ",  url: proxyBase + encodeURIComponent("https://rsshub.app/twitter/user/wojespn") },
+    { label: "SC",   url: proxyBase + encodeURIComponent("https://rsshub.app/twitter/user/sportscenter") },
+    { label: "SCHEF",url: proxyBase + encodeURIComponent("https://rsshub.app/twitter/user/AdamSchefter") },
+    { label: "BR",   url: proxyBase + encodeURIComponent("https://rsshub.app/twitter/user/BleacherReport") }
+  ];
+
   // STATIC STREAMER / HOOK LINES
   var staticLines = [
     { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!!!" },
-    { label: "NSN", text: "NBA • NFL • NHL • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS • NO COMMERCIALS" },
+    { label: "NSN", text: "NBA • NFL • NHL • CFB • INTERNATIONAL FOOTBALL • NO COMMERCIALS" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
     { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
-    { label: "NSN", text: "FINAL SCORES • ODDS • HEADLINES • ALL IN ONE TICKER" }
+    { label: "NSN", text: "SCORES • ODDS • HEADLINES • SOCIAL BUZZ • ALL IN ONE TICKER" }
   ];
 
   var track = document.getElementById("track");
@@ -181,7 +195,8 @@
         for (var j = 0; j < events.length; j++) {
           var ev = events[j];
           try {
-            var comp = ev.competitions && ev.competitions[0];
+            var competitions = ev.competitions || [];
+            var comp = competitions[0];
             if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
 
             var status = ev.status && ev.status.type ? ev.status.type : {};
@@ -219,6 +234,8 @@
           fallback = "NFL FINAL SCORES • DIVISION RACES • PLAYOFF PICTURE";
         } else if (src.label === "NHL") {
           fallback = "NHL FINAL SCORES • POINTS • GOALIE FORM • STREAKS";
+        } else if (src.label === "CFB") {
+          fallback = "CFB FINAL SCORES • RANKINGS • BOWL AND PLAYOFF PICTURE";
         } else if (src.label === "INTL") {
           fallback = "INTERNATIONAL FOOTBALL FINALS • TABLE SHIFTS • TITLE AND RELEGATION RACES";
         } else {
@@ -229,12 +246,12 @@
     }
   }
 
-  // NEWS ONLY (CFB + general)
-  async function addNews() {
+  // GENERIC RSS LOADER (NEWS + SOCIAL)
+  async function addRssFeeds(feedList, typeTag) {
     var parser = new DOMParser();
 
-    for (var i = 0; i < newsFeeds.length; i++) {
-      var feed = newsFeeds[i];
+    for (var i = 0; i < feedList.length; i++) {
+      var feed = feedList[i];
       var gotAny = false;
 
       try {
@@ -242,7 +259,7 @@
         var text = await res.text();
         var xml = parser.parseFromString(text, "text/xml");
         var items = xml.querySelectorAll("item");
-        var limit = Math.min(items.length, 5);
+        var limit = Math.min(items.length, 4); // keep it tight
 
         for (var j = 0; j < limit; j++) {
           var item = items[j];
@@ -250,27 +267,43 @@
           if (!titleNode) continue;
           var title = titleNode.textContent;
           if (!title) continue;
-          add(feed.label + " NEWS", title.trim());
+          var label = feed.label + " " + typeTag;
+          add(label, title.trim());
           gotAny = true;
         }
       } catch (err) {
-        console.log("News fetch failed for", feed.label, err);
+        console.log("RSS fetch failed for", feed.label, err);
       }
 
       if (!gotAny) {
         var fallback = "";
-        if (feed.label === "CFB") {
-          fallback = "COLLEGE FOOTBALL HEADLINES • RANKINGS • TRANSFER PORTAL • COACHING MOVES";
-        } else if (feed.label === "ESPN") {
-          fallback = "TOP SPORTS STORIES • RUMORS • BREAKING UPDATES";
-        } else if (feed.label === "CBS") {
-          fallback = "CBS SPORTS WIRES • GAME RECAPS • POWER RANKINGS • TRADE TALK";
-        } else if (feed.label === "YAHOO") {
-          fallback = "TRENDING STORIES • PLAYER BUZZ • CONTRACT AND TRADE RUMORS";
+        if (typeTag === "NEWS") {
+          if (feed.label === "CFB") {
+            fallback = "COLLEGE FOOTBALL HEADLINES • RANKINGS • TRANSFER PORTAL • COACHING MOVES";
+          } else if (feed.label === "ESPN") {
+            fallback = "TOP SPORTS STORIES • RUMORS • BREAKING UPDATES";
+          } else if (feed.label === "CBS") {
+            fallback = "GAME RECAPS • POWER RANKINGS • TRADE TALK";
+          } else if (feed.label === "YAHOO") {
+            fallback = "TRENDING STORIES • PLAYER BUZZ • CONTRACT NEWS";
+          } else {
+            fallback = "LATEST SPORTS HEADLINES";
+          }
         } else {
-          fallback = "LATEST SPORTS HEADLINES";
+          // SOCIAL
+          if (feed.label === "WOJ") {
+            fallback = "WOJ SOCIAL • NBA TRADE AND FREE-AGENCY RUMORS";
+          } else if (feed.label === "SCHEF") {
+            fallback = "SCHEFTER SOCIAL • NFL CONTRACTS • INJURIES • ROSTER MOVES";
+          } else if (feed.label === "SC") {
+            fallback = "SPORTSCENTER SOCIAL • HIGHLIGHTS • PLAYS • CLUTCH MOMENTS";
+          } else if (feed.label === "BR") {
+            fallback = "B/R SOCIAL • VIRAL SPORTS MOMENTS • REACTIONS • MEMES";
+          } else {
+            fallback = "LIVE SOCIAL BUZZ AROUND THE LEAGUES";
+          }
         }
-        add(feed.label + " INFO", fallback);
+        add(feed.label + " " + typeTag, fallback);
       }
     }
   }
@@ -278,16 +311,21 @@
   async function buildTicker() {
     track.innerHTML = "";
 
-    // Static streamer hooks
+    // Static NSN streamer hooks
     for (var i = 0; i < staticLines.length; i++) {
       add(staticLines[i].label, staticLines[i].text);
     }
 
-    // Scores + news
+    // Final scores
     await addScoreboards();
-    await addNews();
 
-    // Duplicate content so the scroll loops smoothly
+    // News (ESPN/CBS/Yahoo/CFB)
+    await addRssFeeds(newsFeeds, "NEWS");
+
+    // Social / X-Twitter style buzz
+    await addRssFeeds(socialFeeds, "SOCIAL");
+
+    // Duplicate content so scroll loops smoothly
     var children = track.children;
     var clones = [];
     for (var j = 0; j < children.length; j++) {
@@ -304,6 +342,3 @@
 
 </body>
 </html>
-
-
-
