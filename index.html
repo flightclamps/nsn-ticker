@@ -33,6 +33,7 @@
     justify-content: center;
     padding-left: 14px;
     box-sizing: border-box;
+    flex-shrink: 0; /* Prevents logo area from shrinking */
   }
   .nsn-title {
     font-size: 22px;
@@ -55,19 +56,24 @@
     flex: 1;
     overflow: hidden;
     position: relative;
+    height: 100%; /* Ensure scroll-area has height */
   }
 
   .scroll-track {
     position: absolute;
+    height: 100%; /* Ensure track fills scroll-area height */
     white-space: nowrap;
     font-size: 22px;
     font-weight: 600;
     color: #fff;
     will-change: transform;
+    display: flex; /* Use flex to vertically center content */
+    align-items: center;
   }
 
   .item {
     margin-right: 70px;
+    flex-shrink: 0; /* Ensures items don't shrink */
   }
 
   .label {
@@ -380,6 +386,10 @@
     await addScores();
     await addRankings();
     await addNewsAndRumors();
+
+    // 3) Duplicate the content for seamless scrolling
+    const originalContent = track.innerHTML;
+    track.innerHTML += originalContent;
   }
 
   // ==============================
@@ -393,12 +403,22 @@
         console.log("buildTicker error:", e);
         track.innerHTML = "";
         addEngagement(); // fallback
+        const originalContent = track.innerHTML;
+        track.innerHTML += originalContent;
       }
 
-      // Start from just off the right side
-      const viewport = scrollArea.clientWidth || window.innerWidth || 1920;
-      let width = track.scrollWidth || viewport;
-      let offsetX = viewport;
+      // Check if content exists
+      if (track.scrollWidth === 0) {
+          console.warn("Ticker content width is zero. Retrying build in 5s.");
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+      }
+      
+      // The content is duplicated, so the scroll distance for one loop is half the total scrollWidth.
+      const width = track.scrollWidth / 2;
+      
+      // Start position: Off the right edge by the width of the content, so the duplicated content starts showing immediately
+      let offsetX = width; 
 
       track.style.transform = "translateX(" + offsetX + "px)";
 
@@ -409,11 +429,13 @@
           const dt = (timestamp - lastTime) / 1000;
           lastTime = timestamp;
 
+          // Move left based on SPEED and time delta
           offsetX -= SPEED * dt;
           track.style.transform = "translateX(" + offsetX + "px)";
 
+          // Check if the original content has completely scrolled off the screen
           if (offsetX <= -width) {
-            resolve();
+            resolve(); // End the promise, trigger the while loop refresh
             return;
           }
           requestAnimationFrame(step);
