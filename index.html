@@ -64,9 +64,7 @@
     font-weight: 600;
     color: white;
     padding-left: 100%;
-    animation-name: scroll;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+    animation: scroll 245s linear infinite; /* fixed 245s scroll */
   }
 
   .item {
@@ -100,14 +98,15 @@
 </div>
 
 <script>
+  // ================================
   // SETTINGS
-  var proxyBase = "https://api.allorigins.win/raw?url=";
-  var REFRESH_MS = 120000;         // refresh scores + news every 2 minutes
-  var PIXELS_PER_SECOND = 40;      // change to tweak scroll speed
+  // ================================
+  var proxyBase = "https://api.allorigins.win/raw?url="; // proxy for APIs/RSS
+  var REFRESH_MS = 120000; // refresh scores + news every 2 minutes
 
   var track = document.getElementById("track");
 
-  // SCOREBOARD SOURCES – NFL, NBA, NHL, Soccer (global)
+  // SCOREBOARDS – NFL, NBA, NHL, Soccer (global)
   var scoreboardSources = [
     {
       label: "NFL",
@@ -135,18 +134,19 @@
     }
   ];
 
-  // SPORTS NEWS – ESPN / CBS / YAHOO
+  // SPORTS NEWS – ESPN / CBS / Yahoo
   var newsFeeds = [
     { label: "ESPN",  url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/news") },
     { label: "CBS",   url: proxyBase + encodeURIComponent("https://www.cbssports.com/rss/headlines/") },
     { label: "YAHOO", url: proxyBase + encodeURIComponent("https://sports.yahoo.com/rss/") }
   ];
 
-  // STREAMER STATIC LINES
+  // STREAM ENGAGEMENT LINES
   var staticLines = [
+    { label: "NSN", text: "WELCOME TO NSN SPORTS ON TIKTOK • DROP YOUR TEAM IN CHAT" },
     { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!!!" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
-    { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" }
+    { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM AND FOLLOW" }
   ];
 
   function addItem(label, text) {
@@ -159,150 +159,116 @@
   function buildSpreadText(comp) {
     try {
       if (comp.odds && comp.odds[0] && comp.odds[0].details) {
-        return " | " + comp.odds[0].details;
+        return " | " + comp.odds[0].details; // example: "BOS -3.5"
       }
     } catch (e) {}
     return "";
   }
 
-  function loadScoreboards(done) {
-    var idx = 0;
+  // FINAL SCORES ONLY – NFL / NBA / NHL / SOCCER
+  async function addScoreboards() {
+    for (var i = 0; i < scoreboardSources.length; i++) {
+      var src = scoreboardSources[i];
 
-    function nextSource() {
-      if (idx >= scoreboardSources.length) {
-        done();
-        return;
-      }
+      try {
+        var res = await fetch(src.url);
+        var data = await res.json();
+        var events = data.events || [];
+        var added = 0;
 
-      var src = scoreboardSources[idx++];
-      var addedCount = 0;
+        for (var j = 0; j < events.length; j++) {
+          if (added >= 5) break; // up to 5 games per league
 
-      fetch(src.url)
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          var events = data.events || [];
-          for (var j = 0; j < events.length; j++) {
-            if (addedCount >= 6) break;
+          var ev = events[j];
+          try {
+            var competitions = ev.competitions || [];
+            var comp = competitions[0];
+            if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
 
-            var ev = events[j];
-            try {
-              var competitions = ev.competitions || [];
-              var comp = competitions[0];
-              if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
+            var status = ev.status && ev.status.type ? ev.status.type : {};
+            var desc = (status.description || "").toLowerCase();
+            var isFinal = status.completed || desc.indexOf("final") !== -1;
+            if (!isFinal) continue; // final scores only
 
-              var status = ev.status && ev.status.type ? ev.status.type : {};
-              var desc = (status.description || "").toLowerCase();
-              var isFinal = status.completed || desc.indexOf("final") !== -1;
-              if (!isFinal) continue;
+            var c1 = comp.competitors[0];
+            var c2 = comp.competitors[1];
 
-              var c1 = comp.competitors[0];
-              var c2 = comp.competitors[1];
+            var t1 = (c1.team && (c1.team.abbreviation || c1.team.shortDisplayName || c1.team.name)) || "TEAM1";
+            var t2 = (c2.team && (c2.team.abbreviation || c2.team.shortDisplayName || c2.team.name)) || "TEAM2";
 
-              var t1 = (c1.team && (c1.team.abbreviation || c1.team.shortDisplayName || c1.team.name)) || "TEAM1";
-              var t2 = (c2.team && (c2.team.abbreviation || c2.team.shortDisplayName || c2.team.name)) || "TEAM2";
+            var s1 = c1.score || "0";
+            var s2 = c2.score || "0";
 
-              var s1 = c1.score || "0";
-              var s2 = c2.score || "0";
+            var statusShort = status.shortDetail || status.description || "Final";
+            var spreadText = buildSpreadText(comp);
 
-              var statusShort = status.shortDetail || status.description || "Final";
-              var spreadText = buildSpreadText(comp);
-
-              addItem(
-                src.label + " FINAL",
-                t1 + " " + s1 + " • " + t2 + " " + s2 + " (" + statusShort + ")" + spreadText
-              );
-              addedCount++;
-            } catch (errEv) {
-              console.log("Parse error for", src.label, errEv);
-            }
+            addItem(
+              src.label + " FINAL",
+              t1 + " " + s1 + " • " + t2 + " " + s2 + " (" + statusShort + ")" + spreadText
+            );
+            added++;
+          } catch (errEv) {
+            console.log("Error parsing event for", src.label, errEv);
           }
-        })
-        .catch(function(err) {
-          console.log("Scoreboard fetch failed for", src.label, err);
-        })
-        .finally(function() {
-          nextSource();
-        });
+        }
+      } catch (err) {
+        console.log("Scoreboard fetch failed for", src.label, err);
+      }
     }
-
-    nextSource();
   }
 
-  function loadNews(done) {
+  // REAL SPORTS NEWS HEADLINES – ESPN / CBS / YAHOO
+  async function addNews() {
     var parser = new DOMParser();
-    var idx = 0;
 
-    function nextFeed() {
-      if (idx >= newsFeeds.length) {
-        done();
-        return;
+    for (var i = 0; i < newsFeeds.length; i++) {
+      var feed = newsFeeds[i];
+
+      try {
+        var res = await fetch(feed.url);
+        var text = await res.text();
+        var xml = parser.parseFromString(text, "text/xml");
+        var items = xml.querySelectorAll("item");
+        var limit = Math.min(items.length, 5);
+
+        for (var j = 0; j < limit; j++) {
+          var item = items[j];
+          var titleNode = item.querySelector("title");
+          if (!titleNode) continue;
+          var title = titleNode.textContent;
+          if (!title) continue;
+          addItem(feed.label + " NEWS", title.trim());
+        }
+      } catch (err) {
+        console.log("News fetch failed for", feed.label, err);
       }
-
-      var feed = newsFeeds[idx++];
-
-      fetch(feed.url)
-        .then(function(res) { return res.text(); })
-        .then(function(text) {
-          var xml = parser.parseFromString(text, "text/xml");
-          var items = xml.querySelectorAll("item");
-          var limit = Math.min(items.length, 5);
-
-          for (var j = 0; j < limit; j++) {
-            var item = items[j];
-            var titleNode = item.querySelector("title");
-            if (!titleNode) continue;
-            var title = titleNode.textContent;
-            if (!title) continue;
-            addItem(feed.label + " NEWS", title.trim());
-          }
-        })
-        .catch(function(err) {
-          console.log("News fetch failed for", feed.label, err);
-        })
-        .finally(function() {
-          nextFeed();
-        });
     }
-
-    nextFeed();
   }
 
-  function setScrollSpeed() {
-    track.style.animationDuration = "0s";
-    void track.offsetWidth; // force reflow
-
-    var width = track.scrollWidth || 1;
-    var seconds = width / PIXELS_PER_SECOND;
-    track.style.animationDuration = seconds + "s";
-  }
-
-  function buildTicker() {
+  async function buildTicker() {
     track.innerHTML = "";
 
-    // static lines
+    // Stream engagement lines first
     for (var i = 0; i < staticLines.length; i++) {
       addItem(staticLines[i].label, staticLines[i].text);
     }
 
-    // load scores then news, then duplicate + set speed
-    loadScoreboards(function() {
-      loadNews(function() {
-        // duplicate children to make scroll seamless
-        var children = track.children;
-        var clones = [];
-        for (var k = 0; k < children.length; k++) {
-          clones.push(children[k].cloneNode(true));
-        }
-        for (var m = 0; m < clones.length; m++) {
-          track.appendChild(clones[m]);
-        }
+    // Real scores + real headlines
+    await addScoreboards();
+    await addNews();
 
-        setScrollSpeed();
-      });
-    });
+    // Duplicate content for seamless scroll loop
+    var children = track.children;
+    var clones = [];
+    for (var k = 0; k < children.length; k++) {
+      clones.push(children[k].cloneNode(true));
+    }
+    for (var m = 0; m < clones.length; m++) {
+      track.appendChild(clones[m]);
+    }
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     buildTicker();
     setInterval(buildTicker, REFRESH_MS);
   });
