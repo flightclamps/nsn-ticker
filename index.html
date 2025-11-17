@@ -14,13 +14,12 @@
 
   .nsn-bar {
     width: 100vw;
-    height: 68px;
-    background: #0a0a0a;
-    border-top: 3px solid #1E88E5;   /* primary blue */
-    border-bottom: 3px solid #FF3D00; /* secondary orange-red */
+    height: 70px;
+    background: #050505;
+    border-top: 3px solid #1E88E5;
+    border-bottom: 3px solid #FF3D00;
     display: flex;
     align-items: center;
-    box-shadow: 0 0 18px rgba(30,136,229,0.7);
   }
 
   .nsn-logo {
@@ -32,23 +31,22 @@
     flex-direction: column;
     justify-content: center;
     padding-left: 14px;
-    box-sizing: border-box;
-    flex-shrink: 0; /* Prevents logo area from shrinking */
   }
+
   .nsn-title {
     font-size: 22px;
     font-weight: 900;
     color: #fff;
-    letter-spacing: 0.5px;
   }
+
   .nsn-sub {
     font-size: 11px;
     color: #d6ecff;
   }
+
   .nsn-sponsor {
     font-size: 10px;
     color: #ffe0b2;
-    opacity: 0.95;
     margin-top: 3px;
   }
 
@@ -56,24 +54,15 @@
     flex: 1;
     overflow: hidden;
     position: relative;
-    height: 100%; /* Ensure scroll-area has height */
   }
 
   .scroll-track {
     position: absolute;
-    height: 100%; /* Ensure track fills scroll-area height */
     white-space: nowrap;
     font-size: 22px;
     font-weight: 600;
     color: #fff;
     will-change: transform;
-    display: flex; /* Use flex to vertically center content */
-    align-items: center;
-  }
-
-  .item {
-    margin-right: 70px;
-    flex-shrink: 0; /* Ensures items don't shrink */
   }
 
   .label {
@@ -81,14 +70,12 @@
     font-weight: 900;
     margin-right: 10px;
   }
-  .label-rumor {
-    color: #FF3D00;
-  }
-  .label-live {
-    color: #4CAF50;
-  }
-  .label-final {
-    color: #FFC107;
+  .label-live { color: #4CAF50; }
+  .label-final { color: #FFC107; }
+  .label-upcoming { color: #29B6F6; }
+
+  .item {
+    margin-right: 70px;
   }
 </style>
 </head>
@@ -98,8 +85,8 @@
 <div class="nsn-bar">
   <div class="nsn-logo">
     <div class="nsn-title">NSN SPORTS</div>
-    <div class="nsn-sub">NotSoNetwork • No Commercials</div>
-    <div class="nsn-sponsor">Powered by ApexGrid Analytics</div>
+    <div class="nsn-sub">Live • Daily Coverage</div>
+    <div class="nsn-sponsor">Powered by NSN Members</div>
   </div>
 
   <div class="scroll-area">
@@ -108,348 +95,154 @@
 </div>
 
 <script>
-  // ==============================
-  // SETTINGS / PROXY
-  // ==============================
-  const SPEED = 40;                // pixels per second
-  const proxyBase = "https://api.allorigins.win/raw?url=";
+  // ============ SETTINGS ============
+  const SPEED = 250; // pixels per second
+  const proxy = "https://api.allorigins.win/raw?url=";
 
   const track = document.getElementById("track");
   const scrollArea = document.querySelector(".scroll-area");
 
-  // ==============================
-  // LIVE DATA SOURCES
-  // ==============================
-
-  // Scoreboards (ESPN JSON) – core American sports
-  const scoreboardSources = [
+  const sources = [
     { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
     { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
     { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
     { label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
-    { label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard" },
-    { label: "MLS", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard" }
-  ].map(s => ({ label: s.label, url: proxyBase + encodeURIComponent(s.url) }));
+    { label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard" }
+  ].map(s => ({ label: s.label, url: proxy + encodeURIComponent(s.url) }));
 
-  // Rankings (AP polls via ESPN – best effort)
-  const rankingSources = [
-    { label: "CFB AP", url: "https://site.web.api.espn.com/apis/v2/sports/football/college-football/rankings" },
-    { label: "CBB AP", url: "https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/rankings" }
-  ].map(s => ({ label: s.label, url: proxyBase + encodeURIComponent(s.url) }));
-
-  // News feeds (RSS)
-  const newsFeeds = [
-    "https://www.espn.com/espn/rss/news",
-    "https://sports.yahoo.com/rss/",
-    "https://www.cbssports.com/rss/headlines/"
-  ].map(u => proxyBase + encodeURIComponent(u));
-
-  // ==============================
-  // STREAM ENGAGEMENT (TEXT ONLY)
-  // ==============================
-  const engagementLines = [
-    "WELCOME TO NSN SPORTS • DROP YOUR FAVORITE TEAM IN CHAT",
-    "LIKE THE STREAM • HIT FOLLOW • SHARE WITH A FRIEND",
-    "JOIN THE CLUB FOR 1 COIN!!!!! • GET YOUR NAME ON THE BOARD",
-    "SONG REQUESTS: !play Song - Artist • CHAT RUNS THE MUSIC",
-    "NO COMMERCIALS • LIVE SPORTS TALK ALL STREAM",
-    "FIRST TIME VIEWER? SAY HI • OG’S CHECK IN",
-    "CLIP YOUR FAVORITE MOMENT AND TAG @NotSoCj"
+  const questions = [
+    "NFL FANS: WHO WINS TONIGHT?",
+    "NBA FANS: WHO IS YOUR MVP RIGHT NOW?",
+    "CFB FANS: WHO IS THE TRUE NO. 1?",
+    "NHL FANS: WHICH TEAM IS ON TOP?",
+    "DROP YOUR FAVORITE TEAM IN CHAT",
+    "LIKE + FOLLOW FOR DAILY NSN UPDATES"
   ];
 
-  const teamPrompts = [
-    "COWBOYS • WHAT'S YOUR REAL SEASON RECORD PREDICTION?",
-    "CHIEFS • DYNASTY STILL ALIVE OR WINDOW CLOSING?",
-    "EAGLES • WHAT IS THE BIGGEST TEAM NEED RIGHT NOW?",
-    "49ERS • WHO IS THE TRUE MVP OF THIS ROSTER?",
-    "LAKERS • TITLE READY OR ONE PIECE AWAY?",
-    "MAVS • HOW FAR CAN LUKA TAKE THIS CORE?",
-    "RANGERS • WHO DO YOU TRUST IN GAME 7?",
-    "CFB • WHO IS YOUR TRUE NO. 1 TODAY?",
-    "NBA • WHO IS YOUR DARK HORSE CONTENDER?",
-    "NFL • WHO IS THE MOST UNDERRATED QB?"
-  ];
-
-  const fanQuestions = [
-    "NFL FANS: WHO WINS THE NEXT SUPER BOWL?",
-    "NFL FANS: WHO IS THE MOST UNDERRATED QB IN THE LEAGUE?",
-    "NBA FANS: WHO IS YOUR DARK HORSE TITLE TEAM?",
-    "NBA FANS: WHO IS THE REAL MVP RIGHT NOW?",
-    "CFB FANS: WHO IS THE MOST OVERHYPED PROGRAM?",
-    "CFB FANS: WHICH STADIUM HAS THE BEST ATMOSPHERE?",
-    "NHL FANS: WHICH GOALIE DO YOU TRUST IN GAME 7?",
-    "SOCCER FANS: WHO IS THE BEST CLUB IN THE WORLD RIGHT NOW?",
-    "PREMIER LEAGUE FANS: WHO FINISHES TOP FOUR?",
-    "MAVS FANS: WHAT DOES LUKA NEED AROUND HIM?",
-    "COWBOYS FANS: HOW MANY PLAYOFF WINS DO YOU EXPECT?",
-    "LAKERS FANS: MORE SHOOTING OR MORE DEFENSE?"
-  ];
-
-  // ==============================
-  // HELPERS
-  // ==============================
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = a[i];
-      a[i] = a[j];
-      a[j] = tmp;
-    }
-    return a;
-  }
-
-  function addItem(text, label, labelClass) {
+  function addItem(label, text, cls) {
     const span = document.createElement("span");
+    let lab = "label";
+    if (cls) lab += " " + cls;
     span.className = "item";
-    const cls = labelClass ? "label " + labelClass : "label";
-    span.innerHTML = '<span class="' + cls + '">' + label + '</span>' + text;
+    span.innerHTML = `<span class="${lab}">${label}</span>${text}`;
     track.appendChild(span);
   }
 
-  // ==============================
-  // LIVE SCORES
-  // ==============================
+  function shuffle(a) {
+    return a.map(v => [Math.random(), v]).sort().map(pair => pair[1]);
+  }
+
+  function formatTime(dateStr) {
+    try {
+      let d = new Date(dateStr);
+      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    } catch {
+      return "";
+    }
+  }
+
   async function addScores() {
-    for (const src of scoreboardSources) {
+    for (let src of sources) {
       try {
         const res = await fetch(src.url);
         const data = await res.json();
         const events = (data && data.events) ? data.events : [];
-        let added = 0;
 
-        for (let i = 0; i < events.length && added < 4; i++) {
-          const ev = events[i];
-          if (!ev || !ev.competitions || ev.competitions.length === 0) continue;
-          const comp = ev.competitions[0];
-          if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
+        let count = 0;
+        for (let ev of events) {
+          if (count >= 4) break;
 
-          const statusObj = ev.status && ev.status.type ? ev.status.type : null;
-          const desc = statusObj && statusObj.description ? statusObj.description.toLowerCase() : "";
-          const short = statusObj && statusObj.shortDetail ? statusObj.shortDetail : "";
-          const isFinal = statusObj && (statusObj.completed || desc.indexOf("final") !== -1);
+          const comp = ev.competitions?.[0];
+          if (!comp || comp.competitors.length < 2) continue;
+
+          const s = ev.status?.type || {};
+          const desc = (s.description || "").toLowerCase();
+          const state = (s.state || "").toLowerCase();
+          const isFinal = s.completed || desc.includes("final");
+          const isLive = state.includes("in") || desc.includes("live");
 
           const c1 = comp.competitors[0];
           const c2 = comp.competitors[1];
 
-          function getName(c) {
-            if (!c) return "TEAM";
-            if (c.team) {
-              return c.team.abbreviation || c.team.shortDisplayName || c.team.name || "TEAM";
-            }
-            return c.displayName || "TEAM";
-          }
+          const t1 = c1.team?.abbreviation || c1.team?.shortDisplayName || "TEAM1";
+          const t2 = c2.team?.abbreviation || c2.team?.shortDisplayName || "TEAM2";
 
-          const t1 = getName(c1);
-          const t2 = getName(c2);
-          const s1 = c1 && c1.score ? c1.score : "0";
-          const s2 = c2 && c2.score ? c2.score : "0";
-
-          const label = isFinal ? (src.label + " FINAL") : (src.label + " LIVE");
-          const labelClass = isFinal ? "label-final" : "label-live";
-          const extra = short ? " • " + short : "";
-
-          addItem(t1 + " " + s1 + " • " + t2 + " " + s2 + extra, label, labelClass);
-          added++;
-        }
-      } catch (e) {
-        console.log("Score error:", src.label, e);
-      }
-    }
-  }
-
-  // ==============================
-  // LIVE RANKINGS (AP via ESPN)
-  // ==============================
-  async function addRankings() {
-    for (const src of rankingSources) {
-      try {
-        const res = await fetch(src.url);
-        const data = await res.json();
-        let polls = [];
-
-        if (data && Array.isArray(data.rankings)) {
-          polls = data.rankings;
-        } else if (data && Array.isArray(data.items)) {
-          polls = data.items;
-        }
-
-        if (!polls || polls.length === 0) continue;
-
-        const poll = polls[0];
-        let teams = [];
-
-        if (poll.polls && poll.polls[0] && Array.isArray(poll.polls[0].ranks)) {
-          teams = poll.polls[0].ranks;
-        } else if (Array.isArray(poll.ranks)) {
-          teams = poll.ranks;
-        } else if (Array.isArray(poll.teams)) {
-          teams = poll.teams;
-        }
-
-        if (!teams || teams.length === 0) continue;
-
-        const maxTeams = Math.min(10, teams.length);
-        const parts = [];
-
-        for (let i = 0; i < maxTeams; i++) {
-          const t = teams[i];
-          const rank = t.rank || t.current || (i + 1);
-          let name = "";
-
-          if (t.team) {
-            name = t.team.displayName || t.team.shortDisplayName || t.team.abbreviation || t.team.name || "";
+          if (isFinal) {
+            addItem(src.label + " FINAL", `${t1} ${c1.score} • ${t2} ${c2.score}`, "label-final");
+          } else if (isLive) {
+            addItem(src.label + " LIVE", `${t1} ${c1.score} • ${t2} ${c2.score}`, "label-live");
           } else {
-            name = t.displayName || t.shortDisplayName || t.abbreviation || t.name || "";
+            const time = formatTime(ev.date);
+            addItem(src.label + " TODAY", `${t1} @ ${t2} • ${time}`, "label-upcoming");
           }
 
-          if (!name) continue;
-          parts.push(rank + ". " + name);
-        }
-
-        if (parts.length > 0) {
-          addItem(parts.join(" • "), src.label, "");
+          count++;
         }
 
       } catch (e) {
-        console.log("Ranking error:", src.label, e);
+        console.log("error scoreboard", src.label, e);
       }
     }
   }
 
-  // ==============================
-  // LIVE NEWS + RUMORS
-  // ==============================
-  async function addNewsAndRumors() {
-    const parser = new DOMParser();
-    const rumorKeywords = [
-      "rumor", "rumour", "trade", "traded", "trading",
-      "free agent", "free agency", "extension", "contract",
-      "linked to", "talks", "interest in", "shopping", "signing"
-    ];
-
-    for (const feed of newsFeeds) {
-      try {
-        const res = await fetch(feed);
-        const text = await res.text();
-        const xml = parser.parseFromString(text, "text/xml");
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, 6);
-
-        items.forEach(it => {
-          const titleNode = it.querySelector("title");
-          if (!titleNode) return;
-          const title = titleNode.textContent ? titleNode.textContent.trim() : "";
-          if (!title) return;
-
-          const lower = title.toLowerCase();
-          let isRumor = false;
-          for (let i = 0; i < rumorKeywords.length; i++) {
-            if (lower.indexOf(rumorKeywords[i]) !== -1) {
-              isRumor = true;
-              break;
-            }
-          }
-
-          if (isRumor) {
-            addItem(title, "RUMOR", "label-rumor");
-          } else {
-            addItem(title, "NEWS", "");
-          }
-        });
-      } catch (e) {
-        console.log("News error:", feed, e);
-      }
-    }
+  async function addDate() {
+    const d = new Date();
+    const text = d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+    addItem("DATE", text, "");
   }
 
-  // ==============================
-  // STREAM HOOKS / CHAT PROMPTS
-  // ==============================
-  function addEngagement() {
-    engagementLines.forEach(line => addItem(line, "NSN", ""));
-    teamPrompts.forEach(p => addItem(p, "TEAM", ""));
-
-    const sliced = shuffle(fanQuestions).slice(0, 6);
-    sliced.forEach(q => addItem(q, "CHAT", ""));
+  async function addQuestions() {
+    shuffle(questions).slice(0, 5).forEach(q => {
+      addItem("CHAT", q, "");
+    });
   }
 
-  // ==============================
-  // BUILD TICKER CONTENT
-  // ==============================
-  async function buildTicker() {
+  async function build() {
     track.innerHTML = "";
 
-    // 1) Engagement + prompts first (so ticker is never empty)
-    addEngagement();
-
-    // 2) Live data
+    await addDate();
+    await addQuestions();
     await addScores();
-    await addRankings();
-    await addNewsAndRumors();
 
-    // 3) Duplicate the content for seamless scrolling
-    const originalContent = track.innerHTML;
-    track.innerHTML += originalContent;
+    // Duplicate for smooth loop
+    track.innerHTML += track.innerHTML;
   }
 
-  // ==============================
-  // SCROLL ENGINE (refresh after each full loop)
-  // ==============================
-  async function startTicker() {
+  async function startScrolling() {
     while (true) {
-      try {
-        await buildTicker();
-      } catch (e) {
-        console.log("buildTicker error:", e);
-        track.innerHTML = "";
-        addEngagement(); // fallback
-        const originalContent = track.innerHTML;
-        track.innerHTML += originalContent;
-      }
+      await build();
 
-      // Check if content exists
-      if (track.scrollWidth === 0) {
-          console.warn("Ticker content width is zero. Retrying build in 5s.");
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          continue;
-      }
-      
-      // The content is duplicated, so the scroll distance for one loop is half the total scrollWidth.
-      const width = track.scrollWidth / 2;
-      
-      // Start position: Off the right edge by the width of the content, so the duplicated content starts showing immediately
-      let offsetX = width; 
+      let x = scrollArea.offsetWidth;
+      let totalWidth = track.scrollWidth;
 
-      track.style.transform = "translateX(" + offsetX + "px)";
-
+      // requestAnimationFrame loop
       await new Promise(resolve => {
-        let lastTime = null;
-        function step(timestamp) {
-          if (lastTime === null) lastTime = timestamp;
-          const dt = (timestamp - lastTime) / 1000;
-          lastTime = timestamp;
+        let last = null;
+        function step(ts) {
+          if (!last) last = ts;
+          let dt = (ts - last) / 1000;
+          last = ts;
 
-          // Move left based on SPEED and time delta
-          offsetX -= SPEED * dt;
-          track.style.transform = "translateX(" + offsetX + "px)";
+          x -= SPEED * dt;
+          track.style.transform = `translateX(${x}px)`;
 
-          // Check if the original content has completely scrolled off the screen
-          if (offsetX <= -width) {
-            resolve(); // End the promise, trigger the while loop refresh
+          if (x <= -totalWidth) {
+            resolve();
             return;
           }
           requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
       });
-
-      // loop: after full scroll, go back up and rebuild live data
     }
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
-    startTicker();
-  });
+  document.addEventListener("DOMContentLoaded", startScrolling);
 </script>
 
 </body>
