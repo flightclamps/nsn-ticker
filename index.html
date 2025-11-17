@@ -22,7 +22,6 @@
     border-top: 3px solid #1E88E5;
     border-bottom: 3px solid #1E88E5;
     box-shadow: 0 0 14px #1E88E5;
-    animation: fadeIn 1s ease forwards;
   }
 
   .logo-box {
@@ -34,7 +33,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    animation: slideIn 1s ease forwards;
   }
 
   .logo-main {
@@ -42,7 +40,6 @@
     font-size: 22px;
     font-weight: 900;
     letter-spacing: 1px;
-    text-shadow: 0 0 6px rgba(255,255,255,0.5);
   }
 
   .logo-sub {
@@ -63,7 +60,7 @@
   .track {
     position: absolute;
     white-space: nowrap;
-    font-size: 22px;          /* big text */
+    font-size: 22px;
     font-weight: 600;
     color: white;
     padding-left: 100%;
@@ -73,29 +70,18 @@
   }
 
   .item {
-    margin-right: 70px;       /* dense info, still spaced */
+    margin-right: 70px;
   }
 
   .label {
     color: #FFC107;
     font-weight: 900;
     margin-right: 10px;
-    text-shadow: 0 0 6px rgba(255,255,255,0.3);
   }
 
   @keyframes scroll {
     from { transform: translateX(0); }
     to   { transform: translateX(-100%); }
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-40px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
@@ -114,14 +100,12 @@
 </div>
 
 <script>
-  // ================================
-  // SETTINGS
-  // ================================
-  const proxyBase = "https://api.allorigins.win/raw?url="; // easy proxy
-  const REFRESH_MS = 120000; // refresh data ~every 2 minutes
-  const PIXELS_PER_SECOND = 40; // adjust this number to make it slower/faster
+  /* SETTINGS */
+  const proxyBase = "https://api.allorigins.win/raw?url=";
+  const REFRESH_MS = 120000;
+  const PIXELS_PER_SECOND = 40;
 
-  // Scoreboards – FINAL ONLY (NBA, NFL, NHL, Intl Soccer - EPL)
+  /* FINAL SCORE SOURCES */
   const scoreboardSources = [
     {
       label: "NBA",
@@ -143,14 +127,13 @@
     },
     {
       label: "INTL",
-      // Premier League; change eng.1 if you want a different league
       url: proxyBase + encodeURIComponent(
         "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard"
       )
     }
   ];
 
-  // College football + general news – info only
+  /* NEWS SOURCES */
   const newsFeeds = [
     { label: "CFB",   url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/ncf/news") },
     { label: "ESPN",  url: proxyBase + encodeURIComponent("https://www.espn.com/espn/rss/news") },
@@ -158,10 +141,10 @@
     { label: "YAHOO", url: proxyBase + encodeURIComponent("https://sports.yahoo.com/rss/") }
   ];
 
-  // High-value static lines – streamer-focused, no corny questions
+  /* STREAMER STATIC LINES */
   const staticLines = [
     { label: "NSN", text: "JOIN THE CLUB FOR 1 COIN!!!!!" },
-    { label: "NSN", text: "NBA • NFL • NHL • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS • NO COMMERCIALS" },
+    { label: "NSN", text: "NBA • NFL • NHL • INTERNATIONAL FOOTBALL • COLLEGE FOOTBALL NEWS" },
     { label: "NSN", text: "SONG REQUESTS: !play Song - Artist" },
     { label: "NSN", text: "DON’T FORGET TO LIKE THE STREAM" },
     { label: "NSN", text: "FINAL SCORES • ODDS • HEADLINES • ALL IN ONE TICKER" }
@@ -176,15 +159,14 @@
     track.appendChild(span);
   }
 
-  // Build spread / odds text if available
   function buildSpreadText(comp) {
     if (comp.odds && comp.odds[0] && comp.odds[0].details) {
-      return " | " + comp.odds[0].details; // e.g. "BOS -3.5"
+      return " | " + comp.odds[0].details;
     }
     return "";
   }
 
-  // FINAL SCORES ONLY + SPREAD (NBA / NFL / NHL / INTL)
+  /* FINAL SCORES ONLY */
   async function addScoreboards() {
     for (const src of scoreboardSources) {
       let added = false;
@@ -195,126 +177,19 @@
         const events = data.events || [];
 
         events.forEach(ev => {
-          try {
-            const comp = ev.competitions && ev.competitions[0];
-            if (!comp || !comp.competitors || comp.competitors.length < 2) return;
+          const comp = ev.competitions?.[0];
+          if (!comp || !comp.competitors) return;
 
-            const status = ev.status && ev.status.type || {};
-            const desc = (status.description || "").toLowerCase();
-            const isFinal = status.completed || desc.includes("final");
-            if (!isFinal) return; // FINAL ONLY
+          const status = ev.status?.type || {};
+          const desc = (status.description || "").toLowerCase();
+          const isFinal = status.completed || desc.includes("final");
+          if (!isFinal) return;
 
-            const c1 = comp.competitors[0];
-            const c2 = comp.competitors[1];
+          const c1 = comp.competitors[0];
+          const c2 = comp.competitors[1];
 
-            const t1 = c1.team && (c1.team.abbreviation || c1.team.shortDisplayName || c1.team.name) || "TEAM1";
-            const t2 = c2.team && (c2.team.abbreviation || c2.team.shortDisplayName || c2.team.name) || "TEAM2";
-
-            const s1 = c1.score || "0";
-            const s2 = c2.score || "0";
-
-            const statusShort = status.shortDetail || status.description || "Final";
-            const spreadText = buildSpreadText(comp);
-
-            const line = `${t1} ${s1} • ${t2} ${s2} (${statusShort})${spreadText}`;
-            add(src.label + " FINAL", line);
-            added = true;
-          } catch (errEv) {
-            console.log("Error parsing event", src.label, errEv);
-          }
-        });
-      } catch (err) {
-        console.log("Scoreboard fetch failed for", src.label, err);
-      }
-
-      // Fallback info if no finals found for that league
-      if (!added) {
-        const fallback = {
-          "NBA":  "NBA FINAL SCORES • STANDINGS • FORM AND STREAK WATCH",
-          "NFL":  "NFL FINAL SCORES • DIVISION RACES • PLAYOFF PICTURE",
-          "NHL":  "NHL FINAL SCORES • POINTS • GOALIE FORM • STREAKS",
-          "INTL": "INTERNATIONAL FOOTBALL FINALS • TABLE SHIFTS • TITLE AND RELEGATION RACES"
-        }[src.label] || "LATEST RESULTS AND RANKINGS";
-
-        add(src.label + " INFO", fallback);
-      }
-    }
-  }
-
-  // COLLEGE FOOTBALL + GENERAL NEWS / RUMORS ONLY
-  async function addNews() {
-    const parser = new DOMParser();
-
-    for (const feed of newsFeeds) {
-      let gotAny = false;
-
-      try {
-        const res = await fetch(feed.url);
-        const text = await res.text();
-        const xml = parser.parseFromString(text, "application/xml");
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, 5);
-
-        items.forEach(i => {
-          const titleNode = i.querySelector("title");
-          if (!titleNode) return;
-          const title = titleNode.textContent.trim();
-          add(feed.label + " NEWS", title);
-          gotAny = true;
-        });
-      } catch (err) {
-        console.log("News fetch failed for", feed.label, err);
-      }
-
-      if (!gotAny) {
-        const fallback = {
-          "CFB":   "COLLEGE FOOTBALL HEADLINES • RANKINGS • TRANSFER PORTAL • COACHING MOVES",
-          "ESPN":  "TOP SPORTS STORIES • RUMORS • BREAKING UPDATES",
-          "CBS":   "CBS SPORTS WIRES • GAME RECAPS • POWER RANKINGS • TRADE TALK",
-          "YAHOO": "TRENDING STORIES • PLAYER BUZZ • CONTRACT AND TRADE RUMORS"
-        }[feed.label] || "LATEST SPORTS HEADLINES";
-
-        add(feed.label + " INFO", fallback);
-      }
-    }
-  }
-
-  function setConsistentSpeed() {
-    // Reset animation so changes apply cleanly
-    track.style.animationDuration = "0s";
-    // Force reflow
-    void track.offsetWidth;
-
-    const width = track.scrollWidth || 1;
-    const seconds = width / PIXELS_PER_SECOND;
-
-    track.style.animationDuration = seconds + "s";
-  }
-
-  async function buildTicker() {
-    track.innerHTML = "";
-
-    // Core NSN static lines (stream hooks)
-    staticLines.forEach(v => add(v.label, v.text));
-
-    // Final scores with spreads
-    await addScoreboards();
-
-    // College football + general news
-    await addNews();
-
-    // Duplicate content for seamless looping
-    const clones = Array.from(track.children).map(n => n.cloneNode(true));
-    clones.forEach(c => track.appendChild(c));
-
-    // After content is in, set a consistent scroll speed
-    setConsistentSpeed();
-  }
-
-  buildTicker();
-  setInterval(buildTicker, REFRESH_MS);
-</script>
-
-</body>
-</html>
+          const t1 = c1.team?.abbreviation || "TEAM1";
+          const t2 = c2.team?.abbreviation || "TEAM2";
+          const s1 = c1.score || "0";
 
 
