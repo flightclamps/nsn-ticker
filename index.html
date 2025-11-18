@@ -65,18 +65,20 @@
     will-change: transform;
   }
 
+  .item {
+    margin-right: 70px;
+  }
+
   .label {
     color: #FFC107;
     font-weight: 900;
     margin-right: 10px;
   }
+
   .label-live { color: #4CAF50; }
   .label-final { color: #FFC107; }
   .label-upcoming { color: #29B6F6; }
-
-  .item {
-    margin-right: 70px;
-  }
+  .label-news { color: #FFEB3B; }
 </style>
 </head>
 
@@ -85,7 +87,7 @@
 <div class="nsn-bar">
   <div class="nsn-logo">
     <div class="nsn-title">NSN SPORTS</div>
-    <div class="nsn-sub">Live • Daily Coverage</div>
+    <div class="nsn-sub">Welcome to the Stream</div>
     <div class="nsn-sponsor">Powered by NSN Members</div>
   </div>
 
@@ -97,68 +99,87 @@
 <script>
   // ============ SETTINGS ============
   const SPEED = 250; // pixels per second
-  const proxy = "https://api.allorigins.win/raw?url=";
+  const PROXY = "https://api.allorigins.win/raw?url=";
 
   const track = document.getElementById("track");
   const scrollArea = document.querySelector(".scroll-area");
 
-  const sources = [
+  // --------- LIVE SCORE SOURCES (NFL / NBA / NHL) ----------
+  const scoreSources = [
     { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
     { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
-    { label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
-    { label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard" }
-  ].map(s => ({ label: s.label, url: proxy + encodeURIComponent(s.url) }));
+    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" }
+  ].map(s => ({ label: s.label, url: PROXY + encodeURIComponent(s.url) }));
+
+  // --------- NEWS SOURCES (NFL / NBA / NHL) ----------
+  const newsFeeds = [
+    { label: "NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
+    { label: "NBA", url: "https://www.espn.com/espn/rss/nba/news" },
+    { label: "NHL", url: "https://www.espn.com/espn/rss/nhl/news" }
+  ].map(f => ({ label: f.label, url: PROXY + encodeURIComponent(f.url) }));
+
+  // --------- ENGAGEMENT / WELCOME LINES ----------
+  const welcomeLines = [
+    "WELCOME TO THE STREAM • NSN SPORTS LIVE",
+    "DROP YOUR FAVORITE TEAM IN CHAT",
+    "LIKE THE STREAM • HIT FOLLOW • SHARE WITH A FRIEND",
+    "SONG REQUESTS: !play Song - Artist",
+    "NO COMMERCIALS • PURE SPORTS TALK"
+  ];
 
   const questions = [
     "NFL FANS: WHO WINS TONIGHT?",
     "NBA FANS: WHO IS YOUR MVP RIGHT NOW?",
-    "CFB FANS: WHO IS THE TRUE NO. 1?",
-    "NHL FANS: WHICH TEAM IS ON TOP?",
-    "DROP YOUR FAVORITE TEAM IN CHAT",
-    "LIKE + FOLLOW FOR DAILY NSN UPDATES"
+    "NHL FANS: WHICH TEAM IS HOTTEST RIGHT NOW?"
   ];
 
-  function addItem(label, text, cls) {
-    const span = document.createElement("span");
-    let lab = "label";
-    if (cls) lab += " " + cls;
-    span.className = "item";
-    span.innerHTML = `<span class="${lab}">${label}</span>${text}`;
-    track.appendChild(span);
+  function shuffle(a) {
+    return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
   }
 
-  function shuffle(a) {
-    return a.map(v => [Math.random(), v]).sort().map(pair => pair[1]);
+  function addItem(label, text, labelClass) {
+    const span = document.createElement("span");
+    span.className = "item";
+    const cls = labelClass ? `label ${labelClass}` : "label";
+    span.innerHTML = `<span class="${cls}">${label}</span>${text}`;
+    track.appendChild(span);
   }
 
   function formatTime(dateStr) {
     try {
-      let d = new Date(dateStr);
+      const d = new Date(dateStr);
       return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     } catch {
       return "";
     }
   }
 
-  async function addScores() {
-    for (let src of sources) {
+  // --------- 1. WELCOME / ENGAGEMENT BLOCK ----------
+  function addWelcomeBlock() {
+    welcomeLines.forEach(t => addItem("NSN", t, ""));
+    shuffle(questions).forEach(q => addItem("CHAT", q, ""));
+  }
+
+  // --------- 2. SCORES BLOCK (NFL → NBA → NHL) ----------
+  async function addScoresBlock() {
+    for (const src of scoreSources) {
       try {
         const res = await fetch(src.url);
         const data = await res.json();
         const events = (data && data.events) ? data.events : [];
+        let added = 0;
 
-        let count = 0;
-        for (let ev of events) {
-          if (count >= 4) break;
+        for (const ev of events) {
+          if (added >= 5) break;
 
           const comp = ev.competitions?.[0];
-          if (!comp || comp.competitors.length < 2) continue;
+          if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
 
-          const s = ev.status?.type || {};
-          const desc = (s.description || "").toLowerCase();
-          const state = (s.state || "").toLowerCase();
-          const isFinal = s.completed || desc.includes("final");
+          const status = ev.status?.type || {};
+          const desc = (status.description || "").toLowerCase();
+          const state = (status.state || "").toLowerCase();
+          const short = status.shortDetail || "";
+          const isFinal = status.completed || desc.includes("final");
           const isLive = state.includes("in") || desc.includes("live");
 
           const c1 = comp.competitors[0];
@@ -167,65 +188,87 @@
           const t1 = c1.team?.abbreviation || c1.team?.shortDisplayName || "TEAM1";
           const t2 = c2.team?.abbreviation || c2.team?.shortDisplayName || "TEAM2";
 
+          let label, labelClass, text;
+
           if (isFinal) {
-            addItem(src.label + " FINAL", `${t1} ${c1.score} • ${t2} ${c2.score}`, "label-final");
+            label = `${src.label} FINAL`;
+            labelClass = "label-final";
+            text = `${t1} ${c1.score} • ${t2} ${c2.score}` + (short ? ` • ${short}` : "");
           } else if (isLive) {
-            addItem(src.label + " LIVE", `${t1} ${c1.score} • ${t2} ${c2.score}`, "label-live");
+            label = `${src.label} LIVE`;
+            labelClass = "label-live";
+            text = `${t1} ${c1.score} • ${t2} ${c2.score}` + (short ? ` • ${short}` : "");
           } else {
-            const time = formatTime(ev.date);
-            addItem(src.label + " TODAY", `${t1} @ ${t2} • ${time}`, "label-upcoming");
+            label = `${src.label} TODAY`;
+            labelClass = "label-upcoming";
+            const timeText = formatTime(ev.date);
+            text = `${t1} @ ${t2}` + (timeText ? ` • ${timeText}` : "");
           }
 
-          count++;
+          addItem(label, text, labelClass);
+          added++;
         }
-
       } catch (e) {
-        console.log("error scoreboard", src.label, e);
+        console.log("score error", src.label, e);
       }
     }
   }
 
-  async function addDate() {
-    const d = new Date();
-    const text = d.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    });
-    addItem("DATE", text, "");
+  // --------- 3. NEWS BLOCK (HEADLINES) ----------
+  async function addNewsBlock() {
+    const parser = new DOMParser();
+
+    for (const feed of newsFeeds) {
+      try {
+        const res = await fetch(feed.url);
+        const text = await res.text();
+        const xml = parser.parseFromString(text, "text/xml");
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 5);
+
+        for (const item of items) {
+          const titleNode = item.querySelector("title");
+          if (!titleNode) continue;
+          const title = titleNode.textContent ? titleNode.textContent.trim() : "";
+          if (!title) continue;
+
+          addItem(feed.label + " NEWS", title, "label-news");
+        }
+      } catch (e) {
+        console.log("news error", feed.label, e);
+      }
+    }
   }
 
-  async function addQuestions() {
-    shuffle(questions).slice(0, 5).forEach(q => {
-      addItem("CHAT", q, "");
-    });
-  }
-
-  async function build() {
+  // --------- BUILD FULL STRUCTURED TICKER ----------
+  async function buildTicker() {
     track.innerHTML = "";
 
-    await addDate();
-    await addQuestions();
-    await addScores();
+    // 1) Welcome / engagement
+    addWelcomeBlock();
 
-    // Duplicate for smooth loop
+    // 2) Scores (NFL, then NBA, then NHL)
+    await addScoresBlock();
+
+    // 3) News (NFL/NBA/NHL headlines)
+    await addNewsBlock();
+
+    // Duplicate content so scroll has length
     track.innerHTML += track.innerHTML;
   }
 
-  async function startScrolling() {
+  // --------- SCROLL ENGINE @ 250 SPEED ----------
+  async function startScrollLoop() {
     while (true) {
-      await build();
+      await buildTicker();
 
       let x = scrollArea.offsetWidth;
-      let totalWidth = track.scrollWidth;
+      const totalWidth = track.scrollWidth || x;
 
-      // requestAnimationFrame loop
       await new Promise(resolve => {
         let last = null;
         function step(ts) {
           if (!last) last = ts;
-          let dt = (ts - last) / 1000;
+          const dt = (ts - last) / 1000;
           last = ts;
 
           x -= SPEED * dt;
@@ -239,10 +282,11 @@
         }
         requestAnimationFrame(step);
       });
+      // loop: after full scroll, rebuild (welcome → scores → news) with fresh data
     }
   }
 
-  document.addEventListener("DOMContentLoaded", startScrolling);
+  document.addEventListener("DOMContentLoaded", startScrollLoop);
 </script>
 
 </body>
