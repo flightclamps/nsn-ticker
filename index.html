@@ -1,103 +1,475 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<title>NSN Ticker</title>
+<meta charset="UTF-8">
+<title>NSN Broadcast Ticker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body {
-  margin: 0;
-  background: #081f3d;
-  font-family: Arial, sans-serif;
-  overflow: hidden;
-}
+  /* Base Styles */
+  body {
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Inter', Arial, sans-serif;
+  }
 
-#ticker {
-  white-space: nowrap;
-  position: absolute;
-  top: 0;
-  left: 100%;
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
-  display: flex;
-  align-items: center;
-  animation: scroll 250s linear infinite;
-}
+  /* The main container for the ticker strip */
+  .nsn-bar {
+    width: 100vw;
+    height: 48px; /* Tighter bar for "bottom line" look */
+    background: #1A1A1A; /* Dark gray/black */
+    border-top: 2px solid #CC0000; /* Sharp Red Accent */
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  }
 
-.section {
-  margin-right: 80px;
-}
+  /* Fixed Logo/Network Branding Section */
+  .nsn-logo {
+    width: 120px;
+    min-width: 120px;
+    height: 100%;
+    background: #CC0000; /* Strong Red Background */
+    border-right: 2px solid #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
 
-.label {
-  background: #0a3f7c;
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-right: 15px;
-}
-@keyframes scroll {
-  from { left: 100%; }
-  to { left: -300%; }
-}
+  .nsn-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #FFFFFF;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
+  }
+
+  /* The Scrolling Area (Viewport) */
+  .scroll-area {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    /* Clean gradient fade mask for entry/exit */
+    mask-image: linear-gradient(to right, 
+      transparent 0%, 
+      black 5%, 
+      black 95%, 
+      transparent 100%
+    );
+  }
+
+  /* The Content Track that moves */
+  .scroll-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex; 
+    align-items: center;
+    white-space: nowrap;
+    font-size: 22px; 
+    font-weight: 700;
+    color: #FFFFFF;
+    padding-left: 20px; /* Initial space buffer */
+    transition: transform 0s linear; 
+    letter-spacing: -0.5px; /* Tighter text for professional look */
+  }
+
+  /* Individual Ticker Item */
+  .item {
+    padding-right: 50px; /* Spacing between items */
+    margin-right: 50px; /* Ensures duplication doesn't overlap on reset */
+    flex-shrink: 0;
+    /* Subtle 3D/shadow effect for readability over broadcast video */
+    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8), 1px 1px 0px rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Game Status/Category Labels */
+  .label {
+    font-weight: 900;
+    margin-right: 12px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: #444; /* Default background for labels */
+    color: #FFF;
+    font-size: 16px;
+  }
+
+  /* Color coded labels */
+  .label-live { 
+    background-color: #00C853; /* Bright Green */
+    color: #1A1A1A;
+  }
+  .label-final { 
+    background-color: #FFAB00; /* Amber/Yellow */
+    color: #1A1A1A;
+  }
+  .label-upcoming { 
+    background-color: #00B0FF; /* Bright Blue */
+    color: #1A1A1A;
+  }
+  .label-news { 
+    background-color: #555555; /* Gray */
+    color: #FFFFFF;
+  }
+  .label-chat { 
+    background-color: #007AFF; /* Secondary Blue Accent for Chat/Engagement */
+    color: #FFFFFF;
+  }
+  .label-analyst { 
+    background-color: #CC0000; /* Red for Hot Takes */
+    color: #FFFFFF;
+  }
+
+
+  /* Mobile/Responsive Adjustments */
+  @media (max-width: 600px) {
+    .nsn-bar {
+      height: 40px;
+    }
+    .nsn-logo {
+      width: 90px;
+      min-width: 90px;
+    }
+    .nsn-title {
+      font-size: 16px;
+    }
+    .scroll-track {
+      font-size: 18px;
+    }
+    .label {
+      font-size: 14px;
+      margin-right: 8px;
+    }
+    .item {
+      padding-right: 30px; 
+      margin-right: 30px;
+    }
+  }
+
 </style>
 </head>
 
 <body>
 
-<div id="ticker">
-  <span class="section label">WELCOME TO THE STREAM — POWERED BY NSN MEMBERS</span>
-  <span id="scores" class="section">Loading scores...</span>
-  <span id="news" class="section">Loading news...</span>
-  <span class="section">ENGAGE: Who’s winning tonight? Drop your predictions!</span>
+<div class="nsn-bar">
+  <!-- Network Branding -->
+  <div class="nsn-logo">
+    <div class="nsn-title">NSN LIVE</div>
+  </div>
+
+  <!-- Ticker Area -->
+  <div class="scroll-area">
+    <div class="scroll-track" id="track"></div>
+  </div>
 </div>
 
 <script>
-async function fetchProxy(url) {
-  const proxy = "https://api.allorigins.win/raw?url=";
-  const res = await fetch(proxy + encodeURIComponent(url));
-  return res.json();
-}
+  // ============ GLOBAL STATE & SETTINGS ============
+  const SPEED_PX_PER_SEC = 80; 
+  // API proxy is required to bypass CORS restrictions
+  const PROXY = "https://api.allorigins.win/raw?url="; 
+  const REFRESH_INTERVAL_MS = 3 * 60 * 1000; // Refresh all data every 3 minutes
 
-async function loadScores() {
-  try {
-    let nfl = await fetchProxy("https://site.api.espn.com/apis/v2/sports/football/nfl/scoreboard");
-    let nba = await fetchProxy("https://site.api.espn.com/apis/v2/sports/basketball/nba/scoreboard");
-    let nhl = await fetchProxy("https://site.api.espn.com/apis/v2/sports/hockey/nhl/scoreboard");
+  const track = document.getElementById("track");
+  let animationFrameId = null;
+  let lastTime = 0;
+  let scrollPosition = 0;
+  let contentWidth = 0; 
 
-    function parse(league, data) {
-      return data.events.map(g => {
-        let c1 = g.competitions[0].competitors[0];
-        let c2 = g.competitions[0].competitors[1];
-        return `${league}: ${c1.team.abbreviation} ${c1.score} - ${c2.team.abbreviation} ${c2.score}`;
-      }).join("   |   ");
+  // Data Sources and Content Lists
+  const scoreSources = [
+    { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+    { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
+    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" }
+  ].map(s => ({ label: s.label, url: PROXY + encodeURIComponent(s.url) }));
+
+  const newsFeeds = [
+    { label: "NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
+    { label: "NBA", url: "https://www.espn.com/espn/rss/nba/news" },
+    { label: "NHL", url: "https://www.espn.com/espn/rss/nhl/news" }
+  ].map(f => ({ label: f.label, url: PROXY + encodeURIComponent(f.url) }));
+  
+  // Custom Content: All links point to your TikTok channel
+  const tiktokEngagementItems = [
+    "WELCOME TO NSN LIVE STREAM • DROP A FOLLOW ON TIKTOK FOR MORE CONTENT",
+    "POLL: WHO IS THE MOST OVERRATED TEAM IN THE NBA? COMMENT BELOW ON TIKTOK!",
+    "LIKE THE STREAM FOR A FREE SHOUTOUT",
+    "BREAKING NEWS: SEE FULL DETAILS ON OUR TIKTOK CHANNEL",
+    "VOTE FOR THE NEXT GAME WE WATCH! !vote [TEAM]",
+    "TRIVIA: WHAT YEAR WAS THE NFL FOUNDED? ANSWERS IN TIKTOK CHAT!",
+  ];
+
+  // Simulated sports analyst commentary (Hot Takes)
+  const analystHotTakes = [
+    "ANALYST HOT TAKE: LEBRON JAMES IS *NOT* A TOP 5 PLAYER ALL-TIME. YOU HEARD IT HERE FIRST!",
+    "FIRST TAKE: RYAN CLARK SAYS PATRICK MAHOMES IS THE ONLY GENERATIONAL QB TALENT RIGHT NOW.",
+    "SKIP BAYLESS: THE COWBOYS ARE BUILT FOR A SUPER BOWL RUN, NO MATTER WHAT THE HATERS SAY.",
+    "NBA HOT TAKE: JAYSON TATUM NEEDS TO DEVELOP A 'KILLER INSTINCT' TO WIN AN NBA TITLE.",
+    "NFL DEBATE: JALEN HURTS IS ALREADY A BETTER CLUTCH QB THAN JOE BURROW. FACTS OVER FEELINGS.",
+    "NFL ANALYST: THE JETS ARE ONE HEALTHY QUARTERBACK AWAY FROM A TOP-3 AFC EAST FINISH.",
+    "NHL SHOCKER: NO TEAM FROM THE EASTERN CONFERENCE CAN BEAT THE OILERS IN A 7-GAME SERIES.",
+    "DRAFT ANALYSIS: THIS YEAR'S QB CLASS IS OVERRATED. ONLY ONE STAR POTENTIAL.",
+  ];
+
+  // Helper function to randomize arrays
+  function shuffle(a) {
+    return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
+  }
+
+  // Helper function to safely fetch JSON data with exponential backoff
+  async function fetchData(url, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+      }
+    }
+    return { events: [] }; 
+  }
+
+  // Helper function to safely fetch XML/Text data with exponential backoff
+  async function fetchTextData(url, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return await res.text();
+      } catch (e) {
+        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+      }
+    }
+    return "";
+  }
+
+  // Formats date string to time (e.g., 7:30 PM)
+  function formatTime(dateStr) {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    } catch {
+      return "TBD";
+    }
+  }
+  
+  // ==========================================================
+  // CONTENT GENERATORS (Return Item Objects)
+  // ==========================================================
+
+  function getChatAndAnalystItems() {
+    const items = [];
+    const combinedEngagement = [...tiktokEngagementItems, ...analystHotTakes];
+
+    combinedEngagement.forEach(t => { 
+        let label = "TIKTOK CHAT"; 
+        let text = t;
+        let labelClass = "label-chat";
+
+        if (t.includes("ANALYST") || t.includes("BAYLESS") || t.includes("FIRST TAKE") || t.includes("SHOCKER")) {
+            label = "ANALYST HOT TAKE";
+            labelClass = "label-analyst";
+        } else {
+            // Custom parsing for items that already have a colon for specific labels
+            const parts = t.split(':');
+            if (parts.length > 1) {
+                label = parts[0].trim().toUpperCase();
+                text = parts.slice(1).join(':').trim();
+                if(label === 'POLL' || label === 'TRIVIA' || label.includes('NEWS')) {
+                    labelClass = "label-news"; 
+                }
+            }
+        }
+
+        items.push({ label, text, labelClass });
+    });
+    return items;
+  }
+
+  async function getScoreItems() {
+    const items = [];
+
+    for (const src of scoreSources) {
+      try {
+        const data = await fetchData(src.url);
+        const events = (data && data.events) ? data.events : [];
+        
+        // Only prioritize LIVE/FINAL/UPCOMING games
+        const gamesToAdd = events.filter(ev => ev.status?.type?.state?.toLowerCase() !== 'pre');
+
+        let added = 0;
+        for (const ev of gamesToAdd.slice(0, 5)) { // Limit total games per sport to 5
+          if (added >= 5) break; 
+          
+          const comp = ev.competitions?.[0];
+          if (!comp || comp.competitors.length < 2) continue;
+
+          const status = ev.status?.type || {};
+          const desc = (status.description || "").toLowerCase();
+          const state = (status.state || "").toLowerCase();
+          const short = status.shortDetail || "";
+          const isFinal = status.completed || desc.includes("final");
+          const isLive = state.includes("in") || desc.includes("live");
+
+          const homeTeam = comp.competitors.find(c => c.homeAway === 'home') || comp.competitors[0];
+          const awayTeam = comp.competitors.find(c => c.homeAway === 'away') || comp.competitors[1];
+          
+          const t1 = awayTeam.team?.abbreviation || "AWAY";
+          const t2 = homeTeam.team?.abbreviation || "HOME";
+
+          let label, labelClass, text;
+
+          if (isFinal) {
+            label = `${src.label} FINAL`;
+            labelClass = "label-final";
+            // Score format: AWAY score @ HOME score
+            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "");
+          } else if (isLive) {
+            label = `${src.label} LIVE`;
+            labelClass = "label-live";
+            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "");
+          } else {
+            label = `${src.label} UPCOMING`;
+            labelClass = "label-upcoming";
+            const timeText = formatTime(ev.date);
+            // Matchup format: AWAY @ HOME
+            text = `${t1} @ ${t2}` + (timeText ? ` | ${timeText}` : " | TBD");
+          }
+
+          items.push({ label, text, labelClass });
+          added++;
+        }
+      } catch (e) {
+        console.error("Score block failed for", src.label, e);
+      }
+    }
+    return items;
+  }
+
+  async function getNewsItems() {
+    const items = [];
+    const parser = new DOMParser();
+
+    for (const feed of newsFeeds) {
+      try {
+        const text = await fetchTextData(feed.url);
+        if (!text) continue;
+        const xml = parser.parseFromString(text, "text/xml");
+        const newsItems = Array.from(xml.querySelectorAll("item")).slice(0, 3); 
+
+        for (const item of newsItems) {
+          const titleNode = item.querySelector("title");
+          if (!titleNode || !titleNode.textContent) continue;
+          
+          let title = titleNode.textContent.trim().toUpperCase();
+          title = title.replace(/^\[.+?\]\s?/, ''); 
+
+          items.push({ label: feed.label + " NEWS", text: title, labelClass: "label-news" });
+        }
+      } catch (e) {
+        console.error("News block failed for", feed.label, e);
+      }
+    }
+    return items;
+  }
+
+  // Function to create and append a single item to the track DOM element
+  function addItemToDOM({ label, text, labelClass }) {
+    const span = document.createElement("span");
+    span.className = "item";
+    const cls = labelClass ? `label ${labelClass}` : "label";
+    span.innerHTML = `<span class="${cls}">${label}</span>${text}`;
+    track.appendChild(span);
+  }
+
+
+  // ==========================================================
+  // MAIN BUILDER (Collects, Shuffles, Appends, and Loops)
+  // ==========================================================
+  async function buildTicker() {
+    // 1. Fetch all data concurrently
+    const [chatAndAnalyst, scores, news] = await Promise.all([
+      getChatAndAnalystItems(),
+      getScoreItems(),
+      getNewsItems()
+    ]);
+
+    // 2. Combine all data and shuffle for a dynamic feed
+    let allItems = [...chatAndAnalyst, ...scores, ...news];
+    if (allItems.length === 0) {
+        // Fallback if APIs fail
+        allItems.push({ 
+            label: "SYSTEM", 
+            text: "DATA FEED UNAVAILABLE. TUNE INTO TIKTOK FOR LIVE UPDATES.", 
+            labelClass: "label-final" 
+        });
     }
 
-    let full =
-      parse("NFL", nfl) + "   ||   " +
-      parse("NBA", nba) + "   ||   " +
-      parse("NHL", nhl);
+    allItems = shuffle(allItems);
+    
+    // 3. Clear existing content and render the shuffled items
+    track.innerHTML = "";
+    allItems.forEach(item => addItemToDOM(item));
 
-    document.getElementById("scores").innerText = full;
-  } catch {
-    document.getElementById("scores").innerText = "Scores unavailable";
+    // 4. Measure content width for the seamless loop
+    track.style.transform = 'translateX(0px)'; 
+    contentWidth = track.scrollWidth; 
+    
+    // 5. Duplicate content for seamless loop
+    const originalContent = track.innerHTML;
+    track.innerHTML += originalContent;
+
+    // 6. Start the animation loop
+    startAnimation();
   }
-}
 
-async function loadNews() {
-  try {
-    let news = await fetchProxy("https://site.api.espn.com/apis/v2/sports/news");
-    let items = news.articles.slice(0, 5).map(a => a.headline).join("   |   ");
-    document.getElementById("news").innerText = "NEWS: " + items;
-  } catch {
-    document.getElementById("news").innerText = "News unavailable";
+
+  // ==========================================================
+  // ANIMATION LOOP (Pixel Scroll)
+  // ==========================================================
+
+  function animate(currentTime) {
+    if (!lastTime) {
+      lastTime = currentTime;
+    }
+    
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    // Calculate distance to move (pixels per millisecond * milliseconds)
+    const distanceToMove = (SPEED_PX_PER_SEC / 1000) * deltaTime;
+    
+    scrollPosition += distanceToMove;
+
+    if (contentWidth > 0 && scrollPosition >= contentWidth) {
+      // Seamless loop reset
+      scrollPosition -= contentWidth;
+    }
+
+    // Apply the translation
+    track.style.transform = `translateX(-${scrollPosition}px)`;
+    
+    animationFrameId = requestAnimationFrame(animate);
   }
-}
 
-async function refreshAll() {
-  await loadScores();
-  await loadNews();
-}
-refreshAll();
-setInterval(refreshAll, 60000);
+  function startAnimation() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    lastTime = 0; 
+    scrollPosition = 0; 
+    animationFrameId = requestAnimationFrame(animate);
+  }
+
+  // Start the application when the DOM is ready
+  document.addEventListener("DOMContentLoaded", buildTicker);
+  
+  // Re-run the build function periodically to refresh the data
+  setInterval(buildTicker, REFRESH_INTERVAL_MS); 
 </script>
 
 </body>
