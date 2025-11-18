@@ -17,32 +17,47 @@
   /* The main container for the ticker strip */
   .nsn-bar {
     width: 100vw;
-    height: 48px; /* Tighter bar for "bottom line" look */
-    background: #1A1A1A; /* Dark gray/black */
-    border-top: 2px solid #CC0000; /* Sharp Red Accent */
+    height: 52px; /* Slightly taller for better visibility */
+    background: #090909; /* Deep Black */
+    border-top: 3px solid #00E5FF; /* Electric Cyan Top Border */
+    border-bottom: 3px solid #D500F9; /* Neon Purple Bottom Border */
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); /* Glow effect */
   }
 
   /* Fixed Logo/Network Branding Section */
   .nsn-logo {
-    width: 120px;
-    min-width: 120px;
+    width: 130px;
+    min-width: 130px;
     height: 100%;
-    background: #CC0000; /* Strong Red Background */
-    border-right: 2px solid #FFFFFF;
+    background: linear-gradient(135deg, #1A237E, #000000); /* Deep Blue to Black */
+    border-right: 2px solid #00E5FF;
     display: flex;
+    flex-direction: column; /* Stack text vertically */
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+    z-index: 10;
   }
 
   .nsn-title {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 900;
     color: #FFFFFF;
-    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
+    font-style: italic;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0px #D500F9; /* Pop art shadow */
+    line-height: 1;
+  }
+  
+  .nsn-powered {
+      font-size: 8px;
+      color: #00E5FF;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 4px;
+      letter-spacing: 0.5px;
   }
 
   /* The Scrolling Area (Viewport) */
@@ -51,11 +66,11 @@
     height: 100%;
     overflow: hidden;
     position: relative;
-    /* Clean gradient fade mask for entry/exit */
+    /* Soft mask for entry/exit */
     mask-image: linear-gradient(to right, 
       transparent 0%, 
-      black 5%, 
-      black 95%, 
+      black 2%, 
+      black 98%, 
       transparent 100%
     );
   }
@@ -69,84 +84,84 @@
     display: flex; 
     align-items: center;
     white-space: nowrap;
-    font-size: 22px; 
+    font-size: 24px; /* Larger text for mobile readability */
     font-weight: 700;
     color: #FFFFFF;
-    padding-left: 20px; /* Initial space buffer */
+    padding-left: 20px; 
     transition: transform 0s linear; 
-    letter-spacing: -0.5px; /* Tighter text for professional look */
+    letter-spacing: -0.2px; 
   }
 
   /* Individual Ticker Item */
   .item {
-    padding-right: 50px; /* Spacing between items */
-    margin-right: 50px; /* Ensures duplication doesn't overlap on reset */
+    padding-right: 60px; 
+    margin-right: 60px; 
     flex-shrink: 0;
-    /* Subtle 3D/shadow effect for readability over broadcast video */
-    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8), 1px 1px 0px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
   }
   
   /* Game Status/Category Labels */
   .label {
-    font-weight: 900;
-    margin-right: 12px;
-    padding: 3px 6px;
+    font-weight: 800;
+    margin-right: 14px;
+    padding: 4px 10px;
     border-radius: 4px;
-    background: #444; /* Default background for labels */
-    color: #FFF;
+    color: #000; /* Black text on bright backgrounds */
     font-size: 16px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
   }
 
-  /* Color coded labels */
+  /* --- SWITCHED UP COLOR PALETTE --- */
   .label-live { 
-    background-color: #00C853; /* Bright Green */
-    color: #1A1A1A;
+    background-color: #FF0033; /* Electric Red */
+    color: #FFF;
+    animation: pulse 2s infinite;
   }
   .label-final { 
-    background-color: #FFAB00; /* Amber/Yellow */
-    color: #1A1A1A;
+    background-color: #FFD700; /* Gold */
+    color: #000;
   }
   .label-upcoming { 
-    background-color: #00B0FF; /* Bright Blue */
-    color: #1A1A1A;
+    background-color: #00E5FF; /* Cyan */
+    color: #000;
   }
   .label-news { 
-    background-color: #555555; /* Gray */
-    color: #FFFFFF;
+    background-color: #D500F9; /* Neon Purple */
+    color: #FFF;
   }
   .label-chat { 
-    background-color: #007AFF; /* Secondary Blue Accent for Chat/Engagement */
-    color: #FFFFFF;
+    background-color: #651FFF; /* Deep Purple/Blue */
+    color: #FFF;
   }
   .label-analyst { 
-    background-color: #CC0000; /* Red for Hot Takes */
-    color: #FFFFFF;
+    background-color: #FF4081; /* Hot Pink */
+    color: #FFF;
   }
-
+  .label-injury {
+    background-color: #FF6D00; /* Safety Orange */
+    color: #FFF;
+  }
+  .label-rumor {
+    background-color: #AA00FF; /* Purple Accent */
+    color: #FFF;
+  }
+  
+  @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+  }
 
   /* Mobile/Responsive Adjustments */
   @media (max-width: 600px) {
-    .nsn-bar {
-      height: 40px;
-    }
-    .nsn-logo {
-      width: 90px;
-      min-width: 90px;
-    }
-    .nsn-title {
-      font-size: 16px;
-    }
-    .scroll-track {
-      font-size: 18px;
-    }
-    .label {
-      font-size: 14px;
-      margin-right: 8px;
-    }
-    .item {
-      padding-right: 30px; 
-      margin-right: 30px;
-    }
+    .nsn-bar { height: 44px; }
+    .nsn-logo { width: 100px; min-width: 100px; }
+    .nsn-title { font-size: 18px; }
+    .scroll-track { font-size: 18px; }
+    .label { font-size: 12px; margin-right: 8px; padding: 2px 6px; }
+    .item { padding-right: 30px; margin-right: 30px; }
   }
 
 </style>
@@ -158,6 +173,7 @@
   <!-- Network Branding -->
   <div class="nsn-logo">
     <div class="nsn-title">NSN LIVE</div>
+    <div class="nsn-powered">POWERED BY: NSN NATION</div>
   </div>
 
   <!-- Ticker Area -->
@@ -169,8 +185,7 @@
 <script>
   // ============ GLOBAL STATE & SETTINGS ============
   const SPEED_PX_PER_SEC = 80; 
-  // API proxy is required to bypass CORS restrictions
-  const PROXY = "https://api.allorigins.win/raw?url="; 
+  const PROXY = "https://corsproxy.io/?"; 
   const REFRESH_INTERVAL_MS = 3 * 60 * 1000; // Refresh all data every 3 minutes
 
   const track = document.getElementById("track");
@@ -179,11 +194,15 @@
   let scrollPosition = 0;
   let contentWidth = 0; 
 
-  // Data Sources and Content Lists
+  // Data Sources
   const scoreSources = [
     { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+    { label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" }, 
     { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" }
+    { label: "CBB", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" }, 
+    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
+    { label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
+    { label: "EPL", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard" }
   ].map(s => ({ label: s.label, url: PROXY + encodeURIComponent(s.url) }));
 
   const newsFeeds = [
@@ -192,26 +211,22 @@
     { label: "NHL", url: "https://www.espn.com/espn/rss/nhl/news" }
   ].map(f => ({ label: f.label, url: PROXY + encodeURIComponent(f.url) }));
   
-  // Custom Content: All links point to your TikTok channel
   const tiktokEngagementItems = [
-    "WELCOME TO NSN LIVE STREAM • DROP A FOLLOW ON TIKTOK FOR MORE CONTENT",
-    "POLL: WHO IS THE MOST OVERRATED TEAM IN THE NBA? COMMENT BELOW ON TIKTOK!",
-    "LIKE THE STREAM FOR A FREE SHOUTOUT",
-    "BREAKING NEWS: SEE FULL DETAILS ON OUR TIKTOK CHANNEL",
-    "VOTE FOR THE NEXT GAME WE WATCH! !vote [TEAM]",
-    "TRIVIA: WHAT YEAR WAS THE NFL FOUNDED? ANSWERS IN TIKTOK CHAT!",
+    "WELCOME TO NSN LIVE STREAM • DROP A FOLLOW ON TIKTOK!",
+    "🚨 SONG REQUESTS ARE ON! TYPE '!play Song - Artist' IN CHAT 🎶",
+    "🔥 JOIN THE CLUB FOR 1 COIN! BECOME A MEMBER OF NSN NATION TODAY! 🔥",
+    "POLL: WHO IS THE MOST OVERRATED TEAM? COMMENT BELOW!",
+    "BREAKING NEWS: CHECK OUR TIKTOK PAGE FOR UPDATES",
+    "TRIVIA: ANSWER IN CHAT FOR A SHOUTOUT!",
   ];
 
-  // Simulated sports analyst commentary (Hot Takes)
   const analystHotTakes = [
-    "ANALYST HOT TAKE: LEBRON JAMES IS *NOT* A TOP 5 PLAYER ALL-TIME. YOU HEARD IT HERE FIRST!",
-    "FIRST TAKE: RYAN CLARK SAYS PATRICK MAHOMES IS THE ONLY GENERATIONAL QB TALENT RIGHT NOW.",
-    "SKIP BAYLESS: THE COWBOYS ARE BUILT FOR A SUPER BOWL RUN, NO MATTER WHAT THE HATERS SAY.",
-    "NBA HOT TAKE: JAYSON TATUM NEEDS TO DEVELOP A 'KILLER INSTINCT' TO WIN AN NBA TITLE.",
-    "NFL DEBATE: JALEN HURTS IS ALREADY A BETTER CLUTCH QB THAN JOE BURROW. FACTS OVER FEELINGS.",
-    "NFL ANALYST: THE JETS ARE ONE HEALTHY QUARTERBACK AWAY FROM A TOP-3 AFC EAST FINISH.",
-    "NHL SHOCKER: NO TEAM FROM THE EASTERN CONFERENCE CAN BEAT THE OILERS IN A 7-GAME SERIES.",
-    "DRAFT ANALYSIS: THIS YEAR'S QB CLASS IS OVERRATED. ONLY ONE STAR POTENTIAL.",
+    "ANALYST HOT TAKE: LEBRON JAMES IS *NOT* A TOP 5 PLAYER ALL-TIME!",
+    "FIRST TAKE: PATRICK MAHOMES IS THE ONLY GENERATIONAL QB RIGHT NOW.",
+    "SKIP BAYLESS: COWBOYS ARE SUPER BOWL BOUND. PERIOD.",
+    "NBA HOT TAKE: TATUM NEEDS A 'KILLER INSTINCT' TO WIN A RING.",
+    "NFL DEBATE: JALEN HURTS > JOE BURROW. FACTS OVER FEELINGS.",
+    "NHL SHOCKER: OILERS WINNING THE CUP THIS YEAR.",
   ];
 
   // Helper function to randomize arrays
@@ -219,7 +234,6 @@
     return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
   }
 
-  // Helper function to safely fetch JSON data with exponential backoff
   async function fetchData(url, retries = 3) {
     for (let i = 0; i < retries; i++) {
       try {
@@ -227,13 +241,14 @@
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return await res.json();
       } catch (e) {
-        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        if (i < retries - 1) {
+             await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        }
       }
     }
     return { events: [] }; 
   }
 
-  // Helper function to safely fetch XML/Text data with exponential backoff
   async function fetchTextData(url, retries = 3) {
     for (let i = 0; i < retries; i++) {
       try {
@@ -241,24 +256,48 @@
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return await res.text();
       } catch (e) {
-        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        if (i < retries - 1) {
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        }
       }
     }
     return "";
   }
 
-  // Formats date string to time (e.g., 7:30 PM)
-  function formatTime(dateStr) {
+  // --- DATE FORMATTING LOGIC ---
+  function formatGameTime(dateStr) {
     try {
       const d = new Date(dateStr);
-      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      const now = new Date();
+      
+      // Check if it's today
+      const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      
+      const timeString = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      
+      if (isToday) {
+          return timeString; // Just show time for today
+      } else {
+          // Show "Mon 11/18 7:30 PM" for future games
+          const day = d.toLocaleDateString("en-US", { weekday: 'short' });
+          const date = d.toLocaleDateString("en-US", { month: 'numeric', day: 'numeric' });
+          return `${day} ${date} ${timeString}`;
+      }
     } catch {
       return "TBD";
     }
   }
+
+  function getTeamName(teamObj) {
+      let name = teamObj.team?.abbreviation || "TEAM";
+      if (teamObj.curatedRank && teamObj.curatedRank.current <= 25) {
+          name = `(#${teamObj.curatedRank.current}) ${name}`;
+      }
+      return name;
+  }
   
   // ==========================================================
-  // CONTENT GENERATORS (Return Item Objects)
+  // CONTENT GENERATORS
   // ==========================================================
 
   function getChatAndAnalystItems() {
@@ -271,18 +310,14 @@
         let labelClass = "label-chat";
 
         if (t.includes("ANALYST") || t.includes("BAYLESS") || t.includes("FIRST TAKE") || t.includes("SHOCKER")) {
-            label = "ANALYST HOT TAKE";
+            label = "HOT TAKE";
             labelClass = "label-analyst";
-        } else {
-            // Custom parsing for items that already have a colon for specific labels
-            const parts = t.split(':');
-            if (parts.length > 1) {
-                label = parts[0].trim().toUpperCase();
-                text = parts.slice(1).join(':').trim();
-                if(label === 'POLL' || label === 'TRIVIA' || label.includes('NEWS')) {
-                    labelClass = "label-news"; 
-                }
-            }
+        } else if (t.includes("SONG REQUESTS") || t.includes("1 COIN")) {
+            label = "NSN ALERT";
+            labelClass = "label-live"; // Use bright red for important alerts
+        } else if (t.includes("POLL") || t.includes("TRIVIA")) {
+            label = "INTERACT";
+            labelClass = "label-upcoming";
         }
 
         items.push({ label, text, labelClass });
@@ -298,15 +333,14 @@
         const data = await fetchData(src.url);
         const events = (data && data.events) ? data.events : [];
         
-        // Only prioritize LIVE/FINAL/UPCOMING games
-        const gamesToAdd = events.filter(ev => ev.status?.type?.state?.toLowerCase() !== 'pre');
+        const gamesToAdd = events.filter(ev => ev.status?.type?.state?.toLowerCase() !== 'postponed');
 
         let added = 0;
-        for (const ev of gamesToAdd.slice(0, 5)) { // Limit total games per sport to 5
-          if (added >= 5) break; 
+        for (const ev of gamesToAdd.slice(0, 15)) { 
+          if (added >= 15) { break; }
           
           const comp = ev.competitions?.[0];
-          if (!comp || comp.competitors.length < 2) continue;
+          if (!comp || comp.competitors.length < 2) { continue; }
 
           const status = ev.status?.type || {};
           const desc = (status.description || "").toLowerCase();
@@ -318,25 +352,24 @@
           const homeTeam = comp.competitors.find(c => c.homeAway === 'home') || comp.competitors[0];
           const awayTeam = comp.competitors.find(c => c.homeAway === 'away') || comp.competitors[1];
           
-          const t1 = awayTeam.team?.abbreviation || "AWAY";
-          const t2 = homeTeam.team?.abbreviation || "HOME";
+          const t1 = getTeamName(awayTeam);
+          const t2 = getTeamName(homeTeam);
 
           let label, labelClass, text;
 
           if (isFinal) {
             label = `${src.label} FINAL`;
             labelClass = "label-final";
-            // Score format: AWAY score @ HOME score
             text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "");
           } else if (isLive) {
             label = `${src.label} LIVE`;
             labelClass = "label-live";
             text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "");
           } else {
-            label = `${src.label} UPCOMING`;
+            label = `${src.label}`;
             labelClass = "label-upcoming";
-            const timeText = formatTime(ev.date);
-            // Matchup format: AWAY @ HOME
+            // Use the new Date/Time format function here
+            const timeText = formatGameTime(ev.date); 
             text = `${t1} @ ${t2}` + (timeText ? ` | ${timeText}` : " | TBD");
           }
 
@@ -354,21 +387,41 @@
     const items = [];
     const parser = new DOMParser();
 
+    // Keywords for detecting Injuries
+    const injuryKeywords = ["injury", "out", "surgery", "IR", "questionable", "doubtful", "sidelined", "fracture", "tear", "sprain"];
+    // Keywords for detecting Rumors
+    const rumorKeywords = ["rumor", "trade", "source", "report", "linked to", "talks", "interest", "shopping", "extension", "deal"];
+
     for (const feed of newsFeeds) {
       try {
         const text = await fetchTextData(feed.url);
-        if (!text) continue;
+        if (!text) { continue; }
         const xml = parser.parseFromString(text, "text/xml");
-        const newsItems = Array.from(xml.querySelectorAll("item")).slice(0, 3); 
+        const newsItems = Array.from(xml.querySelectorAll("item")).slice(0, 4); // Check slightly more items to find injuries
 
         for (const item of newsItems) {
           const titleNode = item.querySelector("title");
-          if (!titleNode || !titleNode.textContent) continue;
+          if (!titleNode || !titleNode.textContent) { continue; }
           
-          let title = titleNode.textContent.trim().toUpperCase();
+          let title = titleNode.textContent.trim();
           title = title.replace(/^\[.+?\]\s?/, ''); 
 
-          items.push({ label: feed.label + " NEWS", text: title, labelClass: "label-news" });
+          const lowerTitle = title.toLowerCase();
+          let label = feed.label + " NEWS";
+          let labelClass = "label-news";
+
+          // Check for Injuries first (High Priority)
+          if (injuryKeywords.some(keyword => lowerTitle.includes(keyword))) {
+              label = "INJURY UPDATE";
+              labelClass = "label-injury";
+          } 
+          // Check for Rumors
+          else if (rumorKeywords.some(keyword => lowerTitle.includes(keyword))) {
+              label = "RUMOR MILL";
+              labelClass = "label-rumor";
+          }
+
+          items.push({ label: label, text: title.toUpperCase(), labelClass: labelClass });
         }
       } catch (e) {
         console.error("News block failed for", feed.label, e);
@@ -386,22 +439,18 @@
     track.appendChild(span);
   }
 
-
   // ==========================================================
-  // MAIN BUILDER (Collects, Shuffles, Appends, and Loops)
+  // MAIN BUILDER
   // ==========================================================
   async function buildTicker() {
-    // 1. Fetch all data concurrently
     const [chatAndAnalyst, scores, news] = await Promise.all([
       getChatAndAnalystItems(),
       getScoreItems(),
       getNewsItems()
     ]);
 
-    // 2. Combine all data and shuffle for a dynamic feed
     let allItems = [...chatAndAnalyst, ...scores, ...news];
     if (allItems.length === 0) {
-        // Fallback if APIs fail
         allItems.push({ 
             label: "SYSTEM", 
             text: "DATA FEED UNAVAILABLE. TUNE INTO TIKTOK FOR LIVE UPDATES.", 
@@ -411,64 +460,41 @@
 
     allItems = shuffle(allItems);
     
-    // 3. Clear existing content and render the shuffled items
     track.innerHTML = "";
     allItems.forEach(item => addItemToDOM(item));
 
-    // 4. Measure content width for the seamless loop
     track.style.transform = 'translateX(0px)'; 
     contentWidth = track.scrollWidth; 
     
-    // 5. Duplicate content for seamless loop
     const originalContent = track.innerHTML;
     track.innerHTML += originalContent;
 
-    // 6. Start the animation loop
     startAnimation();
   }
 
-
-  // ==========================================================
-  // ANIMATION LOOP (Pixel Scroll)
-  // ==========================================================
-
   function animate(currentTime) {
-    if (!lastTime) {
-      lastTime = currentTime;
-    }
-    
+    if (!lastTime) lastTime = currentTime;
     const deltaTime = currentTime - lastTime;
     lastTime = currentTime;
-
-    // Calculate distance to move (pixels per millisecond * milliseconds)
     const distanceToMove = (SPEED_PX_PER_SEC / 1000) * deltaTime;
-    
     scrollPosition += distanceToMove;
 
     if (contentWidth > 0 && scrollPosition >= contentWidth) {
-      // Seamless loop reset
       scrollPosition -= contentWidth;
     }
 
-    // Apply the translation
     track.style.transform = `translateX(-${scrollPosition}px)`;
-    
     animationFrameId = requestAnimationFrame(animate);
   }
 
   function startAnimation() {
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-    }
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
     lastTime = 0; 
     scrollPosition = 0; 
     animationFrameId = requestAnimationFrame(animate);
   }
 
-  // Start the application when the DOM is ready
   document.addEventListener("DOMContentLoaded", buildTicker);
-  
-  // Re-run the build function periodically to refresh the data
   setInterval(buildTicker, REFRESH_INTERVAL_MS); 
 </script>
 
