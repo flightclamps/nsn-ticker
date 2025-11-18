@@ -1,292 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>NSN SPORTS • Live Ticker</title>
-
+<meta charset="UTF-8"/>
+<title>NSN Ticker</title>
 <style>
-  body {
-    margin: 0;
-    background: #000;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
+body {
+  margin: 0;
+  background: #081f3d;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
 
-  .nsn-bar {
-    width: 100vw;
-    height: 70px;
-    background: #050505;
-    border-top: 3px solid #1E88E5;
-    border-bottom: 3px solid #FF3D00;
-    display: flex;
-    align-items: center;
-  }
+#ticker {
+  white-space: nowrap;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  animation: scroll 250s linear infinite;
+}
 
-  .nsn-logo {
-    width: 300px;
-    height: 100%;
-    background: linear-gradient(135deg, #1E88E5, #0d4d80);
-    border-right: 3px solid #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding-left: 14px;
-  }
+.section {
+  margin-right: 80px;
+}
 
-  .nsn-title {
-    font-size: 22px;
-    font-weight: 900;
-    color: #fff;
-  }
-
-  .nsn-sub {
-    font-size: 11px;
-    color: #d6ecff;
-  }
-
-  .nsn-sponsor {
-    font-size: 10px;
-    color: #ffe0b2;
-    margin-top: 3px;
-  }
-
-  .scroll-area {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .scroll-track {
-    position: absolute;
-    white-space: nowrap;
-    font-size: 22px;
-    font-weight: 600;
-    color: #fff;
-    will-change: transform;
-  }
-
-  .item {
-    margin-right: 70px;
-  }
-
-  .label {
-    color: #FFC107;
-    font-weight: 900;
-    margin-right: 10px;
-  }
-
-  .label-live { color: #4CAF50; }
-  .label-final { color: #FFC107; }
-  .label-upcoming { color: #29B6F6; }
-  .label-news { color: #FFEB3B; }
+.label {
+  background: #0a3f7c;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-right: 15px;
+}
+@keyframes scroll {
+  from { left: 100%; }
+  to { left: -300%; }
+}
 </style>
 </head>
 
 <body>
 
-<div class="nsn-bar">
-  <div class="nsn-logo">
-    <div class="nsn-title">NSN SPORTS</div>
-    <div class="nsn-sub">Welcome to the Stream</div>
-    <div class="nsn-sponsor">Powered by NSN Members</div>
-  </div>
-
-  <div class="scroll-area">
-    <div class="scroll-track" id="track"></div>
-  </div>
+<div id="ticker">
+  <span class="section label">WELCOME TO THE STREAM — POWERED BY NSN MEMBERS</span>
+  <span id="scores" class="section">Loading scores...</span>
+  <span id="news" class="section">Loading news...</span>
+  <span class="section">ENGAGE: Who’s winning tonight? Drop your predictions!</span>
 </div>
 
 <script>
-  // ============ SETTINGS ============
-  const SPEED = 250; // pixels per second
-  const PROXY = "https://api.allorigins.win/raw?url=";
+async function fetchProxy(url) {
+  const proxy = "https://api.allorigins.win/raw?url=";
+  const res = await fetch(proxy + encodeURIComponent(url));
+  return res.json();
+}
 
-  const track = document.getElementById("track");
-  const scrollArea = document.querySelector(".scroll-area");
+async function loadScores() {
+  try {
+    let nfl = await fetchProxy("https://site.api.espn.com/apis/v2/sports/football/nfl/scoreboard");
+    let nba = await fetchProxy("https://site.api.espn.com/apis/v2/sports/basketball/nba/scoreboard");
+    let nhl = await fetchProxy("https://site.api.espn.com/apis/v2/sports/hockey/nhl/scoreboard");
 
-  // --------- LIVE SCORE SOURCES (NFL / NBA / NHL) ----------
-  const scoreSources = [
-    { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
-    { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" }
-  ].map(s => ({ label: s.label, url: PROXY + encodeURIComponent(s.url) }));
-
-  // --------- NEWS SOURCES (NFL / NBA / NHL) ----------
-  const newsFeeds = [
-    { label: "NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
-    { label: "NBA", url: "https://www.espn.com/espn/rss/nba/news" },
-    { label: "NHL", url: "https://www.espn.com/espn/rss/nhl/news" }
-  ].map(f => ({ label: f.label, url: PROXY + encodeURIComponent(f.url) }));
-
-  // --------- ENGAGEMENT / WELCOME LINES ----------
-  const welcomeLines = [
-    "WELCOME TO THE STREAM • NSN SPORTS LIVE",
-    "DROP YOUR FAVORITE TEAM IN CHAT",
-    "LIKE THE STREAM • HIT FOLLOW • SHARE WITH A FRIEND",
-    "SONG REQUESTS: !play Song - Artist",
-    "NO COMMERCIALS • PURE SPORTS TALK"
-  ];
-
-  const questions = [
-    "NFL FANS: WHO WINS TONIGHT?",
-    "NBA FANS: WHO IS YOUR MVP RIGHT NOW?",
-    "NHL FANS: WHICH TEAM IS HOTTEST RIGHT NOW?"
-  ];
-
-  function shuffle(a) {
-    return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
-  }
-
-  function addItem(label, text, labelClass) {
-    const span = document.createElement("span");
-    span.className = "item";
-    const cls = labelClass ? `label ${labelClass}` : "label";
-    span.innerHTML = `<span class="${cls}">${label}</span>${text}`;
-    track.appendChild(span);
-  }
-
-  function formatTime(dateStr) {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    } catch {
-      return "";
+    function parse(league, data) {
+      return data.events.map(g => {
+        let c1 = g.competitions[0].competitors[0];
+        let c2 = g.competitions[0].competitors[1];
+        return `${league}: ${c1.team.abbreviation} ${c1.score} - ${c2.team.abbreviation} ${c2.score}`;
+      }).join("   |   ");
     }
+
+    let full =
+      parse("NFL", nfl) + "   ||   " +
+      parse("NBA", nba) + "   ||   " +
+      parse("NHL", nhl);
+
+    document.getElementById("scores").innerText = full;
+  } catch {
+    document.getElementById("scores").innerText = "Scores unavailable";
   }
+}
 
-  // --------- 1. WELCOME / ENGAGEMENT BLOCK ----------
-  function addWelcomeBlock() {
-    welcomeLines.forEach(t => addItem("NSN", t, ""));
-    shuffle(questions).forEach(q => addItem("CHAT", q, ""));
+async function loadNews() {
+  try {
+    let news = await fetchProxy("https://site.api.espn.com/apis/v2/sports/news");
+    let items = news.articles.slice(0, 5).map(a => a.headline).join("   |   ");
+    document.getElementById("news").innerText = "NEWS: " + items;
+  } catch {
+    document.getElementById("news").innerText = "News unavailable";
   }
+}
 
-  // --------- 2. SCORES BLOCK (NFL → NBA → NHL) ----------
-  async function addScoresBlock() {
-    for (const src of scoreSources) {
-      try {
-        const res = await fetch(src.url);
-        const data = await res.json();
-        const events = (data && data.events) ? data.events : [];
-        let added = 0;
-
-        for (const ev of events) {
-          if (added >= 5) break;
-
-          const comp = ev.competitions?.[0];
-          if (!comp || !comp.competitors || comp.competitors.length < 2) continue;
-
-          const status = ev.status?.type || {};
-          const desc = (status.description || "").toLowerCase();
-          const state = (status.state || "").toLowerCase();
-          const short = status.shortDetail || "";
-          const isFinal = status.completed || desc.includes("final");
-          const isLive = state.includes("in") || desc.includes("live");
-
-          const c1 = comp.competitors[0];
-          const c2 = comp.competitors[1];
-
-          const t1 = c1.team?.abbreviation || c1.team?.shortDisplayName || "TEAM1";
-          const t2 = c2.team?.abbreviation || c2.team?.shortDisplayName || "TEAM2";
-
-          let label, labelClass, text;
-
-          if (isFinal) {
-            label = `${src.label} FINAL`;
-            labelClass = "label-final";
-            text = `${t1} ${c1.score} • ${t2} ${c2.score}` + (short ? ` • ${short}` : "");
-          } else if (isLive) {
-            label = `${src.label} LIVE`;
-            labelClass = "label-live";
-            text = `${t1} ${c1.score} • ${t2} ${c2.score}` + (short ? ` • ${short}` : "");
-          } else {
-            label = `${src.label} TODAY`;
-            labelClass = "label-upcoming";
-            const timeText = formatTime(ev.date);
-            text = `${t1} @ ${t2}` + (timeText ? ` • ${timeText}` : "");
-          }
-
-          addItem(label, text, labelClass);
-          added++;
-        }
-      } catch (e) {
-        console.log("score error", src.label, e);
-      }
-    }
-  }
-
-  // --------- 3. NEWS BLOCK (HEADLINES) ----------
-  async function addNewsBlock() {
-    const parser = new DOMParser();
-
-    for (const feed of newsFeeds) {
-      try {
-        const res = await fetch(feed.url);
-        const text = await res.text();
-        const xml = parser.parseFromString(text, "text/xml");
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, 5);
-
-        for (const item of items) {
-          const titleNode = item.querySelector("title");
-          if (!titleNode) continue;
-          const title = titleNode.textContent ? titleNode.textContent.trim() : "";
-          if (!title) continue;
-
-          addItem(feed.label + " NEWS", title, "label-news");
-        }
-      } catch (e) {
-        console.log("news error", feed.label, e);
-      }
-    }
-  }
-
-  // --------- BUILD FULL STRUCTURED TICKER ----------
-  async function buildTicker() {
-    track.innerHTML = "";
-
-    // 1) Welcome / engagement
-    addWelcomeBlock();
-
-    // 2) Scores (NFL, then NBA, then NHL)
-    await addScoresBlock();
-
-    // 3) News (NFL/NBA/NHL headlines)
-    await addNewsBlock();
-
-    // Duplicate content so scroll has length
-    track.innerHTML += track.innerHTML;
-  }
-
-  // --------- SCROLL ENGINE @ 250 SPEED ----------
-  async function startScrollLoop() {
-    while (true) {
-      await buildTicker();
-
-      let x = scrollArea.offsetWidth;
-      const totalWidth = track.scrollWidth || x;
-
-      await new Promise(resolve => {
-        let last = null;
-        function step(ts) {
-          if (!last) last = ts;
-          const dt = (ts - last) / 1000;
-          last = ts;
-
-          x -= SPEED * dt;
-          track.style.transform = `translateX(${x}px)`;
-
-          if (x <= -totalWidth) {
-            resolve();
-            return;
-          }
-          requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-      });
-      // loop: after full scroll, rebuild (welcome → scores → news) with fresh data
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", startScrollLoop);
+async function refreshAll() {
+  await loadScores();
+  await loadNews();
+}
+refreshAll();
+setInterval(refreshAll, 60000);
 </script>
 
 </body>
