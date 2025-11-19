@@ -178,34 +178,6 @@
   #clock-time { font-size: 20px; font-weight: 900; color: #FFF; letter-spacing: 1px; }
   #clock-zone { font-size: 10px; color: #666; font-weight: 700; margin-top: -2px; text-transform: uppercase; }
 
-  /* --- "TAKEOVER" ALERT MODE (Hidden by default) --- */
-  .takeover-overlay {
-    position: absolute;
-    top: 0; left: 150px; right: 110px; bottom: 0;
-    background: #D50000; /* Alert Red */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 60;
-    transform: translateY(100%); /* Hidden down */
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .takeover-active .takeover-overlay {
-    transform: translateY(0);
-  }
-
-  .takeover-text {
-    color: #FFF;
-    font-size: 28px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    animation: blink 0.5s infinite alternate;
-  }
-
-  @keyframes blink { from { opacity: 1; } to { opacity: 0.5; } }
-
 </style>
 </head>
 
@@ -224,10 +196,6 @@
   <div class="scroll-area">
     <div class="scroll-mask"></div>
     <div class="scroll-track" id="track"></div>
-    
-    <div class="takeover-overlay">
-      <div class="takeover-text" id="alert-text">🚨 BREAKING NEWS 🚨</div>
-    </div>
   </div>
 
   <div class="nsn-clock">
@@ -243,20 +211,13 @@
   const PROXY = "https://corsproxy.io/?"; 
   const REFRESH_INTERVAL_MS = 180000; // 3 Mins
   
-  // "Alive" Settings
-  const ENABLE_TAKEOVERS = true;
-  const TAKEOVER_INTERVAL_MS = 45000; // Show an alert every 45s
-
   // State
   const track = document.getElementById("track");
-  const mainBar = document.getElementById("main-bar");
-  const alertText = document.getElementById("alert-text");
   
   let animationFrameId = null;
   let scrollPosition = 0;
   let contentWidth = 0; 
   let lastTime = 0;
-  let isTakeoverActive = false;
 
   // ============ CLOCK ============
   function updateClock() {
@@ -267,42 +228,9 @@
   setInterval(updateClock, 1000);
   updateClock();
 
-  // ============ VISUAL FX: TAKEOVERS ============
-  const takeoverMessages = [
-    "🚨 FOLLOW THE STREAM NOW 🚨",
-    "🔥 JOIN NSN NATION - 1 COIN 🔥",
-    "💬 DROP A COMMENT 💬",
-    "⚠️ BREAKING UPDATES ⚠️",
-    "⚡ POWERED BY NSN ⚡"
-  ];
-
-  function triggerTakeover() {
-    if (!ENABLE_TAKEOVERS) return;
-    
-    const msg = takeoverMessages[Math.floor(Math.random() * takeoverMessages.length)];
-    alertText.innerText = msg;
-    
-    // Slide up
-    mainBar.classList.add("takeover-active");
-    isTakeoverActive = true;
-
-    // Hold for 4 seconds, then slide down
-    setTimeout(() => {
-      mainBar.classList.remove("takeover-active");
-      isTakeoverActive = false;
-      // Reset LastTime so scroll doesn't "jump"
-      lastTime = performance.now();
-      requestAnimationFrame(animate);
-    }, 4000);
-  }
-
-  if (ENABLE_TAKEOVERS) {
-    setInterval(triggerTakeover, TAKEOVER_INTERVAL_MS);
-  }
-
   // ============ DATA FETCHING ============
   
-  // 1. Top Performer Helper (Kept from previous version)
+  // 1. Top Performer Helper
   function getTopPerformer(comp) {
       if (!comp.leaders || comp.leaders.length === 0) return "";
       const category = comp.leaders[0];
@@ -446,16 +374,14 @@
     if (!lastTime) lastTime = now;
     const dt = now - lastTime;
     
-    // If Alert Mode is ON, do NOT scroll
-    if (!isTakeoverActive) {
-        lastTime = now;
-        const move = (SPEED_PX_PER_SEC / 1000) * dt;
-        scrollPosition += move;
-        if (scrollPosition >= contentWidth) {
-           scrollPosition = 0;
-        }
-        track.style.transform = `translateX(-${scrollPosition}px)`;
+    lastTime = now;
+    const move = (SPEED_PX_PER_SEC / 1000) * dt;
+    scrollPosition += move;
+    
+    if (scrollPosition >= contentWidth) {
+        scrollPosition = 0;
     }
+    track.style.transform = `translateX(-${scrollPosition}px)`;
 
     requestAnimationFrame(animate);
   }
