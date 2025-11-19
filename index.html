@@ -15,7 +15,6 @@
   }
   
   /* --- RGB ANIMATION DEFINITION --- */
-  /* A smooth, continuous cycle through "Tech/Gamer" colors (Cyan, Purple, Pink, Green) */
   @keyframes rgb-flow {
       0% { 
           border-color: #00E5FF; /* Cyan */
@@ -44,14 +43,11 @@
     width: 100vw;
     height: 52px;
     background: #090909;
-    /* Initial border settings (will be overridden by animation) */
     border-top: 3px solid #00E5FF; 
     border-bottom: 3px solid #00E5FF; 
     display: flex;
     align-items: center;
     position: relative; 
-    
-    /* Apply the RGB Animation */
     animation: rgb-flow 10s linear infinite;
   }
 
@@ -60,13 +56,10 @@
     width: 140px; 
     min-width: 140px;
     height: 100%;
-    background: linear-gradient(135deg, #B71C1C, #000000); /* Deep Red Gradient */
-    
-    /* Right border matches the RGB flow */
+    background: linear-gradient(135deg, #B71C1C, #000000);
     border-right: 2px solid #00E5FF; 
     animation: rgb-flow 10s linear infinite;
-    box-shadow: none; /* Reset shadow for inner element so it doesn't double up */
-
+    box-shadow: none; 
     display: flex;
     flex-direction: column;
     justify-content: center; 
@@ -76,7 +69,6 @@
     position: relative;
   }
 
-  /* "NSN LIVE" Title */
   .nsn-title {
     font-size: 24px;
     font-weight: 900;
@@ -88,7 +80,6 @@
     margin-bottom: 2px; 
   }
   
-  /* "POWERED BY: NSN NATION" */
   .nsn-powered {
       font-size: 9px;
       color: #00E5FF;
@@ -96,7 +87,6 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       text-align: center;
-      /* Make this text subtly cycle too? Optional, kept cyan for contrast against red bg */
       animation: text-rgb-flow 10s linear infinite;
   }
   
@@ -114,7 +104,6 @@
     height: 100%;
     overflow: hidden;
     position: relative;
-    /* Mask to fade text out before it hits the clock */
     mask-image: linear-gradient(to right, 
       transparent 0%, 
       black 2%, 
@@ -152,12 +141,9 @@
       width: 100px;
       height: 100%;
       background: #111;
-      
-      /* Left border matches RGB flow */
       border-left: 2px solid #00E5FF;
       animation: rgb-flow 10s linear infinite;
       box-shadow: none;
-
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -170,7 +156,7 @@
   #clock-time {
       font-size: 18px;
       font-weight: 900;
-      color: #fff; /* Keep time white for readability */
+      color: #fff; 
   }
   
   #clock-zone {
@@ -179,7 +165,6 @@
       font-weight: 600;
       margin-top: -2px;
   }
-
 
   /* --- LABELS --- */
   .label {
@@ -193,7 +178,6 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
   }
 
-  /* Keeping the content labels vivid to stand out against the black bar */
   .label-live { background-color: #FF0033; color: #FFF; animation: pulse 2s infinite; }
   .label-final { background-color: #FFD700; color: #000; }
   .label-upcoming { background-color: #00E5FF; color: #000; }
@@ -203,13 +187,15 @@
   .label-injury { background-color: #FF6D00; color: #FFF; }
   .label-rumor { background-color: #AA00FF; color: #FFF; }
   
+  /* Stat highlight color */
+  .stat-highlight { color: #00E676; margin-left: 8px; font-weight: 600; font-size: 0.9em; }
+
   @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.7; }
       100% { opacity: 1; }
   }
 
-  /* Mobile/Responsive Adjustments */
   @media (max-width: 600px) {
     .nsn-bar { height: 44px; }
     .nsn-logo { width: 100px; min-width: 100px; }
@@ -221,25 +207,21 @@
     .nsn-clock { width: 70px; }
     #clock-time { font-size: 14px; }
   }
-
 </style>
 </head>
 
 <body>
 
 <div class="nsn-bar">
-  <!-- LEFT: Network Branding -->
   <div class="nsn-logo">
     <div class="nsn-title">NSN LIVE</div>
     <div class="nsn-powered">POWERED BY<br>NSN NATION</div>
   </div>
 
-  <!-- CENTER: Ticker Area -->
   <div class="scroll-area">
     <div class="scroll-track" id="track"></div>
   </div>
 
-  <!-- RIGHT: Live Clock -->
   <div class="nsn-clock">
       <div id="clock-time">--:--</div>
       <div id="clock-zone">ET</div>
@@ -261,16 +243,16 @@
   // --- CLOCK LOGIC ---
   function updateClock() {
       const now = new Date();
-      // Format: 3:45 PM
       const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      // Get Timezone Name (e.g., EST, CST, PST) - simplified
-      const timeZone = now.toLocaleTimeString("en-us", {timeZoneName:'short'}).split(' ')[2] || 'LIVE';
+      // Simplified timezone check
+      const parts = now.toLocaleTimeString("en-us", {timeZoneName:'short'}).split(' ');
+      const timeZone = parts.length > 2 ? parts[2] : 'LIVE';
       
       document.getElementById('clock-time').textContent = timeString;
       document.getElementById('clock-zone').textContent = timeZone;
   }
   setInterval(updateClock, 1000);
-  updateClock(); // Run immediately
+  updateClock(); 
 
   // --- DATA SOURCES ---
   const scoreSources = [
@@ -306,7 +288,6 @@
     "NFL DEBATE: JALEN HURTS > JOE BURROW. FACTS OVER FEELINGS.",
   ];
 
-  // Helper function to randomize arrays
   function shuffle(a) {
     return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
   }
@@ -318,9 +299,7 @@
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return await res.json();
       } catch (e) {
-        if (i < retries - 1) {
-             await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-        }
+        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
       }
     }
     return { events: [] }; 
@@ -333,24 +312,19 @@
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return await res.text();
       } catch (e) {
-        if (i < retries - 1) {
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-        }
+        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
       }
     }
     return "";
   }
 
-  // --- DATE FORMATTING LOGIC ---
   function formatGameTime(dateStr) {
     try {
       const d = new Date(dateStr);
       const now = new Date();
       const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       const timeString = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      
       if (isToday) return timeString;
-      
       const day = d.toLocaleDateString("en-US", { weekday: 'short' });
       const date = d.toLocaleDateString("en-US", { month: 'numeric', day: 'numeric' });
       return `${day} ${date} ${timeString}`;
@@ -367,18 +341,30 @@
       return name;
   }
 
-  // --- BETTING ODDS GENERATOR (Simulated for robustness) ---
   function getBettingOdds(t1, t2) {
-      // In a real app with a paid API, you'd fetch this. Here we simulate lines for visual effect.
       const spread = (Math.random() * 10).toFixed(1);
       const total = Math.floor(Math.random() * (230 - 190 + 1) + 190);
       const favored = Math.random() > 0.5 ? t1 : t2;
       return `<span class="text-green-400 ml-2 text-sm">[LINE: ${favored} -${spread} | O/U ${total}]</span>`;
   }
-  
-  // ==========================================================
-  // CONTENT GENERATORS
-  // ==========================================================
+
+  // --- NEW: PLAYER STAT EXTRACTION ---
+  function getTopPerformer(comp) {
+      // Check if leaders exist in the API response
+      if (!comp.leaders || comp.leaders.length === 0) return "";
+      
+      // Usually the first category is the most relevant (e.g. Passing for NFL, Points for NBA)
+      const category = comp.leaders[0];
+      if (!category.leaders || category.leaders.length === 0) return "";
+
+      const player = category.leaders[0];
+      const name = player.athlete?.shortName || player.athlete?.displayName || "Player";
+      const stat = player.displayValue;
+      const statLabel = category.shortDisplayName || category.abbreviation || "";
+      
+      // Returns formatted HTML for the ticker
+      return `<span class="stat-highlight"> ⭐ ${name}: ${stat} ${statLabel}</span>`;
+  }
 
   function getChatAndAnalystItems() {
     const items = [];
@@ -399,7 +385,6 @@
             label = "INTERACT";
             labelClass = "label-upcoming";
         }
-
         items.push({ label, text, labelClass });
     });
     return items;
@@ -416,10 +401,10 @@
 
         let added = 0;
         for (const ev of gamesToAdd.slice(0, 15)) { 
-          if (added >= 15) { break; }
+          if (added >= 15) break;
           
           const comp = ev.competitions?.[0];
-          if (!comp || comp.competitors.length < 2) { continue; }
+          if (!comp || comp.competitors.length < 2) continue;
 
           const status = ev.status?.type || {};
           const desc = (status.description || "").toLowerCase();
@@ -436,22 +421,22 @@
 
           let label, labelClass, text;
 
+          // Get the best player stats if available
+          const leaderText = getTopPerformer(comp);
+
           if (isFinal) {
             label = `${src.label} FINAL`;
             labelClass = "label-final";
-            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "");
+            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "") + leaderText;
           } else if (isLive) {
             label = `${src.label} LIVE`;
             labelClass = "label-live";
-            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "");
+            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "") + leaderText;
           } else {
             label = `${src.label}`;
             labelClass = "label-upcoming";
             const timeText = formatGameTime(ev.date); 
-            
-            // NEW: Add Betting Odds to upcoming games for that "Vegas" feel
             const oddsHtml = getBettingOdds(awayTeam.team?.abbreviation, homeTeam.team?.abbreviation);
-            
             text = `${t1} @ ${t2} | ${timeText} ${oddsHtml}`;
           }
 
@@ -474,13 +459,13 @@
     for (const feed of newsFeeds) {
       try {
         const text = await fetchTextData(feed.url);
-        if (!text) { continue; }
+        if (!text) continue;
         const xml = parser.parseFromString(text, "text/xml");
         const newsItems = Array.from(xml.querySelectorAll("item")).slice(0, 4); 
 
         for (const item of newsItems) {
           const titleNode = item.querySelector("title");
-          if (!titleNode || !titleNode.textContent) { continue; }
+          if (!titleNode || !titleNode.textContent) continue;
           
           let title = titleNode.textContent.trim();
           title = title.replace(/^\[.+?\]\s?/, ''); 
@@ -496,7 +481,6 @@
               label = "RUMOR MILL";
               labelClass = "label-rumor";
           }
-
           items.push({ label: label, text: title.toUpperCase(), labelClass: labelClass });
         }
       } catch (e) {
@@ -514,9 +498,6 @@
     track.appendChild(span);
   }
 
-  // ==========================================================
-  // MAIN BUILDER
-  // ==========================================================
   async function buildTicker() {
     const [chatAndAnalyst, scores, news] = await Promise.all([
       getChatAndAnalystItems(),
