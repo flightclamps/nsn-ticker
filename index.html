@@ -30,7 +30,7 @@
   /* --- MAIN BAR CONTAINER --- */
   .nsn-bar {
     width: 100vw;
-    height: 56px; /* Slightly taller for impact */
+    height: 56px; 
     background: #050505;
     border-top: 2px solid #00E5FF; 
     border-bottom: 2px solid #00E5FF; 
@@ -77,7 +77,6 @@
     animation: glitch-skew 3s infinite linear alternate-reverse;
   }
   
-  /* Glitch Animation Keyframes */
   @keyframes glitch-skew {
     0% { transform: skew(0deg); }
     20% { transform: skew(0deg); }
@@ -106,7 +105,6 @@
     background: #090909;
   }
 
-  /* Fade masks on sides of scroll area */
   .scroll-mask {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -144,11 +142,10 @@
     color: #000; 
     font-size: 15px;
     text-transform: uppercase;
-    transform: skew(-10deg); /* Sporty slant */
+    transform: skew(-10deg); 
     display: inline-block;
   }
   
-  /* Reset skew for text inside label */
   .label span { display: inline-block; transform: skew(10deg); }
 
   /* Dynamic Colors */
@@ -158,8 +155,8 @@
   .bg-betting { background: #00E676; color: black; }
   .bg-social { background: #2979FF; color: white; }
 
-  /* Highlight keywords like MVP, STATS */
-  .stat-pop { color: #00E5FF; font-weight: 800; margin-left: 8px; }
+  /* Highlight keywords */
+  .stat-pop { color: #00E5FF; font-weight: 800; margin-left: 10px; font-size: 0.95em; }
   
   /* --- RIGHT: CLOCK --- */
   .nsn-clock {
@@ -211,7 +208,6 @@
   const PROXY = "https://corsproxy.io/?"; 
   const REFRESH_INTERVAL_MS = 180000; // 3 Mins
   
-  // State
   const track = document.getElementById("track");
   
   let animationFrameId = null;
@@ -230,16 +226,24 @@
 
   // ============ DATA FETCHING ============
   
-  // 1. Top Performer Helper
+  // 1. Top Performer Helper - EXTENDED FOR ALL SPORTS
   function getTopPerformer(comp) {
+      // Safety checks
       if (!comp.leaders || comp.leaders.length === 0) return "";
-      const category = comp.leaders[0];
+      
+      // ESPN API organizes leaders by category (Passing, Rushing, Points, Rebounds, etc.)
+      // Usually Index 0 is the most important "Headline" stat for that sport.
+      const category = comp.leaders[0]; 
+      
       if (!category.leaders || category.leaders.length === 0) return "";
       
       const player = category.leaders[0];
-      const name = player.athlete?.shortName || "Player";
+      const name = player.athlete?.shortName || player.athlete?.displayName || "Player";
       const stat = player.displayValue;
-      return `<span class="stat-pop">⭐ ${name} (${stat})</span>`;
+      const statLabel = category.shortDisplayName || category.displayName || "";
+
+      // Return formatted HTML
+      return `<span class="stat-pop">⭐ ${name}: ${stat} ${statLabel}</span>`;
   }
 
   // 2. Fetch Utilities
@@ -260,10 +264,14 @@
 
   // 3. Score Builder
   async function getScores() {
+    // Expanded Source List
     const sources = [
       { l: "NFL", u: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+      { l: "CFB", u: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
       { l: "NBA", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-      { l: "MLB", u: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" }
+      { l: "CBB", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" },
+      { l: "MLB", u: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
+      { l: "NHL", u: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" }
     ];
 
     let items = [];
@@ -271,23 +279,29 @@
       const data = await fetchData(PROXY + encodeURIComponent(s.u));
       const events = data.events || [];
       
-      events.slice(0, 8).forEach(ev => {
+      // Limit to 5 games per sport to keep rotation fast
+      events.slice(0, 5).forEach(ev => {
         const c = ev.competitions[0];
         const s1 = c.competitors[0]; // Home
         const s2 = c.competitors[1]; // Away
-        const t1 = s1.team.abbreviation;
-        const t2 = s2.team.abbreviation;
+        
+        // Team Names (Use Ranks if available)
+        let t1 = s1.team.abbreviation;
+        let t2 = s2.team.abbreviation;
+        if (s1.curatedRank?.current <= 25) t1 = `(#${s1.curatedRank.current}) ` + t1;
+        if (s2.curatedRank?.current <= 25) t2 = `(#${s2.curatedRank.current}) ` + t2;
+
         const score1 = s1.score;
         const score2 = s2.score;
         
         const status = ev.status.type.state; // pre, in, post
         const detail = ev.status.type.shortDetail;
 
-        let labelClass = "bg-betting"; // Default green
+        let labelClass = "bg-betting"; // Default Green
         let labelText = s.l;
         let mainText = `${t2} vs ${t1}`;
 
-        // Leader logic
+        // GET THE LEADER STATS
         let leaderHTML = getTopPerformer(c);
 
         if (status === "post") {
@@ -297,10 +311,12 @@
         } else if (status === "in") {
            labelClass = "bg-live";
            labelText = "LIVE";
-           mainText = `${t2} ${score2} - ${t1} ${score1} <span style='color:#F00'>• ${detail}</span>`;
+           mainText = `${t2} ${score2} - ${t1} ${score1} <span style='color:#FF0033'>• ${detail}</span>`;
         } else {
            // Upcoming
            mainText = `${t2} @ ${t1} [${detail}]`;
+           // Don't show stats for upcoming games (no stats yet), maybe show odds instead?
+           leaderHTML = ""; 
         }
 
         items.push({
@@ -313,7 +329,7 @@
 
   // 4. News/RSS Builder
   async function getNews() {
-    const urls = ["https://www.espn.com/espn/rss/nfl/news"];
+    const urls = ["https://www.espn.com/espn/rss/nfl/news", "https://www.espn.com/espn/rss/nba/news"];
     let items = [];
     const parser = new DOMParser();
 
@@ -350,7 +366,7 @@
     const social = getEngagement();
     
     let all = [...social, ...scores, ...news];
-    // Shuffle simplified
+    // Randomize order
     all.sort(() => Math.random() - 0.5);
 
     if (all.length === 0) all.push({ html: "LOADING DATA..." });
@@ -366,7 +382,6 @@
     // Duplicate for seamless loop
     track.innerHTML += track.innerHTML;
     
-    // Reset position if needed (optional, usually fine to keep scrolling)
     contentWidth = track.scrollWidth / 2;
   }
 
