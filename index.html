@@ -2,557 +2,469 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NSN Broadcast Ticker</title>
+<title>NSN Broadcast Ticker - CYBER EDITION</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-  /* Base Styles */
+  /* --- CORE SETUP --- */
   body {
     margin: 0;
-    background: #000;
+    background: transparent; /* Transparent for OBS */
     overflow: hidden;
-    font-family: 'Inter', Arial, sans-serif;
-  }
-  
-  /* --- RGB ANIMATION DEFINITION --- */
-  @keyframes rgb-flow {
-      0% { 
-          border-color: #00E5FF; /* Cyan */
-          box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
-      }
-      25% { 
-          border-color: #D500F9; /* Purple */
-          box-shadow: 0 0 15px rgba(213, 0, 249, 0.2);
-      }
-      50% { 
-          border-color: #FF4081; /* Pink */
-          box-shadow: 0 0 15px rgba(255, 64, 129, 0.2);
-      }
-      75% { 
-          border-color: #00E676; /* Green */
-          box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
-      }
-      100% { 
-          border-color: #00E5FF; /* Back to Cyan */
-          box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
-      }
+    font-family: 'Inter', 'Roboto', sans-serif;
   }
 
-  /* The main container for the ticker strip */
+  /* --- THE "ALIVE" OVERLAYS (Scanlines & Vignette) --- */
+  .broadcast-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+    background: 
+      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+      linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 6px 100%;
+    mix-blend-mode: overlay;
+  }
+
+  /* --- MAIN BAR CONTAINER --- */
   .nsn-bar {
     width: 100vw;
-    height: 52px;
-    background: #090909;
-    border-top: 3px solid #00E5FF; 
-    border-bottom: 3px solid #00E5FF; 
+    height: 56px; /* Slightly taller for impact */
+    background: #050505;
+    border-top: 2px solid #00E5FF; 
+    border-bottom: 2px solid #00E5FF; 
     display: flex;
     align-items: center;
     position: relative; 
-    animation: rgb-flow 10s linear infinite;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+    overflow: hidden;
   }
 
-  /* 1. LEFT: Fixed Logo/Network Branding Section */
+  /* --- LEFT: LOGO WITH GLITCH EFFECT --- */
   .nsn-logo {
-    width: 140px; 
-    min-width: 140px;
+    width: 150px; 
+    min-width: 150px;
     height: 100%;
-    background: linear-gradient(135deg, #B71C1C, #000000);
-    border-right: 2px solid #00E5FF; 
-    animation: rgb-flow 10s linear infinite;
-    box-shadow: none; 
+    background: #000;
+    border-right: 2px solid #333; 
     display: flex;
     flex-direction: column;
     justify-content: center; 
     align-items: center;     
-    flex-shrink: 0;
-    z-index: 20; 
+    z-index: 50; 
     position: relative;
+    overflow: hidden;
+  }
+
+  /* The Red/Black Gradient Background for Logo */
+  .logo-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #D50000, #000);
+    z-index: 1;
   }
 
   .nsn-title {
-    font-size: 24px;
+    position: relative;
+    z-index: 2;
+    font-size: 26px;
     font-weight: 900;
-    color: #FFFFFF;
+    color: #FFF;
     font-style: italic;
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
-    line-height: 1;
-    margin-bottom: 2px; 
+    letter-spacing: -1px;
+    text-shadow: 3px 3px 0px rgba(0,0,0,0.8);
+    animation: glitch-skew 3s infinite linear alternate-reverse;
   }
   
-  .nsn-powered {
-      font-size: 9px;
-      color: #00E5FF;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      text-align: center;
-      animation: text-rgb-flow 10s linear infinite;
-  }
-  
-  @keyframes text-rgb-flow {
-      0% { color: #00E5FF; }
-      25% { color: #D500F9; }
-      50% { color: #FF4081; }
-      75% { color: #00E676; }
-      100% { color: #00E5FF; }
+  /* Glitch Animation Keyframes */
+  @keyframes glitch-skew {
+    0% { transform: skew(0deg); }
+    20% { transform: skew(0deg); }
+    21% { transform: skew(-10deg); filter: blur(1px); }
+    22% { transform: skew(10deg); }
+    23% { transform: skew(0deg); filter: none; }
+    100% { transform: skew(0deg); }
   }
 
-  /* 2. CENTER: The Scrolling Area */
+  .nsn-powered {
+    position: relative;
+    z-index: 2;
+    font-size: 8px;
+    color: #00E5FF;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* --- CENTER: SCROLL AREA --- */
   .scroll-area {
     flex: 1;
     height: 100%;
-    overflow: hidden;
     position: relative;
-    mask-image: linear-gradient(to right, 
-      transparent 0%, 
-      black 2%, 
-      black 90%, 
-      transparent 100%
-    );
+    background: #090909;
+  }
+
+  /* Fade masks on sides of scroll area */
+  .scroll-mask {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(90deg, #090909 0%, transparent 3%, transparent 97%, #090909 100%);
   }
 
   .scroll-track {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     height: 100%;
     display: flex; 
     align-items: center;
     white-space: nowrap;
-    font-size: 22px; 
-    font-weight: 700;
-    color: #FFFFFF;
     padding-left: 20px; 
-    transition: transform 0s linear; 
-    letter-spacing: -0.2px; 
   }
 
+  /* --- CONTENT ITEMS --- */
   .item {
     padding-right: 60px; 
-    margin-right: 60px; 
-    flex-shrink: 0;
     display: flex;
     align-items: center;
-  }
-  
-  /* 3. RIGHT: Live Local Clock */
-  .nsn-clock {
-      width: 100px;
-      height: 100%;
-      background: #111;
-      border-left: 2px solid #00E5FF;
-      animation: rgb-flow 10s linear infinite;
-      box-shadow: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 20;
-      color: #FFF;
-      flex-shrink: 0;
-  }
-  
-  #clock-time {
-      font-size: 18px;
-      font-weight: 900;
-      color: #fff; 
-  }
-  
-  #clock-zone {
-      font-size: 10px;
-      color: #888;
-      font-weight: 600;
-      margin-top: -2px;
+    font-size: 22px; 
+    font-weight: 600;
+    color: #E0E0E0;
+    font-family: 'Inter', sans-serif;
   }
 
-  /* --- LABELS --- */
   .label {
-    font-weight: 800;
-    margin-right: 14px;
-    padding: 4px 10px;
-    border-radius: 4px;
+    font-weight: 900;
+    margin-right: 12px;
+    padding: 3px 8px;
+    border-radius: 2px;
     color: #000; 
-    font-size: 16px;
+    font-size: 15px;
     text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    transform: skew(-10deg); /* Sporty slant */
+    display: inline-block;
   }
-
-  .label-live { background-color: #FF0033; color: #FFF; animation: pulse 2s infinite; }
-  .label-final { background-color: #FFD700; color: #000; }
-  .label-upcoming { background-color: #00E5FF; color: #000; }
-  .label-news { background-color: #D500F9; color: #FFF; }
-  .label-chat { background-color: #651FFF; color: #FFF; }
-  .label-analyst { background-color: #FF4081; color: #FFF; }
-  .label-injury { background-color: #FF6D00; color: #FFF; }
-  .label-rumor { background-color: #AA00FF; color: #FFF; }
   
-  /* Stat highlight color */
-  .stat-highlight { color: #00E676; margin-left: 8px; font-weight: 600; font-size: 0.9em; }
+  /* Reset skew for text inside label */
+  .label span { display: inline-block; transform: skew(10deg); }
 
-  @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.7; }
-      100% { opacity: 1; }
+  /* Dynamic Colors */
+  .bg-live { background: #FF0033; color: white; box-shadow: 0 0 10px #FF0033; }
+  .bg-final { background: #FFD700; color: black; }
+  .bg-news { background: #D500F9; color: white; }
+  .bg-betting { background: #00E676; color: black; }
+  .bg-social { background: #2979FF; color: white; }
+
+  /* Highlight keywords like MVP, STATS */
+  .stat-pop { color: #00E5FF; font-weight: 800; margin-left: 8px; }
+  
+  /* --- RIGHT: CLOCK --- */
+  .nsn-clock {
+    width: 110px;
+    height: 100%;
+    background: #080808;
+    border-left: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+    position: relative;
+  }
+  
+  #clock-time { font-size: 20px; font-weight: 900; color: #FFF; letter-spacing: 1px; }
+  #clock-zone { font-size: 10px; color: #666; font-weight: 700; margin-top: -2px; text-transform: uppercase; }
+
+  /* --- "TAKEOVER" ALERT MODE (Hidden by default) --- */
+  .takeover-overlay {
+    position: absolute;
+    top: 0; left: 150px; right: 110px; bottom: 0;
+    background: #D50000; /* Alert Red */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    transform: translateY(100%); /* Hidden down */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-  @media (max-width: 600px) {
-    .nsn-bar { height: 44px; }
-    .nsn-logo { width: 100px; min-width: 100px; }
-    .nsn-title { font-size: 16px; }
-    .nsn-powered { font-size: 7px; }
-    .scroll-track { font-size: 18px; }
-    .label { font-size: 12px; margin-right: 8px; padding: 2px 6px; }
-    .item { padding-right: 30px; margin-right: 30px; }
-    .nsn-clock { width: 70px; }
-    #clock-time { font-size: 14px; }
+  .takeover-active .takeover-overlay {
+    transform: translateY(0);
   }
+
+  .takeover-text {
+    color: #FFF;
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: blink 0.5s infinite alternate;
+  }
+
+  @keyframes blink { from { opacity: 1; } to { opacity: 0.5; } }
+
 </style>
 </head>
 
 <body>
 
-<div class="nsn-bar">
+<div class="broadcast-overlay"></div>
+
+<div class="nsn-bar" id="main-bar">
+  
   <div class="nsn-logo">
+    <div class="logo-bg"></div>
     <div class="nsn-title">NSN LIVE</div>
-    <div class="nsn-powered">POWERED BY<br>NSN NATION</div>
+    <div class="nsn-powered">NSN NATION</div>
   </div>
 
   <div class="scroll-area">
+    <div class="scroll-mask"></div>
     <div class="scroll-track" id="track"></div>
+    
+    <div class="takeover-overlay">
+      <div class="takeover-text" id="alert-text">🚨 BREAKING NEWS 🚨</div>
+    </div>
   </div>
 
   <div class="nsn-clock">
       <div id="clock-time">--:--</div>
-      <div id="clock-zone">ET</div>
+      <div id="clock-zone">LIVE</div>
   </div>
+
 </div>
 
 <script>
-  // ============ GLOBAL STATE & SETTINGS ============
-  const SPEED_PX_PER_SEC = 80; 
+  // ============ CONFIGURATION ============
+  const SPEED_PX_PER_SEC = 90; 
   const PROXY = "https://corsproxy.io/?"; 
-  const REFRESH_INTERVAL_MS = 3 * 60 * 1000; 
+  const REFRESH_INTERVAL_MS = 180000; // 3 Mins
+  
+  // "Alive" Settings
+  const ENABLE_TAKEOVERS = true;
+  const TAKEOVER_INTERVAL_MS = 45000; // Show an alert every 45s
 
+  // State
   const track = document.getElementById("track");
+  const mainBar = document.getElementById("main-bar");
+  const alertText = document.getElementById("alert-text");
+  
   let animationFrameId = null;
-  let lastTime = 0;
   let scrollPosition = 0;
   let contentWidth = 0; 
+  let lastTime = 0;
+  let isTakeoverActive = false;
 
-  // --- CLOCK LOGIC ---
+  // ============ CLOCK ============
   function updateClock() {
       const now = new Date();
       const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      // Simplified timezone check
-      const parts = now.toLocaleTimeString("en-us", {timeZoneName:'short'}).split(' ');
-      const timeZone = parts.length > 2 ? parts[2] : 'LIVE';
-      
       document.getElementById('clock-time').textContent = timeString;
-      document.getElementById('clock-zone').textContent = timeZone;
   }
   setInterval(updateClock, 1000);
-  updateClock(); 
+  updateClock();
 
-  // --- DATA SOURCES ---
-  const scoreSources = [
-    { label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
-    { label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" }, 
-    { label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-    { label: "CBB", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" }, 
-    { label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
-    { label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
-    { label: "EPL", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard" }
-  ].map(s => ({ label: s.label, url: PROXY + encodeURIComponent(s.url) }));
+  // ============ VISUAL FX: TAKEOVERS ============
+  const takeoverMessages = [
+    "🚨 FOLLOW THE STREAM NOW 🚨",
+    "🔥 JOIN NSN NATION - 1 COIN 🔥",
+    "💬 DROP A COMMENT 💬",
+    "⚠️ BREAKING UPDATES ⚠️",
+    "⚡ POWERED BY NSN ⚡"
+  ];
 
-  const newsFeeds = [
-    { label: "NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
-    { label: "NBA", url: "https://www.espn.com/espn/rss/nba/news" },
-    { label: "NHL", url: "https://www.espn.com/espn/rss/nhl/news" }
-  ].map(f => ({ label: f.label, url: PROXY + encodeURIComponent(f.url) }));
+  function triggerTakeover() {
+    if (!ENABLE_TAKEOVERS) return;
+    
+    const msg = takeoverMessages[Math.floor(Math.random() * takeoverMessages.length)];
+    alertText.innerText = msg;
+    
+    // Slide up
+    mainBar.classList.add("takeover-active");
+    isTakeoverActive = true;
+
+    // Hold for 4 seconds, then slide down
+    setTimeout(() => {
+      mainBar.classList.remove("takeover-active");
+      isTakeoverActive = false;
+      // Reset LastTime so scroll doesn't "jump"
+      lastTime = performance.now();
+      requestAnimationFrame(animate);
+    }, 4000);
+  }
+
+  if (ENABLE_TAKEOVERS) {
+    setInterval(triggerTakeover, TAKEOVER_INTERVAL_MS);
+  }
+
+  // ============ DATA FETCHING ============
   
-  const tiktokEngagementItems = [
-    "WELCOME TO NSN LIVE STREAM • DROP A FOLLOW ON TIKTOK!",
-    "🚨 SONG REQUESTS ARE ON! TYPE '!play Song - Artist' IN CHAT 🎶",
-    "🔥 JOIN THE CLUB FOR 1 COIN! BECOME A MEMBER OF NSN NATION TODAY! 🔥",
-    "POLL: WHO IS THE MOST OVERRATED TEAM? COMMENT BELOW!",
-    "BREAKING NEWS: CHECK OUR TIKTOK PAGE FOR UPDATES",
-    "TRIVIA: ANSWER IN CHAT FOR A SHOUTOUT!",
-  ];
-
-  const analystHotTakes = [
-    "ANALYST HOT TAKE: LEBRON JAMES IS *NOT* A TOP 5 PLAYER ALL-TIME!",
-    "FIRST TAKE: PATRICK MAHOMES IS THE ONLY GENERATIONAL QB RIGHT NOW.",
-    "SKIP BAYLESS: COWBOYS ARE SUPER BOWL BOUND. PERIOD.",
-    "NBA HOT TAKE: TATUM NEEDS A 'KILLER INSTINCT' TO WIN A RING.",
-    "NFL DEBATE: JALEN HURTS > JOE BURROW. FACTS OVER FEELINGS.",
-  ];
-
-  function shuffle(a) {
-    return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
-  }
-
-  async function fetchData(url, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return await res.json();
-      } catch (e) {
-        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-      }
-    }
-    return { events: [] }; 
-  }
-
-  async function fetchTextData(url, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return await res.text();
-      } catch (e) {
-        if (i < retries - 1) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-      }
-    }
-    return "";
-  }
-
-  function formatGameTime(dateStr) {
-    try {
-      const d = new Date(dateStr);
-      const now = new Date();
-      const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      const timeString = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      if (isToday) return timeString;
-      const day = d.toLocaleDateString("en-US", { weekday: 'short' });
-      const date = d.toLocaleDateString("en-US", { month: 'numeric', day: 'numeric' });
-      return `${day} ${date} ${timeString}`;
-    } catch {
-      return "TBD";
-    }
-  }
-
-  function getTeamName(teamObj) {
-      let name = teamObj.team?.abbreviation || "TEAM";
-      if (teamObj.curatedRank && teamObj.curatedRank.current <= 25) {
-          name = `(#${teamObj.curatedRank.current}) ${name}`;
-      }
-      return name;
-  }
-
-  function getBettingOdds(t1, t2) {
-      const spread = (Math.random() * 10).toFixed(1);
-      const total = Math.floor(Math.random() * (230 - 190 + 1) + 190);
-      const favored = Math.random() > 0.5 ? t1 : t2;
-      return `<span class="text-green-400 ml-2 text-sm">[LINE: ${favored} -${spread} | O/U ${total}]</span>`;
-  }
-
-  // --- NEW: PLAYER STAT EXTRACTION ---
+  // 1. Top Performer Helper (Kept from previous version)
   function getTopPerformer(comp) {
-      // Check if leaders exist in the API response
       if (!comp.leaders || comp.leaders.length === 0) return "";
-      
-      // Usually the first category is the most relevant (e.g. Passing for NFL, Points for NBA)
       const category = comp.leaders[0];
       if (!category.leaders || category.leaders.length === 0) return "";
-
-      const player = category.leaders[0];
-      const name = player.athlete?.shortName || player.athlete?.displayName || "Player";
-      const stat = player.displayValue;
-      const statLabel = category.shortDisplayName || category.abbreviation || "";
       
-      // Returns formatted HTML for the ticker
-      return `<span class="stat-highlight"> ⭐ ${name}: ${stat} ${statLabel}</span>`;
+      const player = category.leaders[0];
+      const name = player.athlete?.shortName || "Player";
+      const stat = player.displayValue;
+      return `<span class="stat-pop">⭐ ${name} (${stat})</span>`;
   }
 
-  function getChatAndAnalystItems() {
-    const items = [];
-    const combinedEngagement = [...tiktokEngagementItems, ...analystHotTakes];
+  // 2. Fetch Utilities
+  async function fetchData(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return { events: [] };
+      return await res.json();
+    } catch { return { events: [] }; }
+  }
 
-    combinedEngagement.forEach(t => { 
-        let label = "TIKTOK CHAT"; 
-        let text = t;
-        let labelClass = "label-chat";
+  async function fetchText(url) {
+    try {
+      const res = await fetch(url);
+      return res.ok ? await res.text() : "";
+    } catch { return ""; }
+  }
 
-        if (t.includes("ANALYST") || t.includes("BAYLESS") || t.includes("FIRST TAKE") || t.includes("SHOCKER")) {
-            label = "HOT TAKE";
-            labelClass = "label-analyst";
-        } else if (t.includes("SONG REQUESTS") || t.includes("1 COIN")) {
-            label = "NSN ALERT";
-            labelClass = "label-live"; 
-        } else if (t.includes("POLL") || t.includes("TRIVIA")) {
-            label = "INTERACT";
-            labelClass = "label-upcoming";
+  // 3. Score Builder
+  async function getScores() {
+    const sources = [
+      { l: "NFL", u: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+      { l: "NBA", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
+      { l: "MLB", u: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" }
+    ];
+
+    let items = [];
+    for (const s of sources) {
+      const data = await fetchData(PROXY + encodeURIComponent(s.u));
+      const events = data.events || [];
+      
+      events.slice(0, 8).forEach(ev => {
+        const c = ev.competitions[0];
+        const s1 = c.competitors[0]; // Home
+        const s2 = c.competitors[1]; // Away
+        const t1 = s1.team.abbreviation;
+        const t2 = s2.team.abbreviation;
+        const score1 = s1.score;
+        const score2 = s2.score;
+        
+        const status = ev.status.type.state; // pre, in, post
+        const detail = ev.status.type.shortDetail;
+
+        let labelClass = "bg-betting"; // Default green
+        let labelText = s.l;
+        let mainText = `${t2} vs ${t1}`;
+
+        // Leader logic
+        let leaderHTML = getTopPerformer(c);
+
+        if (status === "post") {
+           labelClass = "bg-final";
+           labelText = "FINAL";
+           mainText = `${t2} ${score2} - ${t1} ${score1}`;
+        } else if (status === "in") {
+           labelClass = "bg-live";
+           labelText = "LIVE";
+           mainText = `${t2} ${score2} - ${t1} ${score1} <span style='color:#F00'>• ${detail}</span>`;
+        } else {
+           // Upcoming
+           mainText = `${t2} @ ${t1} [${detail}]`;
         }
-        items.push({ label, text, labelClass });
-    });
-    return items;
-  }
 
-  async function getScoreItems() {
-    const items = [];
-
-    for (const src of scoreSources) {
-      try {
-        const data = await fetchData(src.url);
-        const events = (data && data.events) ? data.events : [];
-        const gamesToAdd = events.filter(ev => ev.status?.type?.state?.toLowerCase() !== 'postponed');
-
-        let added = 0;
-        for (const ev of gamesToAdd.slice(0, 15)) { 
-          if (added >= 15) break;
-          
-          const comp = ev.competitions?.[0];
-          if (!comp || comp.competitors.length < 2) continue;
-
-          const status = ev.status?.type || {};
-          const desc = (status.description || "").toLowerCase();
-          const state = (status.state || "").toLowerCase();
-          const short = status.shortDetail || "";
-          const isFinal = status.completed || desc.includes("final");
-          const isLive = state.includes("in") || desc.includes("live");
-
-          const homeTeam = comp.competitors.find(c => c.homeAway === 'home') || comp.competitors[0];
-          const awayTeam = comp.competitors.find(c => c.homeAway === 'away') || comp.competitors[1];
-          
-          const t1 = getTeamName(awayTeam);
-          const t2 = getTeamName(homeTeam);
-
-          let label, labelClass, text;
-
-          // Get the best player stats if available
-          const leaderText = getTopPerformer(comp);
-
-          if (isFinal) {
-            label = `${src.label} FINAL`;
-            labelClass = "label-final";
-            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "") + leaderText;
-          } else if (isLive) {
-            label = `${src.label} LIVE`;
-            labelClass = "label-live";
-            text = `${t1} ${awayTeam.score} @ ${t2} ${homeTeam.score}` + (short ? ` | ${short}` : "") + leaderText;
-          } else {
-            label = `${src.label}`;
-            labelClass = "label-upcoming";
-            const timeText = formatGameTime(ev.date); 
-            const oddsHtml = getBettingOdds(awayTeam.team?.abbreviation, homeTeam.team?.abbreviation);
-            text = `${t1} @ ${t2} | ${timeText} ${oddsHtml}`;
-          }
-
-          items.push({ label, text, labelClass });
-          added++;
-        }
-      } catch (e) {
-        console.error("Score block failed for", src.label, e);
-      }
-    }
-    return items;
-  }
-
-  async function getNewsItems() {
-    const items = [];
-    const parser = new DOMParser();
-    const injuryKeywords = ["injury", "out", "surgery", "IR", "questionable", "doubtful"];
-    const rumorKeywords = ["rumor", "trade", "source", "report", "talks", "interest"];
-
-    for (const feed of newsFeeds) {
-      try {
-        const text = await fetchTextData(feed.url);
-        if (!text) continue;
-        const xml = parser.parseFromString(text, "text/xml");
-        const newsItems = Array.from(xml.querySelectorAll("item")).slice(0, 4); 
-
-        for (const item of newsItems) {
-          const titleNode = item.querySelector("title");
-          if (!titleNode || !titleNode.textContent) continue;
-          
-          let title = titleNode.textContent.trim();
-          title = title.replace(/^\[.+?\]\s?/, ''); 
-
-          const lowerTitle = title.toLowerCase();
-          let label = feed.label + " NEWS";
-          let labelClass = "label-news";
-
-          if (injuryKeywords.some(keyword => lowerTitle.includes(keyword))) {
-              label = "INJURY REPORT";
-              labelClass = "label-injury";
-          } else if (rumorKeywords.some(keyword => lowerTitle.includes(keyword))) {
-              label = "RUMOR MILL";
-              labelClass = "label-rumor";
-          }
-          items.push({ label: label, text: title.toUpperCase(), labelClass: labelClass });
-        }
-      } catch (e) {
-        console.error("News block failed for", feed.label, e);
-      }
-    }
-    return items;
-  }
-
-  function addItemToDOM({ label, text, labelClass }) {
-    const span = document.createElement("span");
-    span.className = "item";
-    const cls = labelClass ? `label ${labelClass}` : "label";
-    span.innerHTML = `<span class="${cls}">${label}</span>${text}`;
-    track.appendChild(span);
-  }
-
-  async function buildTicker() {
-    const [chatAndAnalyst, scores, news] = await Promise.all([
-      getChatAndAnalystItems(),
-      getScoreItems(),
-      getNewsItems()
-    ]);
-
-    let allItems = [...chatAndAnalyst, ...scores, ...news];
-    if (allItems.length === 0) {
-        allItems.push({ 
-            label: "SYSTEM", 
-            text: "DATA FEED UNAVAILABLE. TUNE INTO TIKTOK FOR LIVE UPDATES.", 
-            labelClass: "label-final" 
+        items.push({
+           html: `<div class="label ${labelClass}"><span>${labelText}</span></div> ${mainText} ${leaderHTML}`
         });
+      });
     }
+    return items;
+  }
 
-    allItems = shuffle(allItems);
+  // 4. News/RSS Builder
+  async function getNews() {
+    const urls = ["https://www.espn.com/espn/rss/nfl/news"];
+    let items = [];
+    const parser = new DOMParser();
+
+    for (const u of urls) {
+      const xmlStr = await fetchText(PROXY + encodeURIComponent(u));
+      const xml = parser.parseFromString(xmlStr, "text/xml");
+      const rows = Array.from(xml.querySelectorAll("item")).slice(0, 3);
+      
+      rows.forEach(r => {
+         const title = r.querySelector("title").textContent.replace("<![CDATA[", "").replace("]]>", "");
+         items.push({
+           html: `<div class="label bg-news"><span>NEWS</span></div> ${title}`
+         });
+      });
+    }
+    return items;
+  }
+
+  // 5. Engagement/Chat Builder
+  function getEngagement() {
+    const msgs = [
+       "TIKTOK: DROP A FOLLOW TO SUPPORT THE STREAM!",
+       "CHAT: WHO IS YOUR MVP THIS SEASON?",
+       "POLL: TYPE '1' FOR CHIEFS, '2' FOR EAGLES"
+    ];
+    return msgs.map(m => ({
+       html: `<div class="label bg-social"><span>SOCIAL</span></div> ${m}`
+    }));
+  }
+
+  // ============ RENDER & ANIMATE ============
+  async function buildTicker() {
+    const [scores, news] = await Promise.all([getScores(), getNews()]);
+    const social = getEngagement();
     
+    let all = [...social, ...scores, ...news];
+    // Shuffle simplified
+    all.sort(() => Math.random() - 0.5);
+
+    if (all.length === 0) all.push({ html: "LOADING DATA..." });
+
     track.innerHTML = "";
-    allItems.forEach(item => addItemToDOM(item));
+    all.forEach(obj => {
+       const div = document.createElement("div");
+       div.className = "item";
+       div.innerHTML = obj.html;
+       track.appendChild(div);
+    });
 
-    track.style.transform = 'translateX(0px)'; 
-    contentWidth = track.scrollWidth; 
+    // Duplicate for seamless loop
+    track.innerHTML += track.innerHTML;
     
-    const originalContent = track.innerHTML;
-    track.innerHTML += originalContent;
-
-    startAnimation();
+    // Reset position if needed (optional, usually fine to keep scrolling)
+    contentWidth = track.scrollWidth / 2;
   }
 
-  function animate(currentTime) {
-    if (!lastTime) lastTime = currentTime;
-    const deltaTime = currentTime - lastTime;
-    lastTime = currentTime;
-    const distanceToMove = (SPEED_PX_PER_SEC / 1000) * deltaTime;
-    scrollPosition += distanceToMove;
-
-    if (contentWidth > 0 && scrollPosition >= contentWidth) {
-      scrollPosition -= contentWidth;
+  function animate(now) {
+    if (!lastTime) lastTime = now;
+    const dt = now - lastTime;
+    
+    // If Alert Mode is ON, do NOT scroll
+    if (!isTakeoverActive) {
+        lastTime = now;
+        const move = (SPEED_PX_PER_SEC / 1000) * dt;
+        scrollPosition += move;
+        if (scrollPosition >= contentWidth) {
+           scrollPosition = 0;
+        }
+        track.style.transform = `translateX(-${scrollPosition}px)`;
     }
 
-    track.style.transform = `translateX(-${scrollPosition}px)`;
-    animationFrameId = requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
   }
 
-  function startAnimation() {
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    lastTime = 0; 
-    scrollPosition = 0; 
-    animationFrameId = requestAnimationFrame(animate);
-  }
+  // Init
+  buildTicker();
+  setInterval(buildTicker, REFRESH_INTERVAL_MS);
+  requestAnimationFrame(animate);
 
-  document.addEventListener("DOMContentLoaded", buildTicker);
-  setInterval(buildTicker, REFRESH_INTERVAL_MS); 
 </script>
-
 </body>
 </html>
