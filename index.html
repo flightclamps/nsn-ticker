@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PRO SPORTS TICKER - RGB EDITION</title>
+<title>NSN Sports Ticker - RGB EDITION</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 
@@ -55,8 +55,8 @@
 
   /* --- LEFT: LOGO --- */
   .ticker-logo {
-    width: 180px; 
-    min-width: 180px;
+    width: 200px; 
+    min-width: 200px;
     height: 100%;
     background: #000;
     border-right: 2px solid #222; 
@@ -76,15 +76,35 @@
     z-index: 1;
   }
 
-  .ticker-title {
+  /* Typewriter effect for title */
+  .ticker-title-container {
     position: relative;
     z-index: 2;
+    display: inline-block;
+  }
+  
+  .ticker-title {
     font-family: 'Chakra Petch', sans-serif;
     font-size: 28px;
     font-weight: 700;
     color: #FFF;
     letter-spacing: -1px;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 3px solid #00FFFF;
+    width: 0;
+    animation: typing 3.5s steps(11, end) forwards, blink-caret 0.75s step-end infinite;
+  }
+  
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 175px }
+  }
+  
+  @keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: #00FFFF }
   }
 
   .ticker-tagline {
@@ -94,8 +114,8 @@
     color: #999;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 2px;
+    letter-spacing: 1px;
+    margin-top: 6px;
   }
 
   /* --- CENTER: SCROLL AREA --- */
@@ -243,8 +263,10 @@
   
   <div class="ticker-logo">
     <div class="logo-bg"></div>
-    <div class="ticker-title">PRO LIVE</div>
-    <div class="ticker-tagline">SPORTS NETWORK</div>
+    <div class="ticker-title-container">
+      <div class="ticker-title">NSN SPORTS</div>
+    </div>
+    <div class="ticker-tagline">Powered by NotSoCj⭐️</div>
   </div>
 
   <div class="scroll-area">
@@ -293,6 +315,18 @@
   }
   setInterval(updateClock, 1000);
   updateClock();
+
+  // ============ TYPEWRITER RESET ============
+  // Reset typewriter animation periodically
+  function resetTypewriter() {
+    const title = document.querySelector('.ticker-title');
+    title.style.animation = 'none';
+    void title.offsetWidth; // Trigger reflow
+    title.style.animation = 'typing 3.5s steps(11, end) forwards, blink-caret 0.75s step-end infinite';
+  }
+  
+  // Reset every 10 seconds
+  setInterval(resetTypewriter, 10000);
 
   // ============ DATA FETCHING ============
   
@@ -495,7 +529,7 @@
   function getEngagementContent() {
     const messages = [
       "POLL: Who will win MVP this season? Reply with your pick!",
-      "SOCIAL: Follow us @ProSportsNetwork for more updates",
+      "SOCIAL: Follow @NotSoCj on all platforms for more updates",
       "TRIVIA: Which team has the most championships in NBA history?",
       "INTERACT: Drop a 🔥 if you're enjoying the stream!",
       "QUESTION: Who's your all-time favorite athlete?",
@@ -576,6 +610,9 @@
   buildTicker();
   setInterval(buildTicker, REFRESH_INTERVAL_MS);
   requestAnimationFrame(animate);
+  
+  // Start typewriter animation
+  resetTypewriter();
 </script>
 </body>
 </html>
