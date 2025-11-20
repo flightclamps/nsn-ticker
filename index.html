@@ -2,52 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NSN Broadcast Ticker - CYBER EDITION</title>
+<title>PRO SPORTS TICKER - RGB EDITION</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
   /* --- CORE SETUP --- */
   body {
     margin: 0;
-    background: transparent; /* Transparent for OBS */
+    background: transparent;
     overflow: hidden;
-    font-family: 'Inter', 'Roboto', sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
   }
 
-  /* --- THE "ALIVE" OVERLAYS (Scanlines & Vignette) --- */
+  /* --- RGB BORDER ANIMATION --- */
+  @keyframes rgb-border-flow {
+    0% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
+    20% { border-color: #ff7700; box-shadow: 0 0 15px rgba(255, 119, 0, 0.7); }
+    40% { border-color: #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.7); }
+    60% { border-color: #0088ff; box-shadow: 0 0 15px rgba(0, 136, 255, 0.7); }
+    80% { border-color: #8800ff; box-shadow: 0 0 15px rgba(136, 0, 255, 0.7); }
+    100% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
+  }
+
+  /* --- SCANLINES EFFECT --- */
   .broadcast-overlay {
     position: absolute;
     top: 0; left: 0; width: 100vw; height: 100vh;
     pointer-events: none;
     z-index: 100;
     background: 
-      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-      linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+      linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.03));
     background-size: 100% 2px, 6px 100%;
     mix-blend-mode: overlay;
   }
 
   /* --- MAIN BAR CONTAINER --- */
-  .nsn-bar {
+  .pro-ticker {
     width: 100vw;
-    height: 56px; 
-    background: #050505;
-    border-top: 2px solid #00E5FF; 
-    border-bottom: 2px solid #00E5FF; 
+    height: 68px; 
+    background: linear-gradient(180deg, #111111 0%, #0a0a0a 100%);
+    border-top: 3px solid #ff0000; 
+    border-bottom: 3px solid #ff0000; 
+    animation: rgb-border-flow 10s infinite linear;
     display: flex;
     align-items: center;
     position: relative; 
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
     overflow: hidden;
   }
 
-  /* --- LEFT: LOGO WITH GLITCH EFFECT --- */
-  .nsn-logo {
-    width: 150px; 
-    min-width: 150px;
+  /* --- LEFT: LOGO --- */
+  .ticker-logo {
+    width: 180px; 
+    min-width: 180px;
     height: 100%;
     background: #000;
-    border-right: 2px solid #333; 
+    border-right: 2px solid #222; 
     display: flex;
     flex-direction: column;
     justify-content: center; 
@@ -57,43 +69,32 @@
     overflow: hidden;
   }
 
-  /* The Red/Black Gradient Background for Logo */
   .logo-bg {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, #D50000, #000);
+    background: linear-gradient(135deg, #111 0%, #000 100%);
     z-index: 1;
   }
 
-  .nsn-title {
+  .ticker-title {
     position: relative;
     z-index: 2;
-    font-size: 26px;
-    font-weight: 900;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
     color: #FFF;
-    font-style: italic;
     letter-spacing: -1px;
-    text-shadow: 3px 3px 0px rgba(0,0,0,0.8);
-    animation: glitch-skew 3s infinite linear alternate-reverse;
-  }
-  
-  @keyframes glitch-skew {
-    0% { transform: skew(0deg); }
-    20% { transform: skew(0deg); }
-    21% { transform: skew(-10deg); filter: blur(1px); }
-    22% { transform: skew(10deg); }
-    23% { transform: skew(0deg); filter: none; }
-    100% { transform: skew(0deg); }
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   }
 
-  .nsn-powered {
+  .ticker-tagline {
     position: relative;
     z-index: 2;
-    font-size: 8px;
-    color: #00E5FF;
+    font-size: 10px;
+    color: #999;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     margin-top: 2px;
   }
 
@@ -102,7 +103,7 @@
     flex: 1;
     height: 100%;
     position: relative;
-    background: #090909;
+    background: linear-gradient(180deg, #0c0c0c 0%, #050505 100%);
   }
 
   .scroll-mask {
@@ -110,7 +111,7 @@
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: 40;
     pointer-events: none;
-    background: linear-gradient(90deg, #090909 0%, transparent 3%, transparent 97%, #090909 100%);
+    background: linear-gradient(90deg, #090909 0%, transparent 5%, transparent 95%, #090909 100%);
   }
 
   .scroll-track {
@@ -120,50 +121,93 @@
     display: flex; 
     align-items: center;
     white-space: nowrap;
-    padding-left: 20px; 
+    padding-left: 30px; 
   }
 
   /* --- CONTENT ITEMS --- */
-  .item {
-    padding-right: 60px; 
+  .ticker-item {
+    padding-right: 80px; 
     display: flex;
     align-items: center;
-    font-size: 22px; 
+    font-size: 24px; 
     font-weight: 600;
-    color: #E0E0E0;
-    font-family: 'Inter', sans-serif;
+    color: #FFFFFF;
+    font-family: 'Roboto Condensed', sans-serif;
   }
 
-  .label {
-    font-weight: 900;
-    margin-right: 12px;
-    padding: 3px 8px;
-    border-radius: 2px;
-    color: #000; 
-    font-size: 15px;
+  .league-badge {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    margin-right: 15px;
+    padding: 4px 10px;
+    font-size: 16px;
     text-transform: uppercase;
-    transform: skew(-10deg); 
-    display: inline-block;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    height: 26px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   }
   
-  .label span { display: inline-block; transform: skew(10deg); }
+  /* League-specific colors */
+  .nfl { background: #013369; color: white; }
+  .nba { background: #C9082A; color: white; }
+  .mlb { background: #041E42; color: white; }
+  .nhl { background: #000000; color: white; border: 1px solid #ccc; }
+  .mls { background: #1EB53A; color: white; }
+  .pga { background: #001D59; color: white; }
+  .uefa { background: #000A4E; color: white; }
+  .f1 { background: #E10600; color: white; }
+  .news { background: #7D3C98; color: white; }
+  .live { background: #FF0000; color: white; }
+  .final { background: #FFD700; color: black; }
 
-  /* Dynamic Colors */
-  .bg-live { background: #FF0033; color: white; box-shadow: 0 0 10px #FF0033; }
-  .bg-final { background: #FFD700; color: black; }
-  .bg-news { background: #D500F9; color: white; }
-  .bg-betting { background: #00E676; color: black; }
-  .bg-social { background: #2979FF; color: white; }
+  /* Status indicators */
+  .status {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 3px 8px;
+    margin-left: 12px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  
+  .status-live {
+    background: #FF0000;
+    color: white;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  
+  .status-final {
+    background: #333;
+    color: white;
+  }
+  
+  .status-upcoming {
+    background: #555;
+    color: white;
+  }
 
-  /* Highlight keywords */
-  .stat-pop { color: #00E5FF; font-weight: 800; margin-left: 10px; font-size: 0.95em; }
+  /* Highlight content */
+  .team-name { font-weight: 700; }
+  .team-score { font-weight: 900; margin: 0 5px; }
+  .player-stats { color: #00FFFF; font-weight: 700; margin-left: 15px; }
   
   /* --- RIGHT: CLOCK --- */
-  .nsn-clock {
-    width: 110px;
+  .ticker-clock {
+    width: 130px;
+    min-width: 130px;
     height: 100%;
-    background: #080808;
-    border-left: 2px solid #333;
+    background: linear-gradient(135deg, #111 0%, #000 100%);
+    border-left: 2px solid #222;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -172,9 +216,22 @@
     position: relative;
   }
   
-  #clock-time { font-size: 20px; font-weight: 900; color: #FFF; letter-spacing: 1px; }
-  #clock-zone { font-size: 10px; color: #666; font-weight: 700; margin-top: -2px; text-transform: uppercase; }
-
+  #clock-time { 
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 24px; 
+    font-weight: 700; 
+    color: #FFF; 
+    letter-spacing: 1px; 
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  
+  #clock-date { 
+    font-size: 12px; 
+    color: #999; 
+    font-weight: 700; 
+    margin-top: 2px; 
+    text-transform: uppercase; 
+  }
 </style>
 </head>
 
@@ -182,12 +239,12 @@
 
 <div class="broadcast-overlay"></div>
 
-<div class="nsn-bar" id="main-bar">
+<div class="pro-ticker" id="main-ticker">
   
-  <div class="nsn-logo">
+  <div class="ticker-logo">
     <div class="logo-bg"></div>
-    <div class="nsn-title">NSN LIVE</div>
-    <div class="nsn-powered">NSN NATION</div>
+    <div class="ticker-title">PRO LIVE</div>
+    <div class="ticker-tagline">SPORTS NETWORK</div>
   </div>
 
   <div class="scroll-area">
@@ -195,352 +252,308 @@
     <div class="scroll-track" id="track"></div>
   </div>
 
-  <div class="nsn-clock">
-      <div id="clock-time">--:--</div>
-      <div id="clock-zone">LIVE</div>
+  <div class="ticker-clock">
+    <div id="clock-time">--:--</div>
+    <div id="clock-date">--/--</div>
   </div>
 
 </div>
 
 <script>
   // ============ CONFIGURATION ============
-  const SPEED_PX_PER_SEC = 90; 
-  const PROXY = "https://corsproxy.io/?"; 
-  const REFRESH_INTERVAL_MS = 180000; // 3 Mins
+  const SPEED_PX_PER_SEC = 100; 
+  const PROXY_URLS = [
+    "https://corsproxy.io/?",
+    "https://api.allorigins.win/raw?url=",
+    "https://cors-anywhere.herokuapp.com/",
+    "https://crossorigin.me/",
+    "https://thingproxy.freeboard.io/fetch/"
+  ];
+  
+  // Pick a random proxy to distribute load and have fallbacks
+  function getProxy() {
+    return PROXY_URLS[Math.floor(Math.random() * PROXY_URLS.length)];
+  }
+  
+  const REFRESH_INTERVAL_MS = 120000; // 2 mins
   
   const track = document.getElementById("track");
   
-  let animationFrameId = null;
   let scrollPosition = 0;
   let contentWidth = 0; 
   let lastTime = 0;
 
   // ============ CLOCK ============
   function updateClock() {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      document.getElementById('clock-time').textContent = timeString;
+    const now = new Date();
+    const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const dateString = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    document.getElementById('clock-time').textContent = timeString;
+    document.getElementById('clock-date').textContent = dateString.toUpperCase();
   }
   setInterval(updateClock, 1000);
   updateClock();
 
   // ============ DATA FETCHING ============
   
-  // 1. Top Performer Helper - EXTENDED FOR BOX SCORES
-  async function getTopPerformerStats(event, sportType) {
-    if (!event || !event.id) return "";
-    
-    try {
-      // Construct the box score URL based on sport type and event ID
-      const boxScoreUrl = `https://site.api.espn.com/apis/site/v2/sports/${sportType}/scoreboard/${event.id}`;
-      const data = await fetchData(PROXY + encodeURIComponent(boxScoreUrl));
-      
-      if (!data || !data.boxscore) {
-        // Fallback to basic leader info
-        return getBasicTopPerformer(event.competitions[0]);
-      }
-      
-      // Get the right statistics based on sport type
-      let playerStats = [];
-      
-      // Process players based on sport type
-      if (sportType.includes('basketball')) {
-        // For basketball, look for points, rebounds, assists
-        const teams = data.boxscore.players || [];
-        
-        teams.forEach(team => {
-          const stats = team.statistics || [];
-          const players = team.athletes || [];
-          
-          players.forEach(player => {
-            const points = player.stats.find(s => s.name === 'points')?.value || 0;
-            const rebounds = player.stats.find(s => s.name === 'rebounds')?.value || 0;
-            const assists = player.stats.find(s => s.name === 'assists')?.value || 0;
-            
-            if (points > 0) {
-              playerStats.push({
-                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
-                value: points,
-                statLine: `${points}pts, ${rebounds}reb, ${assists}ast`
-              });
-            }
-          });
-        });
-        
-        // Sort by points (highest first)
-        playerStats.sort((a, b) => b.value - a.value);
-        
-      } else if (sportType.includes('football')) {
-        // For football, get passing/rushing/receiving yards
-        const teams = data.boxscore.players || [];
-        
-        teams.forEach(team => {
-          const stats = team.statistics || [];
-          const players = team.athletes || [];
-          
-          players.forEach(player => {
-            const passYds = player.stats.find(s => s.name === 'passingYards')?.value || 0;
-            const rushYds = player.stats.find(s => s.name === 'rushingYards')?.value || 0;
-            const recYds = player.stats.find(s => s.name === 'receivingYards')?.value || 0;
-            const touchdowns = (player.stats.find(s => s.name === 'passingTouchdowns')?.value || 0) +
-                              (player.stats.find(s => s.name === 'rushingTouchdowns')?.value || 0) +
-                              (player.stats.find(s => s.name === 'receivingTouchdowns')?.value || 0);
-            
-            let statLine = "";
-            let value = 0;
-            
-            if (passYds > 0) {
-              statLine = `${passYds} pass yds, ${touchdowns} TD`;
-              value = passYds;
-            } else if (rushYds > 0) {
-              statLine = `${rushYds} rush yds, ${touchdowns} TD`;
-              value = rushYds;
-            } else if (recYds > 0) {
-              statLine = `${recYds} rec yds, ${touchdowns} TD`;
-              value = recYds;
-            }
-            
-            if (value > 0) {
-              playerStats.push({
-                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
-                value: value,
-                statLine: statLine
-              });
-            }
-          });
-        });
-        
-        // Sort by yards (highest first)
-        playerStats.sort((a, b) => b.value - a.value);
-        
-      } else if (sportType.includes('baseball')) {
-        // For baseball, look for hits, RBIs, home runs
-        const teams = data.boxscore.players || [];
-        
-        teams.forEach(team => {
-          const stats = team.statistics || [];
-          const players = team.athletes || [];
-          
-          players.forEach(player => {
-            const hits = player.stats.find(s => s.name === 'hits')?.value || 0;
-            const rbi = player.stats.find(s => s.name === 'RBI')?.value || 0;
-            const hr = player.stats.find(s => s.name === 'homeRuns')?.value || 0;
-            
-            if (hits > 0 || rbi > 0 || hr > 0) {
-              playerStats.push({
-                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
-                value: hits + (rbi * 2) + (hr * 5), // Weighted value
-                statLine: `${hits}H, ${rbi}RBI, ${hr}HR`
-              });
-            }
-          });
-        });
-        
-        // Sort by weighted value (highest first)
-        playerStats.sort((a, b) => b.value - a.value);
-        
-      } else if (sportType.includes('hockey')) {
-        // For hockey, look for goals, assists, points
-        const teams = data.boxscore.players || [];
-        
-        teams.forEach(team => {
-          const stats = team.statistics || [];
-          const players = team.athletes || [];
-          
-          players.forEach(player => {
-            const goals = player.stats.find(s => s.name === 'goals')?.value || 0;
-            const assists = player.stats.find(s => s.name === 'assists')?.value || 0;
-            const points = goals + assists;
-            
-            if (points > 0) {
-              playerStats.push({
-                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
-                value: points,
-                statLine: `${goals}G, ${assists}A`
-              });
-            }
-          });
-        });
-        
-        // Sort by points (highest first)
-        playerStats.sort((a, b) => b.value - a.value);
-      }
-      
-      // If we found player stats, return the top performer
-      if (playerStats.length > 0) {
-        const topPlayer = playerStats[0];
-        return `<span class="stat-pop">⭐ ${topPlayer.name}: ${topPlayer.statLine}</span>`;
-      }
-      
-      // If no detailed stats found, fall back to basic leader info
-      return getBasicTopPerformer(event.competitions[0]);
-      
-    } catch (error) {
-      // Fallback to basic leader info if box score fetch fails
-      return getBasicTopPerformer(event.competitions[0]);
-    }
-  }
-  
-  // Basic top performer fallback function
-  function getBasicTopPerformer(comp) {
-    // Safety checks
-    if (!comp || !comp.leaders || comp.leaders.length === 0) return "";
-    
-    // ESPN API organizes leaders by category (Passing, Rushing, Points, Rebounds, etc.)
-    const category = comp.leaders[0]; 
-    
-    if (!category.leaders || category.leaders.length === 0) return "";
-    
-    const player = category.leaders[0];
-    const name = player.athlete?.shortName || player.athlete?.displayName || "Player";
-    const stat = player.displayValue;
-    const statLabel = category.shortDisplayName || category.displayName || "";
-
-    // Return formatted HTML
-    return `<span class="stat-pop">⭐ ${name}: ${stat} ${statLabel}</span>`;
-  }
-
-  // 2. Fetch Utilities
+  // Fetch Utilities
   async function fetchData(url) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) return { events: [] };
-      return await res.json();
-    } catch { return { events: [] }; }
+    // Try each proxy until one works
+    for (let i = 0; i < PROXY_URLS.length; i++) {
+      try {
+        const proxy = PROXY_URLS[i];
+        const res = await fetch(proxy + encodeURIComponent(url), { 
+          timeout: 5000, 
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } 
+        });
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch (e) {
+        console.log("Proxy failed, trying next one");
+      }
+    }
+    return { events: [] }; // Return empty data if all proxies fail
   }
 
   async function fetchText(url) {
-    try {
-      const res = await fetch(url);
-      return res.ok ? await res.text() : "";
-    } catch { return ""; }
-  }
-
-  // 3. Score Builder
-  async function getScores() {
-    // Expanded Source List with sport type for box score URLs
-    const sources = [
-      { l: "NFL", u: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard", sportType: "football/nfl" },
-      { l: "CFB", u: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80", sportType: "football/college-football" },
-      { l: "NBA", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard", sportType: "basketball/nba" },
-      { l: "CBB", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50", sportType: "basketball/mens-college-basketball" },
-      { l: "MLB", u: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard", sportType: "baseball/mlb" },
-      { l: "NHL", u: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard", sportType: "hockey/nhl" }
-    ];
-
-    let items = [];
-    for (const s of sources) {
-      const data = await fetchData(PROXY + encodeURIComponent(s.u));
-      const events = data.events || [];
-      
-      // Process events (limit to 5 games per sport)
-      for (const ev of events.slice(0, 5)) {
-        const c = ev.competitions[0];
-        const s1 = c.competitors[0]; // Home
-        const s2 = c.competitors[1]; // Away
-        
-        // Team Names (Use Ranks if available)
-        let t1 = s1.team.abbreviation;
-        let t2 = s2.team.abbreviation;
-        if (s1.curatedRank?.current <= 25) t1 = `(#${s1.curatedRank.current}) ` + t1;
-        if (s2.curatedRank?.current <= 25) t2 = `(#${s2.curatedRank.current}) ` + t2;
-
-        const score1 = s1.score;
-        const score2 = s2.score;
-        
-        const status = ev.status.type.state; // pre, in, post
-        const detail = ev.status.type.shortDetail;
-
-        let labelClass = "bg-betting"; // Default Green
-        let labelText = s.l;
-        let mainText = `${t2} vs ${t1}`;
-        
-        // Get detailed player stats - only for in-progress or completed games
-        let leaderHTML = "";
-        if (status === "in" || status === "post") {
-          // For completed/in-progress games, get detailed box score stats
-          leaderHTML = await getTopPerformerStats(ev, s.sportType);
-        }
-
-        if (status === "post") {
-           labelClass = "bg-final";
-           labelText = "FINAL";
-           mainText = `${t2} ${score2} - ${t1} ${score1}`;
-        } else if (status === "in") {
-           labelClass = "bg-live";
-           labelText = "LIVE";
-           mainText = `${t2} ${score2} - ${t1} ${score1} <span style='color:#FF0033'>• ${detail}</span>`;
-        } else {
-           // Upcoming
-           mainText = `${t2} @ ${t1} [${detail}]`;
-           // Don't show stats for upcoming games
-           leaderHTML = "";
-        }
-
-        items.push({
-           html: `<div class="label ${labelClass}"><span>${labelText}</span></div> ${mainText} ${leaderHTML}`
+    // Try each proxy until one works
+    for (let i = 0; i < PROXY_URLS.length; i++) {
+      try {
+        const proxy = PROXY_URLS[i];
+        const res = await fetch(proxy + encodeURIComponent(url), { 
+          timeout: 5000,
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
         });
+        if (res.ok) {
+          return await res.text();
+        }
+      } catch (e) {
+        console.log("Proxy failed, trying next one");
       }
     }
-    return items;
+    return "";
   }
 
-  // 4. News/RSS Builder
-  async function getNews() {
-    const urls = ["https://www.espn.com/espn/rss/nfl/news", "https://www.espn.com/espn/rss/nba/news"];
-    let items = [];
-    const parser = new DOMParser();
-
-    for (const u of urls) {
-      const xmlStr = await fetchText(PROXY + encodeURIComponent(u));
-      const xml = parser.parseFromString(xmlStr, "text/xml");
-      const rows = Array.from(xml.querySelectorAll("item")).slice(0, 3);
+  // 1. Sports Data Sources
+  async function getSportsData() {
+    // Multiple sources for different leagues
+    const sources = [
+      // ESPN Sources
+      { league: "NFL", label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+      { league: "NBA", label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
+      { league: "MLB", label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
+      { league: "NHL", label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
+      { league: "MLS", label: "MLS", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard" },
       
-      rows.forEach(r => {
-         const title = r.querySelector("title").textContent.replace("<![CDATA[", "").replace("]]>", "");
-         items.push({
-           html: `<div class="label bg-news"><span>NEWS</span></div> ${title}`
-         });
-      });
+      // College Sports
+      { league: "NCAAF", label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
+      { league: "NCAAB", label: "CBB", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" },
+      
+      // International Soccer
+      { league: "EPL", label: "EPL", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard" },
+      { league: "LALIGA", label: "LIGA", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard" },
+      { league: "BUNDESLIGA", label: "BUND", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard" },
+      { league: "SERIEA", label: "SERIE", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard" },
+      
+      // Other Major Sports
+      { league: "F1", label: "F1", url: "https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard" },
+      { league: "PGA", label: "PGA", url: "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard" }
+    ];
+
+    let items = [];
+    
+    for (const source of sources) {
+      try {
+        const data = await fetchData(source.url);
+        const events = data.events || [];
+        
+        // Process up to 3 games per league to keep the rotation diverse
+        for (const ev of events.slice(0, 3)) {
+          const comp = ev.competitions[0];
+          const status = ev.status.type.state; // pre, in, post
+          const detail = ev.status.type.shortDetail;
+          
+          // Skip events that are too far in the future (more than 1 day away)
+          if (status === "pre") {
+            const eventDate = new Date(ev.date);
+            const now = new Date();
+            const diffTime = Math.abs(eventDate - now);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays > 1) continue;
+          }
+          
+          // Process competitors
+          if (comp.competitors && comp.competitors.length >= 2) {
+            const home = comp.competitors.find(team => team.homeAway === "home") || comp.competitors[0];
+            const away = comp.competitors.find(team => team.homeAway === "away") || comp.competitors[1];
+            
+            // Team names with rankings if available
+            let homeName = home.team.abbreviation || home.team.shortDisplayName;
+            let awayName = away.team.abbreviation || away.team.shortDisplayName;
+            
+            if (home.curatedRank && home.curatedRank.current <= 25) {
+              homeName = `#${home.curatedRank.current} ${homeName}`;
+            }
+            
+            if (away.curatedRank && away.curatedRank.current <= 25) {
+              awayName = `#${away.curatedRank.current} ${awayName}`;
+            }
+            
+            const homeScore = home.score;
+            const awayScore = away.score;
+            
+            // Create the HTML for this event
+            let statusClass = "";
+            let statusText = "";
+            let mainHtml = "";
+            
+            if (status === "in") {
+              statusClass = "status status-live";
+              statusText = "LIVE";
+              mainHtml = `<span class="team-name">${awayName}</span> <span class="team-score">${awayScore}</span> @ <span class="team-name">${homeName}</span> <span class="team-score">${homeScore}</span> <span style="color:#FF5555; margin-left:8px;">${detail}</span>`;
+            } else if (status === "post") {
+              statusClass = "status status-final";
+              statusText = "FINAL";
+              mainHtml = `<span class="team-name">${awayName}</span> <span class="team-score">${awayScore}</span> @ <span class="team-name">${homeName}</span> <span class="team-score">${homeScore}</span>`;
+            } else {
+              statusClass = "status status-upcoming";
+              statusText = detail;
+              mainHtml = `<span class="team-name">${awayName}</span> @ <span class="team-name">${homeName}</span>`;
+            }
+            
+            // Get top performer stats if game is in progress or completed
+            let playerStatsHtml = "";
+            if (status === "in" || status === "post") {
+              if (comp.leaders && comp.leaders.length > 0 && comp.leaders[0].leaders && comp.leaders[0].leaders.length > 0) {
+                const topCategory = comp.leaders[0];
+                const topPlayer = topCategory.leaders[0];
+                const playerName = topPlayer.athlete?.shortName || topPlayer.athlete?.displayName || "Player";
+                const statValue = topPlayer.displayValue;
+                const statName = topCategory.shortDisplayName || topCategory.displayName;
+                
+                playerStatsHtml = `<span class="player-stats">⭐ ${playerName}: ${statValue} ${statName}</span>`;
+              }
+            }
+            
+            // Add to items array
+            items.push({
+              html: `<div class="league-badge ${source.league.toLowerCase()}">${source.label}</div> ${mainHtml} <span class="${statusClass}">${statusText}</span> ${playerStatsHtml}`
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching ${source.league} data:`, error);
+      }
     }
+    
     return items;
   }
 
-  // 5. Engagement/Chat Builder
-  function getEngagement() {
-    const msgs = [
-       "TIKTOK: DROP A FOLLOW TO SUPPORT THE STREAM!",
-       "CHAT: WHO IS YOUR MVP THIS SEASON?",
-       "POLL: TYPE '1' FOR CHIEFS, '2' FOR EAGLES"
+  // 2. News from Multiple Sources
+  async function getSportsNews() {
+    // Multiple news sources
+    const sources = [
+      { name: "ESPN NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
+      { name: "ESPN NBA", url: "https://www.espn.com/espn/rss/nba/news" },
+      { name: "ESPN MLB", url: "https://www.espn.com/espn/rss/mlb/news" },
+      { name: "ESPN NHL", url: "https://www.espn.com/espn/rss/nhl/news" },
+      { name: "CBS Sports", url: "https://www.cbssports.com/rss/headlines/" },
+      { name: "Yahoo Sports", url: "https://sports.yahoo.com/rss/" },
+      { name: "FOX Sports", url: "https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU" }
     ];
-    return msgs.map(m => ({
-       html: `<div class="label bg-social"><span>SOCIAL</span></div> ${m}`
+    
+    let newsItems = [];
+    const parser = new DOMParser();
+    
+    // Get 2 news items from each source
+    for (const source of sources) {
+      try {
+        const xmlStr = await fetchText(source.url);
+        if (!xmlStr) continue;
+        
+        const xml = parser.parseFromString(xmlStr, "text/xml");
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 2);
+        
+        for (const item of items) {
+          const title = item.querySelector("title")?.textContent.replace("<![CDATA[", "").replace("]]>", "") || "";
+          if (title) {
+            newsItems.push({
+              html: `<div class="league-badge news">NEWS</div> ${title}`
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching news from ${source.name}:`, error);
+      }
+    }
+    
+    return newsItems;
+  }
+
+  // 3. Generate Engagement Content
+  function getEngagementContent() {
+    const messages = [
+      "POLL: Who will win MVP this season? Reply with your pick!",
+      "SOCIAL: Follow us @ProSportsNetwork for more updates",
+      "TRIVIA: Which team has the most championships in NBA history?",
+      "INTERACT: Drop a 🔥 if you're enjoying the stream!",
+      "QUESTION: Who's your all-time favorite athlete?",
+      "PREDICTION: Will we see a new champion this year?",
+      "DISCUSS: Greatest sports comeback of all time?",
+      "DEBATE: Jordan vs LeBron - who's the GOAT?",
+      "POLL: Best sports city in America? Reply with your pick!"
+    ];
+    
+    // Shuffle and take 3 random engagement messages
+    const shuffled = [...messages].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3).map(msg => ({
+      html: `<div class="league-badge live">LIVE</div> ${msg}`
     }));
   }
 
   // ============ RENDER & ANIMATE ============
   async function buildTicker() {
-    const [scores, news] = await Promise.all([getScores(), getNews()]);
-    const social = getEngagement();
-    
-    let all = [...social, ...scores, ...news];
-    // Randomize order
-    all.sort(() => Math.random() - 0.5);
-
-    if (all.length === 0) all.push({ html: "LOADING DATA..." });
-
-    track.innerHTML = "";
-    all.forEach(obj => {
-       const div = document.createElement("div");
-       div.className = "item";
-       div.innerHTML = obj.html;
-       track.appendChild(div);
-    });
-
-    // Duplicate for seamless loop
-    track.innerHTML += track.innerHTML;
-    
-    contentWidth = track.scrollWidth / 2;
+    try {
+      // Get all data in parallel
+      const [sportsData, newsData] = await Promise.all([
+        getSportsData(),
+        getSportsNews()
+      ]);
+      
+      const engagementData = getEngagementContent();
+      
+      // Combine all data
+      let allItems = [...sportsData, ...newsData, ...engagementData];
+      
+      // Shuffle to mix different content types
+      allItems.sort(() => Math.random() - 0.5);
+      
+      // If no data, show loading message
+      if (allItems.length === 0) {
+        allItems = [{ html: "<div class='league-badge'>INFO</div> Loading sports data... Please wait." }];
+      }
+      
+      // Clear and rebuild the track
+      track.innerHTML = "";
+      
+      allItems.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "ticker-item";
+        div.innerHTML = item.html;
+        track.appendChild(div);
+      });
+      
+      // Duplicate content for seamless loop
+      track.innerHTML += track.innerHTML;
+      
+      // Update content width for animation
+      contentWidth = track.scrollWidth / 2;
+      
+    } catch (error) {
+      console.error("Error building ticker:", error);
+      track.innerHTML = "<div class='ticker-item'><div class='league-badge'>ERROR</div> Unable to load sports data. Retrying...</div>";
+    }
   }
 
   function animate(now) {
@@ -552,18 +565,17 @@
     scrollPosition += move;
     
     if (scrollPosition >= contentWidth) {
-        scrollPosition = 0;
+      scrollPosition = 0;
     }
+    
     track.style.transform = `translateX(-${scrollPosition}px)`;
-
     requestAnimationFrame(animate);
   }
 
-  // Init
+  // Initialize
   buildTicker();
   setInterval(buildTicker, REFRESH_INTERVAL_MS);
   requestAnimationFrame(animate);
-
 </script>
 </body>
 </html>
