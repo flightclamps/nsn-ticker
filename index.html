@@ -1,9 +1,3 @@
-Here is the complete, fixed code.
-I have made the following specific changes based on your requests:
- * Finished the Script: Completed the cut-off getSportsNews function and added the logic to actually inject the data into the HTML.
- * Double Line Logic: The script now explicitly separates data: Line 1 gets Game Scores/Live Data, and Line 2 gets News Headlines and Injury reports.
- * Resized Logo: I reduced the "NSN SPORTS" logo width and font size so it fits cleanly without taking up too much screen real estate.
-You can copy and paste this entire block into a single .html file.
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,24 +53,88 @@ You can copy and paste this entire block into a single .html file.
   
   @keyframes drift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
   
-  /* --- MAIN TICKER CONTAINER --- */
+  /* --- PLANETS --- */
+  .planet {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  }
+  
+  .planet-1 {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 40% 40%, #ff6a00, #4a0072);
+    top: 70%;
+    left: 15%;
+    animation: rotate 80s linear infinite;
+  }
+  
+  .planet-2 {
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle at 30% 40%, #00c8ff, #001e38);
+    bottom: 20%;
+    right: 10%;
+    animation: rotate 120s linear infinite reverse;
+  }
+  
+  .planet-3 {
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle at 60% 30%, #ffcc00, #803300);
+    top: 40%;
+    right: 30%;
+    animation: rotate 60s linear infinite;
+  }
+  
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .saturn {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #e4c17d, #9b7a44);
+    top: 20%;
+    left: 30%;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    z-index: 2;
+  }
+  
+  .saturn-ring {
+    position: absolute;
+    width: 120px;
+    height: 20px;
+    background: linear-gradient(to right, rgba(228,193,125,0), rgba(228,193,125,0.8), rgba(228,193,125,0));
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotateX(75deg);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(228,193,125,0.5);
+    z-index: 1;
+  }
+
+  /* --- MAIN TICKER CONTAINER (MOVED TO TOP) --- */
   .sports-ticker {
     width: 100vw;
     height: 80px; /* Height allows for two stacked lines */
     position: fixed;
-    bottom: 0;
+    top: 0; /* Changed from bottom to top */
     left: 0;
     z-index: 10;
     display: flex;
     overflow: hidden;
     box-shadow: 0 0 30px rgba(0, 100, 255, 0.5);
-    border-top: 1px solid #004488;
+    border-bottom: 1px solid #004488; /* Changed from border-top to border-bottom */
   }
 
-  /* --- LEFT: LOGO AREA (RESIZED) --- */
+  /* --- LEFT: LOGO AREA (FURTHER RESIZED) --- */
   .ticker-logo {
-    width: 140px; /* Reduced from 180px */
-    min-width: 140px;
+    width: 90px; /* Reduced from 140px */
+    min-width: 90px;
     height: 100%;
     background-color: rgba(0, 0, 20, 0.95);
     border-right: 2px solid #0066cc;
@@ -91,7 +149,7 @@ You can copy and paste this entire block into a single .html file.
   
   .ticker-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 20px; /* Reduced from 28px */
+    font-size: 16px; /* Reduced from 20px */
     font-weight: 900;
     color: #ffffff;
     text-shadow: 0 0 10px rgba(0, 150, 255, 0.8);
@@ -102,11 +160,11 @@ You can copy and paste this entire block into a single .html file.
     animation: typing 3s steps(11, end) forwards, blink-caret 0.75s step-end infinite;
   }
   
-  @keyframes typing { from { width: 0 } to { width: 120px } } /* Adjusted width */
+  @keyframes typing { from { width: 0 } to { width: 80px } } /* Adjusted width */
   @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #00a1ff } }
   
   .ticker-tagline {
-    font-size: 9px;
+    font-size: 7px; /* Reduced from 9px */
     color: #7ad2ff;
     font-weight: 700;
     text-transform: uppercase;
@@ -152,12 +210,12 @@ You can copy and paste this entire block into a single .html file.
     align-items: center;
     white-space: nowrap;
     left: 0;
-    /* Different speeds for visual distinction */
+    /* Different speeds for visual distinction - SLOWED DOWN */
     animation: scroll-line 45s linear infinite; 
   }
 
-  .line-items-scores { animation-duration: 60s; } /* Scores move slower */
-  .line-items-news { animation-duration: 50s; } /* News moves slightly faster */
+  .line-items-scores { animation-duration: 90s; } /* Scores move slower - increased from 60s to 90s */
+  .line-items-news { animation-duration: 80s; } /* News moves slightly faster - increased from 50s to 80s */
   
   @keyframes scroll-line {
     0% { transform: translateX(100vw); }
@@ -252,6 +310,15 @@ You can copy and paste this entire block into a single .html file.
 <div class="space-bg">
   <div class="stars"></div>
   <div class="nebula"></div>
+  
+  <!-- Added planets -->
+  <div class="planet planet-1"></div>
+  <div class="planet planet-2"></div>
+  <div class="planet planet-3"></div>
+  
+  <!-- Added Saturn with rings -->
+  <div class="saturn"></div>
+  <div class="saturn-ring"></div>
 </div>
 
 <div class="sports-ticker">
@@ -498,4 +565,3 @@ window.onload = function() {
 
 </body>
 </html>
-
