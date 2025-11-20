@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-  /* --- BASE STYLES --- */
   body, html {
     margin: 0;
     padding: 0;
@@ -16,7 +15,7 @@
     background: #000;
   }
 
-  /* --- SPACE BACKGROUND ANIMATIONS --- */
+  /* Space Background */
   .galaxy-bg {
     position: fixed;
     width: 100%;
@@ -151,7 +150,7 @@
     100% { opacity: 0; }
   }
 
-  /* --- TICKER CONTAINER --- */
+  /* Ticker Container */
   .sports-ticker {
     position: fixed;
     bottom: 0;
@@ -162,7 +161,7 @@
     box-shadow: 0 -5px 25px rgba(0,100,255,0.4);
   }
 
-  /* --- LEFT: LOGO SECTION --- */
+  /* Logo Section */
   .ticker-logo {
     width: 180px;
     min-width: 180px;
@@ -208,7 +207,7 @@
     margin-top: 6px;
   }
 
-  /* --- CENTER: CONTENT AREA --- */
+  /* Two-Row Content Area */
   .ticker-content {
     flex: 1;
     height: 100%;
@@ -288,6 +287,8 @@
   .mlb { background-color: #041E42; }
   .nhl { background-color: #000000; border: 1px solid #ccc; }
   .soccer { background-color: #1EB53A; }
+  .golf { background-color: #006747; }
+  .nascar { background-color: #E10600; }
   .cfb { background-color: #7B6545; }
   .cbb { background-color: #4B328F; }
   .news { background-color: #7D3C98; }
@@ -345,7 +346,7 @@
     display: inline-block;
   }
   
-  /* --- RIGHT: CLOCK SECTION --- */
+  /* Clock Section */
   .ticker-clock {
     width: 110px;
     min-width: 110px;
@@ -404,6 +405,7 @@
 
 <body>
 
+<!-- Space Background -->
 <div class="galaxy-bg">
   <div class="stars"></div>
   <div class="nebula"></div>
@@ -413,28 +415,36 @@
   <div class="shooting-star"></div>
 </div>
 
+<!-- Sports Ticker -->
 <div class="sports-ticker">
   
+  <!-- Logo Section -->
   <div class="ticker-logo">
     <div class="title">NSN SPORTS</div>
     <div class="tagline">Powered by NotSoCj⭐️</div>
   </div>
   
+  <!-- Main Content Area -->
   <div class="ticker-content">
     <div class="ticker-rows">
+      <!-- Top Row - Scores -->
       <div class="ticker-row">
         <div class="scrolling-items scores-feed" id="scores-feed">
-          </div>
+          <!-- Scores will be populated here -->
+        </div>
       </div>
       
+      <!-- Bottom Row - News -->
       <div class="ticker-row">
         <div class="scrolling-items news-feed" id="news-feed">
-          </div>
+          <!-- News will be populated here -->
+        </div>
       </div>
     </div>
     <div id="loading" class="loading">Loading sports data</div>
   </div>
   
+  <!-- Clock Section -->
   <div class="ticker-clock">
     <div id="time">--:--</div>
     <div id="date">--/--</div>
@@ -443,20 +453,12 @@
 </div>
 
 <script>
-// ============ CONFIGURATION & CONSTANTS ============
-const PROXIES = [
-  "https://corsproxy.io/?",
-  "https://api.allorigins.win/raw?url=",
-  "https://cors-anywhere.herokuapp.com/",
-  "https://thingproxy.freeboard.io/fetch/"
-];
-
-const REFRESH_INTERVAL = 60000; // 1 minute
+// Configuration
 const HOUSTON_TEAMS = [
   "HOU", "Rockets", "Texans", "Astros", "Dynamo", "Dash", "Cougars", "Owls", "Houston"
 ];
 
-// Default data in case APIs fail completely
+// Default data since GitHub Pages has CORS issues with external APIs
 const DEFAULT_SCORES = [
   { league: "NBA", badge: "nba", game: "<span class=\"team\">Warriors</span> <span class=\"score\">105</span> @ <span class=\"team\">Lakers</span> <span class=\"score\">112</span>", status: "<span class=\"status final\">FINAL</span>" },
   { league: "NFL", badge: "nfl", game: "<span class=\"houston\">Texans</span> <span class=\"score\">24</span> @ <span class=\"team\">Cowboys</span> <span class=\"score\">21</span>", status: "<span class=\"status final\">FINAL</span>" },
@@ -476,11 +478,7 @@ const DEFAULT_NEWS = [
   { badge: "news", title: "College Football Playoff committee releases first rankings" }
 ];
 
-let apiAttempts = 0;
-const MAX_ATTEMPTS = 3;
-let useDefaultData = false;
-
-// ============ CLOCK LOGIC ============
+// Clock Functions
 function updateClock() {
   const now = new Date();
   const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
@@ -493,336 +491,79 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-// Reset typewriter effect periodically to make it look alive
+// Reset typewriter effect
 function resetTypewriter() {
   const title = document.querySelector('.title');
   title.style.animation = 'none';
   void title.offsetWidth; // Force reflow
   title.style.animation = 'type-effect 3s steps(10) forwards, cursor-blink 0.7s step-end infinite';
 }
+
+// Reset typewriter periodically
 setInterval(resetTypewriter, 10000);
 
-// ============ DATA FETCHING UTILITIES ============
-async function fetchWithTimeout(url, options = {}, timeout = 5000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+// Build ticker content
+function buildTicker() {
+  // Hide loading indicator
+  document.getElementById('loading').style.display = 'none';
   
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
-}
-
-async function getJsonData(url) {
-  // Try each proxy until one works
-  for (let i = 0; i < PROXIES.length; i++) {
-    try {
-      const proxy = PROXIES[i];
-      const response = await fetchWithTimeout(proxy + encodeURIComponent(url), {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-      });
-      
-      if (response.ok) {
-        return await response.json();
-      }
-    } catch (error) {
-      console.warn(`Proxy ${i+1} failed:`, error.message);
-    }
-  }
-  throw new Error("All proxies failed");
-}
-
-async function getXmlData(url) {
-  for (let i = 0; i < PROXIES.length; i++) {
-    try {
-      const proxy = PROXIES[i];
-      const response = await fetchWithTimeout(proxy + encodeURIComponent(url), {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-      });
-      if (response.ok) {
-        return await response.text();
-      }
-    } catch (error) {
-      console.warn(`XML proxy ${i+1} failed:`, error.message);
-    }
-  }
-  throw new Error("All XML proxies failed");
-}
-
-// Check for Houston teams
-function isHoustonTeam(teamName) {
-  if (!teamName) return false;
-  return HOUSTON_TEAMS.some(term => teamName.includes(term));
-}
-
-// ============ CORE LOGIC: SCORES ============
-async function getSportsData() {
-  if (useDefaultData) {
-    return DEFAULT_SCORES.map(item => ({
-      html: `<span class="league-badge ${item.badge}">${item.league}</span> ${item.game} ${item.status}`,
-      priority: item.game.includes("houston") ? 10 : 1
-    }));
-  }
+  // Build scores row
+  const scoresContainer = document.getElementById('scores-feed');
+  let scoresHTML = '';
   
-  const leagues = [
-    { code: "NFL", badge: "nfl", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
-    { code: "NBA", badge: "nba", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-    { code: "MLB", badge: "mlb", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
-    { code: "NHL", badge: "nhl", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
-    { code: "CFB", badge: "cfb", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
-    { code: "CBB", badge: "cbb", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" },
-    { code: "SOCCER", badge: "soccer", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard" }
-  ];
-
-  let gameItems = [];
-  let apiSuccess = false;
-  
-  for (const league of leagues) {
-    try {
-      const data = await getJsonData(league.url);
-      
-      if (!data || !data.events) continue;
-      
-      apiSuccess = true;
-      const events = data.events || [];
-      
-      // Process games (limited to 5 per league to keep ticker moving)
-      for (const event of events.slice(0, 5)) {
-        if (!event.competitions || !event.competitions[0]) continue;
-        
-        const game = event.competitions[0];
-        const gameState = event.status?.type?.state || "unknown"; // pre, in, post
-        const gameDetail = event.status?.type?.shortDetail || "";
-        
-        if (!game.competitors || game.competitors.length < 2) continue;
-        
-        const homeTeam = game.competitors.find(team => team.homeAway === "home") || game.competitors[0];
-        const awayTeam = game.competitors.find(team => team.homeAway === "away") || game.competitors[1];
-        
-        if (!homeTeam.team || !awayTeam.team) continue;
-        
-        // Team names with rankings
-        let homeName = homeTeam.team.abbreviation || homeTeam.team.shortDisplayName || "Home";
-        let awayName = awayTeam.team.abbreviation || awayTeam.team.shortDisplayName || "Away";
-        
-        const isHomeHouston = isHoustonTeam(homeTeam.team.displayName);
-        const isAwayHouston = isHoustonTeam(awayTeam.team.displayName);
-        
-        if (homeTeam.curatedRank && homeTeam.curatedRank.current <= 25) {
-          homeName = `#${homeTeam.curatedRank.current} ${homeName}`;
-        }
-        if (awayTeam.curatedRank && awayTeam.curatedRank.current <= 25) {
-          awayName = `#${awayTeam.curatedRank.current} ${awayName}`;
-        }
-        
-        const homeScore = homeTeam.score || "0";
-        const awayScore = awayTeam.score || "0";
-        
-        const homeNameHTML = isHomeHouston ? `<span class="houston">${homeName}</span>` : `<span class="team">${homeName}</span>`;
-        const awayNameHTML = isAwayHouston ? `<span class="houston">${awayName}</span>` : `<span class="team">${awayName}</span>`;
-        
-        let statusHTML = "";
-        let gameHTML = "";
-        
-        if (gameState === "in") {
-          statusHTML = `<span class="status live">LIVE</span>`;
-          gameHTML = `${awayNameHTML} <span class="score">${awayScore}</span> @ ${homeNameHTML} <span class="score">${homeScore}</span> ${gameDetail}`;
-        } else if (gameState === "post") {
-          statusHTML = `<span class="status final">FINAL</span>`;
-          gameHTML = `${awayNameHTML} <span class="score">${awayScore}</span> @ ${homeNameHTML} <span class="score">${homeScore}</span>`;
-        } else {
-          statusHTML = `<span class="status upcoming">${gameDetail}</span>`;
-          gameHTML = `${awayNameHTML} @ ${homeNameHTML}`;
-        }
-        
-        // Player Highlight Extraction
-        let playerHTML = "";
-        if ((gameState === "in" || gameState === "post") && game.leaders && game.leaders.length > 0) {
-            const statCategory = game.leaders[0];
-            if(statCategory.leaders && statCategory.leaders.length > 0) {
-                const topPlayer = statCategory.leaders[0];
-                if (topPlayer && topPlayer.athlete) {
-                    const playerName = topPlayer.athlete.shortName || topPlayer.athlete.displayName || "Player";
-                    const statValue = topPlayer.displayValue;
-                    const statType = statCategory.shortDisplayName || statCategory.displayName;
-                    playerHTML = `<span class="player-stat">⭐ ${playerName}: ${statValue} ${statType}</span>`;
-                }
-            }
-        }
-        
-        gameItems.push({
-          html: `<span class="league-badge ${league.badge}">${league.code}</span> ${gameHTML} ${statusHTML} ${playerHTML}`,
-          priority: (isHomeHouston || isAwayHouston) ? 10 : 1, 
-          status: gameState 
-        });
-      }
-    } catch (error) {
-      console.error(`Error getting ${league.code} data:`, error);
-    }
-  }
-  
-  if (gameItems.length === 0 && !apiSuccess) {
-    apiAttempts++;
-    if (apiAttempts >= MAX_ATTEMPTS) {
-      useDefaultData = true;
-      return DEFAULT_SCORES.map(item => ({
-        html: `<span class="league-badge ${item.badge}">${item.league}</span> ${item.game} ${item.status}`,
-        priority: item.game.includes("houston") ? 10 : 1
-      }));
-    } else {
-      throw new Error("No sports data available");
-    }
-  }
-  
-  // Sort: Houston teams first, then Live games
-  gameItems.sort((a, b) => {
-    if (a.priority !== b.priority) return b.priority - a.priority;
-    if (a.status !== b.status) {
-      if (a.status === "in") return -1;
-      if (b.status === "in") return 1;
-    }
-    return 0;
-  });
-  
-  return gameItems;
-}
-
-// ============ CORE LOGIC: NEWS ============
-async function getNewsData() {
-  if (useDefaultData) {
-    return DEFAULT_NEWS.map(item => ({
-      html: `<span class="league-badge ${item.badge}">NEWS</span> ${item.title}`,
-      priority: item.title.toLowerCase().includes("houston") ? 10 : 1
-    }));
-  }
-  
-  const newsSources = [
-    { name: "ESPN", url: "https://www.espn.com/espn/rss/news" },
-    { name: "NBA", url: "https://www.espn.com/espn/rss/nba/news" },
-    { name: "NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
-    { name: "MLB", url: "https://www.espn.com/espn/rss/mlb/news" }
-  ];
-
-  let newsItems = [];
-  const parser = new DOMParser();
-  
-  for (const source of newsSources) {
-    try {
-      const xmlText = await getXmlData(source.url);
-      if (!xmlText) continue;
-      
-      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-      const items = xmlDoc.querySelectorAll("item");
-      
-      // Take top 3 stories from each source
-      for (let i = 0; i < Math.min(items.length, 3); i++) {
-        const item = items[i];
-        const titleNode = item.querySelector("title");
-        if (!titleNode) continue;
-        
-        let title = titleNode.textContent;
-        // Clean up CDATA
-        title = title.replace("<![CDATA[", "").replace("]]>", "").trim();
-        
-        const isHouston = isHoustonTeam(title);
-        let formattedTitle = title;
-        
-        // Highlight Houston keywords
-        if (isHouston) {
-             HOUSTON_TEAMS.forEach(term => {
-                 const regex = new RegExp(`\\b${term}\\b`, 'gi');
-                 formattedTitle = formattedTitle.replace(regex, `<span class="houston">$&</span>`);
-             });
-        }
-
-        newsItems.push({
-          html: `<span class="league-badge news">NEWS</span> ${formattedTitle}`,
-          priority: isHouston ? 10 : 1
-        });
-      }
-    } catch (e) {
-      console.warn(`Failed to fetch news from ${source.name}`, e);
-    }
-  }
-  
-  if (newsItems.length === 0) {
-    return DEFAULT_NEWS.map(item => ({
-      html: `<span class="league-badge ${item.badge}">NEWS</span> ${item.title}`,
-      priority: item.title.toLowerCase().includes("houston") ? 10 : 1
-    }));
-  }
-  
-  // Shuffle standard items, keep Priority (Houston) items at top
-  const priorityItems = newsItems.filter(i => i.priority > 1);
-  const standardItems = newsItems.filter(i => i.priority === 1).sort(() => Math.random() - 0.5);
-  
-  return [...priorityItems, ...standardItems];
-}
-
-// ============ DOM MANIPULATION ============
-function populateTicker(elementId, items) {
-  const container = document.getElementById(elementId);
-  if (!container) return;
-  
-  container.innerHTML = ""; 
-  
-  let contentHTML = "";
-  items.forEach((item, index) => {
-    contentHTML += `<div class="ticker-item">${item.html}</div>`;
-    if (index < items.length - 1) {
-      contentHTML += `<div class="dot"></div>`;
+  DEFAULT_SCORES.forEach((item, index) => {
+    scoresHTML += `<div class="ticker-item">
+      <span class="league-badge ${item.badge}">${item.league}</span>
+      ${item.game} ${item.status}
+    </div>`;
+    
+    // Add separator dot except for last item
+    if (index < DEFAULT_SCORES.length - 1) {
+      scoresHTML += '<span class="dot"></span>';
     }
   });
   
-  // Inject
-  container.innerHTML = contentHTML;
+  scoresContainer.innerHTML = scoresHTML;
   
-  // Duplicate for seamless scroll
-  if (items.length > 0) {
-      const separator = `<div class="dot"></div>`;
-      container.innerHTML += separator + contentHTML;
-  }
+  // Build news row
+  const newsContainer = document.getElementById('news-feed');
+  let newsHTML = '';
+  
+  DEFAULT_NEWS.forEach((item, index) => {
+    newsHTML += `<div class="ticker-item">
+      <span class="league-badge ${item.badge}">NEWS</span>
+      ${item.title}
+    </div>`;
+    
+    // Add separator dot except for last item
+    if (index < DEFAULT_NEWS.length - 1) {
+      newsHTML += '<span class="dot"></span>';
+    }
+  });
+  
+  newsContainer.innerHTML = newsHTML;
+  
+  // Reset animations for smooth scrolling
+  scoresContainer.style.animation = 'none';
+  newsContainer.style.animation = 'none';
+  
+  // Force reflow
+  void scoresContainer.offsetWidth;
+  void newsContainer.offsetWidth;
+  
+  // Restart animations
+  scoresContainer.style.animation = 'scroll-ticker 35s linear infinite';
+  newsContainer.style.animation = 'scroll-ticker 40s linear infinite';
 }
 
-// ============ INITIALIZATION ============
-async function initTicker() {
-  const loading = document.getElementById('loading');
-  
-  try {
-    // Fetch both concurrently
-    const [scores, news] = await Promise.all([
-      getSportsData(),
-      getNewsData()
-    ]);
-    
-    populateTicker('scores-feed', scores);
-    populateTicker('news-feed', news);
-    
-    if (loading) loading.style.display = 'none';
-    
-  } catch (error) {
-    console.error("Initialization error, using defaults:", error);
-    useDefaultData = true;
-    const scores = await getSportsData();
-    const news = await getNewsData();
-    populateTicker('scores-feed', scores);
-    populateTicker('news-feed', news);
-    if (loading) loading.style.display = 'none';
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  initTicker();
-  setInterval(initTicker, REFRESH_INTERVAL);
+// Initialize ticker
+document.addEventListener('DOMContentLoaded', function() {
+  // Small delay to ensure everything is loaded
+  setTimeout(buildTicker, 500);
 });
 
+// Refresh ticker periodically
+setInterval(buildTicker, 60000); // Refresh every minute
 </script>
 </body>
 </html>
