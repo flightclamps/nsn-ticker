@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>COSMIC SPORTS FEED</title>
+<title>COSMIC SPORTS TICKER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+  /* --- BASE STYLES --- */
   body, html {
     margin: 0;
     padding: 0;
@@ -15,8 +16,8 @@
     background: #000;
   }
 
-  /* Galaxy Background */
-  .universe {
+  /* --- SPACE BACKGROUND ANIMATIONS --- */
+  .galaxy-bg {
     position: fixed;
     width: 100%;
     height: 100%;
@@ -25,7 +26,7 @@
     z-index: 1;
   }
   
-  .starfield {
+  .stars {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -50,7 +51,7 @@
     100% { opacity: 0.6; }
   }
   
-  .cosmic-dust {
+  .nebula {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -68,8 +69,8 @@
     100% { background-position: 100% 100%; }
   }
   
-  /* Orbital Planet */
-  .celestial-body {
+  /* Planet */
+  .planet {
     position: absolute;
     width: 70px;
     height: 70px;
@@ -104,7 +105,7 @@
   }
   
   /* Shooting Stars */
-  .meteor {
+  .shooting-star {
     position: absolute;
     width: 200px;
     height: 1px;
@@ -113,7 +114,7 @@
     opacity: 0;
   }
   
-  .meteor:before {
+  .shooting-star:before {
     content: '';
     position: absolute;
     width: 100%;
@@ -122,21 +123,21 @@
     filter: blur(1px);
   }
   
-  .meteor:nth-child(1) {
+  .shooting-star:nth-child(1) {
     top: 15%;
     left: 20%;
     animation: shoot 6s linear infinite;
     animation-delay: 0s;
   }
   
-  .meteor:nth-child(2) {
+  .shooting-star:nth-child(2) {
     top: 50%;
     left: 40%;
     animation: shoot 8s linear infinite;
     animation-delay: 3s;
   }
   
-  .meteor:nth-child(3) {
+  .shooting-star:nth-child(3) {
     top: 30%;
     left: 60%;
     animation: shoot 5s linear infinite;
@@ -150,8 +151,8 @@
     100% { opacity: 0; }
   }
 
-  /* Ticker Container */
-  .sports-feed {
+  /* --- TICKER CONTAINER --- */
+  .sports-ticker {
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -161,8 +162,8 @@
     box-shadow: 0 -5px 25px rgba(0,100,255,0.4);
   }
 
-  /* Branding Section */
-  .branding {
+  /* --- LEFT: LOGO SECTION --- */
+  .ticker-logo {
     width: 180px;
     min-width: 180px;
     height: 100%;
@@ -176,7 +177,7 @@
     z-index: 12;
   }
   
-  .brand-title {
+  .title {
     font-family: 'Orbitron', sans-serif;
     font-size: 28px;
     font-weight: 900;
@@ -199,7 +200,7 @@
     50% { border-color: #00eeff }
   }
   
-  .brand-subtitle {
+  .tagline {
     font-size: 11px;
     color: #00ccff;
     font-weight: 600;
@@ -207,15 +208,15 @@
     margin-top: 6px;
   }
 
-  /* Two-Row Content Area */
-  .content-area {
+  /* --- CENTER: CONTENT AREA --- */
+  .ticker-content {
     flex: 1;
     height: 100%;
     position: relative;
     background: rgba(0,5,20,0.85);
   }
   
-  .dual-rows {
+  .ticker-rows {
     position: absolute;
     top: 0;
     left: 0;
@@ -225,7 +226,7 @@
     flex-direction: column;
   }
   
-  .feed-row {
+  .ticker-row {
     height: 50%;
     width: 100%;
     display: flex;
@@ -234,11 +235,11 @@
     position: relative;
   }
   
-  .feed-row:first-child {
+  .ticker-row:first-child {
     border-bottom: 1px solid #0077ee;
   }
   
-  .scrolling-content {
+  .scrolling-items {
     position: absolute;
     display: flex;
     align-items: center;
@@ -247,20 +248,20 @@
     height: 100%;
   }
   
-  .top-feed {
-    animation: scroll-content 35s linear infinite;
+  .scores-feed {
+    animation: scroll-ticker 35s linear infinite;
   }
   
-  .bottom-feed {
-    animation: scroll-content 40s linear infinite;
+  .news-feed {
+    animation: scroll-ticker 40s linear infinite;
   }
   
-  @keyframes scroll-content {
+  @keyframes scroll-ticker {
     0% { transform: translateX(100%); }
     100% { transform: translateX(-100%); }
   }
   
-  .info-segment {
+  .ticker-item {
     display: flex;
     align-items: center;
     margin-right: 40px;
@@ -270,8 +271,8 @@
     padding: 0 5px;
   }
   
-  /* Category Badges */
-  .category-badge {
+  /* League Labels */
+  .league-badge {
     background-color: #0077ee;
     color: white;
     font-weight: 700;
@@ -281,15 +282,25 @@
     text-transform: uppercase;
   }
   
+  /* Sport-specific colors */
+  .nfl { background-color: #013369; }
+  .nba { background-color: #C9082A; }
+  .mlb { background-color: #041E42; }
+  .nhl { background-color: #000000; border: 1px solid #ccc; }
+  .soccer { background-color: #1EB53A; }
+  .cfb { background-color: #7B6545; }
+  .cbb { background-color: #4B328F; }
+  .news { background-color: #7D3C98; }
+  
   /* Houston Highlight */
-  .houston-highlight {
+  .houston {
     color: #ff5500;
     font-weight: 700;
     text-shadow: 0 0 8px rgba(255,85,0,0.4);
   }
   
-  /* Game Status Indicators */
-  .game-status {
+  /* Game Status */
+  .status {
     font-size: 11px;
     font-weight: 700;
     padding: 2px 6px;
@@ -297,7 +308,7 @@
     text-transform: uppercase;
   }
   
-  .live-now {
+  .live {
     background-color: #ff0000;
     color: white;
     animation: pulse 1.5s infinite;
@@ -309,18 +320,23 @@
     100% { opacity: 1; }
   }
   
-  .concluded {
+  .final {
     background-color: #333333;
     color: white;
   }
   
-  /* Text Formatting */
+  .upcoming {
+    background-color: #555555;
+    color: white;
+  }
+  
+  /* Text Styles */
   .team { font-weight: 700; }
-  .points { font-weight: 700; margin: 0 4px; }
-  .player-highlight { color: #00eeff; margin-left: 10px; font-size: 15px; }
+  .score { font-weight: 700; margin: 0 4px; }
+  .player-stat { color: #00eeff; margin-left: 10px; font-size: 15px; }
   
   /* Separator Dot */
-  .divider {
+  .dot {
     width: 4px;
     height: 4px;
     background-color: #0077ee;
@@ -329,8 +345,8 @@
     display: inline-block;
   }
   
-  /* Time Display */
-  .time-display {
+  /* --- RIGHT: CLOCK SECTION --- */
+  .ticker-clock {
     width: 110px;
     min-width: 110px;
     height: 100%;
@@ -344,7 +360,7 @@
     z-index: 12;
   }
   
-  #current-time {
+  #time {
     font-family: 'Orbitron', sans-serif;
     font-size: 22px;
     font-weight: 700;
@@ -352,7 +368,7 @@
     text-shadow: 0 0 10px #0077ee;
   }
   
-  #current-date {
+  #date {
     font-size: 12px;
     color: #00ccff;
     font-weight: 600;
@@ -361,7 +377,7 @@
   }
   
   /* Loading Indicator */
-  .data-loading {
+  .loading {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -372,7 +388,7 @@
     z-index: 100;
   }
   
-  .data-loading:after {
+  .loading:after {
     content: '';
     animation: loading-dots 1.5s steps(4, end) infinite;
   }
@@ -388,120 +404,105 @@
 
 <body>
 
-<!-- Space Background -->
-<div class="universe">
-  <div class="starfield"></div>
-  <div class="cosmic-dust"></div>
-  <div class="celestial-body"><div class="ring"></div></div>
-  <div class="meteor"></div>
-  <div class="meteor"></div>
-  <div class="meteor"></div>
+<div class="galaxy-bg">
+  <div class="stars"></div>
+  <div class="nebula"></div>
+  <div class="planet"><div class="ring"></div></div>
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
 </div>
 
-<!-- Sports Ticker -->
-<div class="sports-feed">
+<div class="sports-ticker">
   
-  <!-- Logo Section -->
-  <div class="branding">
-    <div class="brand-title">NSN SPORTS</div>
-    <div class="brand-subtitle">Powered by NotSoCj⭐️</div>
+  <div class="ticker-logo">
+    <div class="title">NSN SPORTS</div>
+    <div class="tagline">Powered by NotSoCj⭐️</div>
   </div>
   
-  <!-- Main Content Area -->
-  <div class="content-area">
-    <div class="dual-rows">
-      <!-- Top Row - Scores -->
-      <div class="feed-row">
-        <div class="scrolling-content top-feed" id="scores-feed">
-          <div class="info-segment">
-            <span class="category-badge">NBA</span> 
-            <span class="houston-highlight">Rockets</span> <span class="points">112</span> @ 
-            <span class="team">Lakers</span> <span class="points">108</span> 
-            <span class="game-status concluded">FINAL</span>
+  <div class="ticker-content">
+    <div class="ticker-rows">
+      <div class="ticker-row">
+        <div class="scrolling-items scores-feed" id="scores-feed">
           </div>
-        </div>
       </div>
       
-      <!-- Bottom Row - News -->
-      <div class="feed-row">
-        <div class="scrolling-content bottom-feed" id="news-feed">
-          <div class="info-segment">
-            <span class="category-badge">NEWS</span> 
-            <span class="houston-highlight">Rockets</span> rookie impresses in debut with double-double
+      <div class="ticker-row">
+        <div class="scrolling-items news-feed" id="news-feed">
           </div>
-        </div>
       </div>
     </div>
-    <div id="loading-indicator" class="data-loading">Connecting to sports networks</div>
+    <div id="loading" class="loading">Loading sports data</div>
   </div>
   
-  <!-- Time Display -->
-  <div class="time-display">
-    <div id="current-time">--:--</div>
-    <div id="current-date">--/--</div>
+  <div class="ticker-clock">
+    <div id="time">--:--</div>
+    <div id="date">--/--</div>
   </div>
   
 </div>
 
 <script>
-// Configuration
-const PROXY_OPTIONS = [
+// ============ CONFIGURATION & CONSTANTS ============
+const PROXIES = [
   "https://corsproxy.io/?",
   "https://api.allorigins.win/raw?url=",
   "https://cors-anywhere.herokuapp.com/",
   "https://thingproxy.freeboard.io/fetch/"
 ];
 
-const DATA_REFRESH_INTERVAL = 60000; // 1 minute
-const HOUSTON_KEYWORDS = [
+const REFRESH_INTERVAL = 60000; // 1 minute
+const HOUSTON_TEAMS = [
   "HOU", "Rockets", "Texans", "Astros", "Dynamo", "Dash", "Cougars", "Owls", "Houston"
 ];
 
-// Default data if APIs fail
-const BACKUP_SCORES = [
-  { league: "NBA", game: "<span class=\"houston-highlight\">Rockets</span> 112 @ <span class=\"team\">Lakers</span> 108", status: "<span class=\"game-status concluded\">FINAL</span>" },
-  { league: "NFL", game: "<span class=\"houston-highlight\">Texans</span> 24 @ <span class=\"team\">Cowboys</span> 21", status: "<span class=\"game-status concluded\">FINAL</span>" },
-  { league: "MLB", game: "<span class=\"team\">Yankees</span> 3 @ <span class=\"houston-highlight\">Astros</span> 5", status: "<span class=\"game-status concluded\">FINAL</span>" },
-  { league: "NHL", game: "<span class=\"team\">Bruins</span> 2 @ <span class=\"team\">Stars</span> 3", status: "<span class=\"game-status concluded\">FINAL</span>" },
-  { league: "NBA", game: "<span class=\"team\">Celtics</span> 118 @ <span class=\"team\">Bucks</span> 109", status: "<span class=\"game-status live-now\">LIVE</span>" }
+// Default data in case APIs fail completely
+const DEFAULT_SCORES = [
+  { league: "NBA", badge: "nba", game: "<span class=\"team\">Warriors</span> <span class=\"score\">105</span> @ <span class=\"team\">Lakers</span> <span class=\"score\">112</span>", status: "<span class=\"status final\">FINAL</span>" },
+  { league: "NFL", badge: "nfl", game: "<span class=\"houston\">Texans</span> <span class=\"score\">24</span> @ <span class=\"team\">Cowboys</span> <span class=\"score\">21</span>", status: "<span class=\"status final\">FINAL</span>" },
+  { league: "MLB", badge: "mlb", game: "<span class=\"team\">Yankees</span> <span class=\"score\">3</span> @ <span class=\"houston\">Astros</span> <span class=\"score\">5</span>", status: "<span class=\"status final\">FINAL</span>" },
+  { league: "NHL", badge: "nhl", game: "<span class=\"team\">Bruins</span> <span class=\"score\">2</span> @ <span class=\"team\">Stars</span> <span class=\"score\">3</span>", status: "<span class=\"status final\">FINAL</span>" },
+  { league: "NBA", badge: "nba", game: "<span class=\"houston\">Rockets</span> <span class=\"score\">118</span> @ <span class=\"team\">Spurs</span> <span class=\"score\">109</span>", status: "<span class=\"status live\">LIVE</span>" },
+  { league: "CFB", badge: "cfb", game: "<span class=\"team\">Alabama</span> <span class=\"score\">35</span> @ <span class=\"team\">Georgia</span> <span class=\"score\">28</span>", status: "<span class=\"status final\">FINAL</span>" },
+  { league: "SOCCER", badge: "soccer", game: "<span class=\"team\">Man United</span> <span class=\"score\">2</span> @ <span class=\"team\">Liverpool</span> <span class=\"score\">1</span>", status: "<span class=\"status final\">FINAL</span>" }
 ];
 
-const BACKUP_NEWS = [
-  { title: "<span class=\"houston-highlight\">Rockets</span> rookie impresses in debut with double-double" },
-  { title: "NFL playoff race heats up as Week 12 approaches" },
-  { title: "<span class=\"houston-highlight\">Astros</span> sign top free agent pitcher to 5-year deal" },
-  { title: "NBA considering new tournament format for upcoming season" }
+const DEFAULT_NEWS = [
+  { badge: "news", title: "<span class=\"houston\">Rockets</span> rookie impresses in debut with double-double" },
+  { badge: "news", title: "NFL playoff race heats up as Week 12 approaches" },
+  { badge: "news", title: "Lakers and Celtics renew historic rivalry with Christmas Day matchup" },
+  { badge: "news", title: "<span class=\"houston\">Astros</span> sign top free agent pitcher to 5-year deal" },
+  { badge: "news", title: "NFL considering expansion to 18-game regular season" },
+  { badge: "news", title: "College Football Playoff committee releases first rankings" }
 ];
 
-let apiFailCount = 0;
-const MAX_API_ATTEMPTS = 3;
-let useBackupData = false;
+let apiAttempts = 0;
+const MAX_ATTEMPTS = 3;
+let useDefaultData = false;
 
-// Clock Functions
-function updateTimeDisplay() {
+// ============ CLOCK LOGIC ============
+function updateClock() {
   const now = new Date();
   const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   const dateString = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  document.getElementById('current-time').textContent = timeString;
-  document.getElementById('current-date').textContent = dateString.toUpperCase();
+  document.getElementById('time').textContent = timeString;
+  document.getElementById('date').textContent = dateString.toUpperCase();
 }
 
 // Initialize clock
-updateTimeDisplay();
-setInterval(updateTimeDisplay, 1000);
+updateClock();
+setInterval(updateClock, 1000);
 
-// Reset typewriter effect
-function resetTypewriterEffect() {
-  const title = document.querySelector('.brand-title');
+// Reset typewriter effect periodically to make it look alive
+function resetTypewriter() {
+  const title = document.querySelector('.title');
   title.style.animation = 'none';
   void title.offsetWidth; // Force reflow
   title.style.animation = 'type-effect 3s steps(10) forwards, cursor-blink 0.7s step-end infinite';
 }
+setInterval(resetTypewriter, 10000);
 
-// Reset typewriter periodically
-setInterval(resetTypewriterEffect, 10000);
-
-// API Functions
+// ============ DATA FETCHING UTILITIES ============
 async function fetchWithTimeout(url, options = {}, timeout = 5000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -519,92 +520,80 @@ async function fetchWithTimeout(url, options = {}, timeout = 5000) {
   }
 }
 
-async function fetchAPIData(url) {
+async function getJsonData(url) {
   // Try each proxy until one works
-  for (let i = 0; i < PROXY_OPTIONS.length; i++) {
+  for (let i = 0; i < PROXIES.length; i++) {
     try {
-      const proxy = PROXY_OPTIONS[i];
-      console.log(`Trying proxy ${i+1}: ${proxy}`);
-      
+      const proxy = PROXIES[i];
       const response = await fetchWithTimeout(proxy + encodeURIComponent(url), {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
       });
       
       if (response.ok) {
-        const data = await response.json();
-        console.log("API fetch successful");
-        return data;
+        return await response.json();
       }
     } catch (error) {
       console.warn(`Proxy ${i+1} failed:`, error.message);
     }
   }
-  
   throw new Error("All proxies failed");
 }
 
-async function fetchRSSFeed(url) {
-  // Try each proxy until one works
-  for (let i = 0; i < PROXY_OPTIONS.length; i++) {
+async function getXmlData(url) {
+  for (let i = 0; i < PROXIES.length; i++) {
     try {
-      const proxy = PROXY_OPTIONS[i];
+      const proxy = PROXIES[i];
       const response = await fetchWithTimeout(proxy + encodeURIComponent(url), {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
       });
-      
       if (response.ok) {
         return await response.text();
       }
     } catch (error) {
-      console.warn(`RSS proxy ${i+1} failed:`, error.message);
+      console.warn(`XML proxy ${i+1} failed:`, error.message);
     }
   }
-  
-  throw new Error("All RSS proxies failed");
+  throw new Error("All XML proxies failed");
 }
 
 // Check for Houston teams
-function isHoustonRelated(text) {
-  if (!text) return false;
-  return HOUSTON_KEYWORDS.some(term => text.includes(term));
+function isHoustonTeam(teamName) {
+  if (!teamName) return false;
+  return HOUSTON_TEAMS.some(term => teamName.includes(term));
 }
 
-// Get Sports Data
-async function getSportsScores() {
-  if (useBackupData) {
-    return BACKUP_SCORES.map(item => ({
-      html: `<span class="category-badge">${item.league}</span> ${item.game} ${item.status}`,
+// ============ CORE LOGIC: SCORES ============
+async function getSportsData() {
+  if (useDefaultData) {
+    return DEFAULT_SCORES.map(item => ({
+      html: `<span class="league-badge ${item.badge}">${item.league}</span> ${item.game} ${item.status}`,
       priority: item.game.includes("houston") ? 10 : 1
     }));
   }
   
   const leagues = [
-    { code: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
-    { code: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-    { code: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
-    { code: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
-    { code: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
-    { code: "CBB", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" }
+    { code: "NFL", badge: "nfl", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+    { code: "NBA", badge: "nba", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
+    { code: "MLB", badge: "mlb", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
+    { code: "NHL", badge: "nhl", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
+    { code: "CFB", badge: "cfb", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
+    { code: "CBB", badge: "cbb", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" },
+    { code: "SOCCER", badge: "soccer", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard" }
   ];
 
-  let scoreItems = [];
-  let apiSuccessful = false;
+  let gameItems = [];
+  let apiSuccess = false;
   
   for (const league of leagues) {
     try {
-      console.log(`Fetching ${league.code} scores...`);
-      const data = await fetchAPIData(league.url);
+      const data = await getJsonData(league.url);
       
-      if (!data || !data.events) {
-        console.warn(`No ${league.code} events found`);
-        continue;
-      }
+      if (!data || !data.events) continue;
       
-      apiSuccessful = true;
+      apiSuccess = true;
       const events = data.events || [];
-      console.log(`Found ${events.length} ${league.code} events`);
       
-      // Process games (limited to 5 per league)
+      // Process games (limited to 5 per league to keep ticker moving)
       for (const event of events.slice(0, 5)) {
         if (!event.competitions || !event.competitions[0]) continue;
         
@@ -623,14 +612,12 @@ async function getSportsScores() {
         let homeName = homeTeam.team.abbreviation || homeTeam.team.shortDisplayName || "Home";
         let awayName = awayTeam.team.abbreviation || awayTeam.team.shortDisplayName || "Away";
         
-        // Check for Houston teams
-        const isHomeHouston = isHoustonRelated(homeTeam.team.displayName);
-        const isAwayHouston = isHoustonRelated(awayTeam.team.displayName);
+        const isHomeHouston = isHoustonTeam(homeTeam.team.displayName);
+        const isAwayHouston = isHoustonTeam(awayTeam.team.displayName);
         
         if (homeTeam.curatedRank && homeTeam.curatedRank.current <= 25) {
           homeName = `#${homeTeam.curatedRank.current} ${homeName}`;
         }
-        
         if (awayTeam.curatedRank && awayTeam.curatedRank.current <= 25) {
           awayName = `#${awayTeam.curatedRank.current} ${awayName}`;
         }
@@ -638,48 +625,42 @@ async function getSportsScores() {
         const homeScore = homeTeam.score || "0";
         const awayScore = awayTeam.score || "0";
         
-        // Format team names with Houston highlight
-        const homeNameHTML = isHomeHouston ? 
-          `<span class="houston-highlight">${homeName}</span>` : 
-          `<span class="team">${homeName}</span>`;
-          
-        const awayNameHTML = isAwayHouston ? 
-          `<span class="houston-highlight">${awayName}</span>` : 
-          `<span class="team">${awayName}</span>`;
+        const homeNameHTML = isHomeHouston ? `<span class="houston">${homeName}</span>` : `<span class="team">${homeName}</span>`;
+        const awayNameHTML = isAwayHouston ? `<span class="houston">${awayName}</span>` : `<span class="team">${awayName}</span>`;
         
-        // Game status and format
         let statusHTML = "";
         let gameHTML = "";
         
         if (gameState === "in") {
-          statusHTML = `<span class="game-status live-now">LIVE</span>`;
-          gameHTML = `${awayNameHTML} <span class="points">${awayScore}</span> @ ${homeNameHTML} <span class="points">${homeScore}</span> ${gameDetail}`;
+          statusHTML = `<span class="status live">LIVE</span>`;
+          gameHTML = `${awayNameHTML} <span class="score">${awayScore}</span> @ ${homeNameHTML} <span class="score">${homeScore}</span> ${gameDetail}`;
         } else if (gameState === "post") {
-          statusHTML = `<span class="game-status concluded">FINAL</span>`;
-          gameHTML = `${awayNameHTML} <span class="points">${awayScore}</span> @ ${homeNameHTML} <span class="points">${homeScore}</span>`;
+          statusHTML = `<span class="status final">FINAL</span>`;
+          gameHTML = `${awayNameHTML} <span class="score">${awayScore}</span> @ ${homeNameHTML} <span class="score">${homeScore}</span>`;
         } else {
-          gameHTML = `${awayNameHTML} @ ${homeNameHTML} ${gameDetail}`;
+          statusHTML = `<span class="status upcoming">${gameDetail}</span>`;
+          gameHTML = `${awayNameHTML} @ ${homeNameHTML}`;
         }
         
-        // Player highlights for in-progress or completed games
+        // Player Highlight Extraction
         let playerHTML = "";
-        if ((gameState === "in" || gameState === "post") && game.leaders && game.leaders.length > 0 && game.leaders[0].leaders && game.leaders[0].leaders.length > 0) {
-          const statCategory = game.leaders[0];
-          const topPerformer = statCategory.leaders[0];
-          if (topPerformer && topPerformer.athlete) {
-            const playerName = topPerformer.athlete.shortName || topPerformer.athlete.displayName || "Player";
-            const statValue = topPerformer.displayValue;
-            const statType = statCategory.shortDisplayName || statCategory.displayName;
-            
-            playerHTML = `<span class="player-highlight">⭐ ${playerName}: ${statValue} ${statType}</span>`;
-          }
+        if ((gameState === "in" || gameState === "post") && game.leaders && game.leaders.length > 0) {
+            const statCategory = game.leaders[0];
+            if(statCategory.leaders && statCategory.leaders.length > 0) {
+                const topPlayer = statCategory.leaders[0];
+                if (topPlayer && topPlayer.athlete) {
+                    const playerName = topPlayer.athlete.shortName || topPlayer.athlete.displayName || "Player";
+                    const statValue = topPlayer.displayValue;
+                    const statType = statCategory.shortDisplayName || statCategory.displayName;
+                    playerHTML = `<span class="player-stat">⭐ ${playerName}: ${statValue} ${statType}</span>`;
+                }
+            }
         }
         
-        // Add to items collection
-        scoreItems.push({
-          html: `<span class="category-badge">${league.code}</span> ${gameHTML} ${statusHTML} ${playerHTML}`,
-          priority: (isHomeHouston || isAwayHouston) ? 10 : 1, // Houston teams get priority
-          status: gameState // For sorting by game state
+        gameItems.push({
+          html: `<span class="league-badge ${league.badge}">${league.code}</span> ${gameHTML} ${statusHTML} ${playerHTML}`,
+          priority: (isHomeHouston || isAwayHouston) ? 10 : 1, 
+          status: gameState 
         });
       }
     } catch (error) {
@@ -687,15 +668,12 @@ async function getSportsScores() {
     }
   }
   
-  if (scoreItems.length === 0 && !apiSuccessful) {
-    console.warn("All API calls failed, using backup data");
-    apiFailCount++;
-    
-    if (apiFailCount >= MAX_API_ATTEMPTS) {
-      console.log("Maximum API attempts reached, switching to backup data");
-      useBackupData = true;
-      return BACKUP_SCORES.map(item => ({
-        html: `<span class="category-badge">${item.league}</span> ${item.game} ${item.status}`,
+  if (gameItems.length === 0 && !apiSuccess) {
+    apiAttempts++;
+    if (apiAttempts >= MAX_ATTEMPTS) {
+      useDefaultData = true;
+      return DEFAULT_SCORES.map(item => ({
+        html: `<span class="league-badge ${item.badge}">${item.league}</span> ${item.game} ${item.status}`,
         priority: item.game.includes("houston") ? 10 : 1
       }));
     } else {
@@ -703,73 +681,148 @@ async function getSportsScores() {
     }
   }
   
-  // Sort: Houston teams first, then live games, then upcoming, then completed
-  scoreItems.sort((a, b) => {
-    // Houston priority
+  // Sort: Houston teams first, then Live games
+  gameItems.sort((a, b) => {
     if (a.priority !== b.priority) return b.priority - a.priority;
-    
-    // Game status priority
     if (a.status !== b.status) {
       if (a.status === "in") return -1;
       if (b.status === "in") return 1;
-      if (a.status === "pre") return -1;
-      if (b.status === "pre") return 1;
     }
-    
     return 0;
   });
   
-  return scoreItems;
+  return gameItems;
 }
 
-// Get News Data
-async function getSportsNews() {
-  if (useBackupData) {
-    return BACKUP_NEWS.map(item => ({
-      html: `<span class="category-badge">NEWS</span> ${item.title}`,
+// ============ CORE LOGIC: NEWS ============
+async function getNewsData() {
+  if (useDefaultData) {
+    return DEFAULT_NEWS.map(item => ({
+      html: `<span class="league-badge ${item.badge}">NEWS</span> ${item.title}`,
       priority: item.title.toLowerCase().includes("houston") ? 10 : 1
     }));
   }
   
   const newsSources = [
     { name: "ESPN", url: "https://www.espn.com/espn/rss/news" },
-    { name: "CBS Sports", url: "https://www.cbssports.com/rss/headlines/" }
+    { name: "NBA", url: "https://www.espn.com/espn/rss/nba/news" },
+    { name: "NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
+    { name: "MLB", url: "https://www.espn.com/espn/rss/mlb/news" }
   ];
-  
+
   let newsItems = [];
-  let apiSuccessful = false;
   const parser = new DOMParser();
   
   for (const source of newsSources) {
     try {
-      console.log(`Fetching news from ${source.name}...`);
-      const xmlData = await fetchRSSFeed(source.url);
+      const xmlText = await getXmlData(source.url);
+      if (!xmlText) continue;
       
-      if (!xmlData) {
-        console.warn(`No data from ${source.name}`);
-        continue;
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+      const items = xmlDoc.querySelectorAll("item");
+      
+      // Take top 3 stories from each source
+      for (let i = 0; i < Math.min(items.length, 3); i++) {
+        const item = items[i];
+        const titleNode = item.querySelector("title");
+        if (!titleNode) continue;
+        
+        let title = titleNode.textContent;
+        // Clean up CDATA
+        title = title.replace("<![CDATA[", "").replace("]]>", "").trim();
+        
+        const isHouston = isHoustonTeam(title);
+        let formattedTitle = title;
+        
+        // Highlight Houston keywords
+        if (isHouston) {
+             HOUSTON_TEAMS.forEach(term => {
+                 const regex = new RegExp(`\\b${term}\\b`, 'gi');
+                 formattedTitle = formattedTitle.replace(regex, `<span class="houston">$&</span>`);
+             });
+        }
+
+        newsItems.push({
+          html: `<span class="league-badge news">NEWS</span> ${formattedTitle}`,
+          priority: isHouston ? 10 : 1
+        });
       }
-      
-      apiSuccessful = true;
-      const xml = parser.parseFromString(xmlData, "text/xml");
-      const items = Array.from(xml.querySelectorAll("item")).slice(0, 3);
-      console.log(`Found ${items.length} news items from ${source.name}`);
-      
-      for (const item of items) {
-        const headline = item.querySelector("title")?.textContent.replace("<![CDATA[", "").replace("]]>", "") || "";
-        if (headline) {
-          // Check if news mentions Houston teams
-          const isHoustonNews = HOUSTON_KEYWORDS.some(term => headline.includes(term));
-          
-          // Format headline with Houston highlighting
-          let formattedHeadline = headline;
-          HOUSTON_KEYWORDS.forEach(term => {
-            if (headline.includes(term)) {
-              formattedHeadline = formattedHeadline.replace(
-                new RegExp(term, 'g'), 
-                `<span class="houston-highlight">${term}</span>`
-              );
-            }
-          });
-          
-          news
+    } catch (e) {
+      console.warn(`Failed to fetch news from ${source.name}`, e);
+    }
+  }
+  
+  if (newsItems.length === 0) {
+    return DEFAULT_NEWS.map(item => ({
+      html: `<span class="league-badge ${item.badge}">NEWS</span> ${item.title}`,
+      priority: item.title.toLowerCase().includes("houston") ? 10 : 1
+    }));
+  }
+  
+  // Shuffle standard items, keep Priority (Houston) items at top
+  const priorityItems = newsItems.filter(i => i.priority > 1);
+  const standardItems = newsItems.filter(i => i.priority === 1).sort(() => Math.random() - 0.5);
+  
+  return [...priorityItems, ...standardItems];
+}
+
+// ============ DOM MANIPULATION ============
+function populateTicker(elementId, items) {
+  const container = document.getElementById(elementId);
+  if (!container) return;
+  
+  container.innerHTML = ""; 
+  
+  let contentHTML = "";
+  items.forEach((item, index) => {
+    contentHTML += `<div class="ticker-item">${item.html}</div>`;
+    if (index < items.length - 1) {
+      contentHTML += `<div class="dot"></div>`;
+    }
+  });
+  
+  // Inject
+  container.innerHTML = contentHTML;
+  
+  // Duplicate for seamless scroll
+  if (items.length > 0) {
+      const separator = `<div class="dot"></div>`;
+      container.innerHTML += separator + contentHTML;
+  }
+}
+
+// ============ INITIALIZATION ============
+async function initTicker() {
+  const loading = document.getElementById('loading');
+  
+  try {
+    // Fetch both concurrently
+    const [scores, news] = await Promise.all([
+      getSportsData(),
+      getNewsData()
+    ]);
+    
+    populateTicker('scores-feed', scores);
+    populateTicker('news-feed', news);
+    
+    if (loading) loading.style.display = 'none';
+    
+  } catch (error) {
+    console.error("Initialization error, using defaults:", error);
+    useDefaultData = true;
+    const scores = await getSportsData();
+    const news = await getNewsData();
+    populateTicker('scores-feed', scores);
+    populateTicker('news-feed', news);
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initTicker();
+  setInterval(initTicker, REFRESH_INTERVAL);
+});
+
+</script>
+</body>
+</html>
