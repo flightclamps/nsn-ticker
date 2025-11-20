@@ -1,24 +1,393 @@
-// 1. Expanded Top Performer Helper with Box Score data
-async function getTopPerformerWithBoxScore(event) {
-  // Safety checks
-  if (!event || !event.id) return "";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NSN Broadcast Ticker - CYBER EDITION</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  /* --- CORE SETUP --- */
+  body {
+    margin: 0;
+    background: transparent; /* Transparent for OBS */
+    overflow: hidden;
+    font-family: 'Inter', 'Roboto', sans-serif;
+  }
+
+  /* --- THE "ALIVE" OVERLAYS (Scanlines & Vignette) --- */
+  .broadcast-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+    background: 
+      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+      linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 6px 100%;
+    mix-blend-mode: overlay;
+  }
+
+  /* --- MAIN BAR CONTAINER --- */
+  .nsn-bar {
+    width: 100vw;
+    height: 56px; 
+    background: #050505;
+    border-top: 2px solid #00E5FF; 
+    border-bottom: 2px solid #00E5FF; 
+    display: flex;
+    align-items: center;
+    position: relative; 
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+    overflow: hidden;
+  }
+
+  /* --- LEFT: LOGO WITH GLITCH EFFECT --- */
+  .nsn-logo {
+    width: 150px; 
+    min-width: 150px;
+    height: 100%;
+    background: #000;
+    border-right: 2px solid #333; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;     
+    z-index: 50; 
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* The Red/Black Gradient Background for Logo */
+  .logo-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #D50000, #000);
+    z-index: 1;
+  }
+
+  .nsn-title {
+    position: relative;
+    z-index: 2;
+    font-size: 26px;
+    font-weight: 900;
+    color: #FFF;
+    font-style: italic;
+    letter-spacing: -1px;
+    text-shadow: 3px 3px 0px rgba(0,0,0,0.8);
+    animation: glitch-skew 3s infinite linear alternate-reverse;
+  }
   
-  try {
-    // Fetch detailed box score data for this specific game
-    const boxScoreUrl = `https://site.api.espn.com/apis/site/v2/sports/${event.league}/scoreboard/${event.id}`;
-    const boxScoreData = await fetchData(PROXY + encodeURIComponent(boxScoreUrl));
+  @keyframes glitch-skew {
+    0% { transform: skew(0deg); }
+    20% { transform: skew(0deg); }
+    21% { transform: skew(-10deg); filter: blur(1px); }
+    22% { transform: skew(10deg); }
+    23% { transform: skew(0deg); filter: none; }
+    100% { transform: skew(0deg); }
+  }
+
+  .nsn-powered {
+    position: relative;
+    z-index: 2;
+    font-size: 8px;
+    color: #00E5FF;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* --- CENTER: SCROLL AREA --- */
+  .scroll-area {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    background: #090909;
+  }
+
+  .scroll-mask {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(90deg, #090909 0%, transparent 3%, transparent 97%, #090909 100%);
+  }
+
+  .scroll-track {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    display: flex; 
+    align-items: center;
+    white-space: nowrap;
+    padding-left: 20px; 
+  }
+
+  /* --- CONTENT ITEMS --- */
+  .item {
+    padding-right: 60px; 
+    display: flex;
+    align-items: center;
+    font-size: 22px; 
+    font-weight: 600;
+    color: #E0E0E0;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .label {
+    font-weight: 900;
+    margin-right: 12px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    color: #000; 
+    font-size: 15px;
+    text-transform: uppercase;
+    transform: skew(-10deg); 
+    display: inline-block;
+  }
+  
+  .label span { display: inline-block; transform: skew(10deg); }
+
+  /* Dynamic Colors */
+  .bg-live { background: #FF0033; color: white; box-shadow: 0 0 10px #FF0033; }
+  .bg-final { background: #FFD700; color: black; }
+  .bg-news { background: #D500F9; color: white; }
+  .bg-betting { background: #00E676; color: black; }
+  .bg-social { background: #2979FF; color: white; }
+
+  /* Highlight keywords */
+  .stat-pop { color: #00E5FF; font-weight: 800; margin-left: 10px; font-size: 0.95em; }
+  
+  /* --- RIGHT: CLOCK --- */
+  .nsn-clock {
+    width: 110px;
+    height: 100%;
+    background: #080808;
+    border-left: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+    position: relative;
+  }
+  
+  #clock-time { font-size: 20px; font-weight: 900; color: #FFF; letter-spacing: 1px; }
+  #clock-zone { font-size: 10px; color: #666; font-weight: 700; margin-top: -2px; text-transform: uppercase; }
+
+</style>
+</head>
+
+<body>
+
+<div class="broadcast-overlay"></div>
+
+<div class="nsn-bar" id="main-bar">
+  
+  <div class="nsn-logo">
+    <div class="logo-bg"></div>
+    <div class="nsn-title">NSN LIVE</div>
+    <div class="nsn-powered">NSN NATION</div>
+  </div>
+
+  <div class="scroll-area">
+    <div class="scroll-mask"></div>
+    <div class="scroll-track" id="track"></div>
+  </div>
+
+  <div class="nsn-clock">
+      <div id="clock-time">--:--</div>
+      <div id="clock-zone">LIVE</div>
+  </div>
+
+</div>
+
+<script>
+  // ============ CONFIGURATION ============
+  const SPEED_PX_PER_SEC = 90; 
+  const PROXY = "https://corsproxy.io/?"; 
+  const REFRESH_INTERVAL_MS = 180000; // 3 Mins
+  
+  const track = document.getElementById("track");
+  
+  let animationFrameId = null;
+  let scrollPosition = 0;
+  let contentWidth = 0; 
+  let lastTime = 0;
+
+  // ============ CLOCK ============
+  function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      document.getElementById('clock-time').textContent = timeString;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ============ DATA FETCHING ============
+  
+  // 1. Top Performer Helper - EXTENDED FOR BOX SCORES
+  async function getTopPerformerStats(event, sportType) {
+    if (!event || !event.id) return "";
     
-    if (!boxScoreData || !boxScoreData.competitions || boxScoreData.competitions.length === 0) {
-      return getTopPerformer(event.competitions[0]); // Fallback to basic leader data
+    try {
+      // Construct the box score URL based on sport type and event ID
+      const boxScoreUrl = `https://site.api.espn.com/apis/site/v2/sports/${sportType}/scoreboard/${event.id}`;
+      const data = await fetchData(PROXY + encodeURIComponent(boxScoreUrl));
+      
+      if (!data || !data.boxscore) {
+        // Fallback to basic leader info
+        return getBasicTopPerformer(event.competitions[0]);
+      }
+      
+      // Get the right statistics based on sport type
+      let playerStats = [];
+      
+      // Process players based on sport type
+      if (sportType.includes('basketball')) {
+        // For basketball, look for points, rebounds, assists
+        const teams = data.boxscore.players || [];
+        
+        teams.forEach(team => {
+          const stats = team.statistics || [];
+          const players = team.athletes || [];
+          
+          players.forEach(player => {
+            const points = player.stats.find(s => s.name === 'points')?.value || 0;
+            const rebounds = player.stats.find(s => s.name === 'rebounds')?.value || 0;
+            const assists = player.stats.find(s => s.name === 'assists')?.value || 0;
+            
+            if (points > 0) {
+              playerStats.push({
+                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
+                value: points,
+                statLine: `${points}pts, ${rebounds}reb, ${assists}ast`
+              });
+            }
+          });
+        });
+        
+        // Sort by points (highest first)
+        playerStats.sort((a, b) => b.value - a.value);
+        
+      } else if (sportType.includes('football')) {
+        // For football, get passing/rushing/receiving yards
+        const teams = data.boxscore.players || [];
+        
+        teams.forEach(team => {
+          const stats = team.statistics || [];
+          const players = team.athletes || [];
+          
+          players.forEach(player => {
+            const passYds = player.stats.find(s => s.name === 'passingYards')?.value || 0;
+            const rushYds = player.stats.find(s => s.name === 'rushingYards')?.value || 0;
+            const recYds = player.stats.find(s => s.name === 'receivingYards')?.value || 0;
+            const touchdowns = (player.stats.find(s => s.name === 'passingTouchdowns')?.value || 0) +
+                              (player.stats.find(s => s.name === 'rushingTouchdowns')?.value || 0) +
+                              (player.stats.find(s => s.name === 'receivingTouchdowns')?.value || 0);
+            
+            let statLine = "";
+            let value = 0;
+            
+            if (passYds > 0) {
+              statLine = `${passYds} pass yds, ${touchdowns} TD`;
+              value = passYds;
+            } else if (rushYds > 0) {
+              statLine = `${rushYds} rush yds, ${touchdowns} TD`;
+              value = rushYds;
+            } else if (recYds > 0) {
+              statLine = `${recYds} rec yds, ${touchdowns} TD`;
+              value = recYds;
+            }
+            
+            if (value > 0) {
+              playerStats.push({
+                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
+                value: value,
+                statLine: statLine
+              });
+            }
+          });
+        });
+        
+        // Sort by yards (highest first)
+        playerStats.sort((a, b) => b.value - a.value);
+        
+      } else if (sportType.includes('baseball')) {
+        // For baseball, look for hits, RBIs, home runs
+        const teams = data.boxscore.players || [];
+        
+        teams.forEach(team => {
+          const stats = team.statistics || [];
+          const players = team.athletes || [];
+          
+          players.forEach(player => {
+            const hits = player.stats.find(s => s.name === 'hits')?.value || 0;
+            const rbi = player.stats.find(s => s.name === 'RBI')?.value || 0;
+            const hr = player.stats.find(s => s.name === 'homeRuns')?.value || 0;
+            
+            if (hits > 0 || rbi > 0 || hr > 0) {
+              playerStats.push({
+                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
+                value: hits + (rbi * 2) + (hr * 5), // Weighted value
+                statLine: `${hits}H, ${rbi}RBI, ${hr}HR`
+              });
+            }
+          });
+        });
+        
+        // Sort by weighted value (highest first)
+        playerStats.sort((a, b) => b.value - a.value);
+        
+      } else if (sportType.includes('hockey')) {
+        // For hockey, look for goals, assists, points
+        const teams = data.boxscore.players || [];
+        
+        teams.forEach(team => {
+          const stats = team.statistics || [];
+          const players = team.athletes || [];
+          
+          players.forEach(player => {
+            const goals = player.stats.find(s => s.name === 'goals')?.value || 0;
+            const assists = player.stats.find(s => s.name === 'assists')?.value || 0;
+            const points = goals + assists;
+            
+            if (points > 0) {
+              playerStats.push({
+                name: player.athlete?.displayName || player.athlete?.shortName || "Player",
+                value: points,
+                statLine: `${goals}G, ${assists}A`
+              });
+            }
+          });
+        });
+        
+        // Sort by points (highest first)
+        playerStats.sort((a, b) => b.value - a.value);
+      }
+      
+      // If we found player stats, return the top performer
+      if (playerStats.length > 0) {
+        const topPlayer = playerStats[0];
+        return `<span class="stat-pop">⭐ ${topPlayer.name}: ${topPlayer.statLine}</span>`;
+      }
+      
+      // If no detailed stats found, fall back to basic leader info
+      return getBasicTopPerformer(event.competitions[0]);
+      
+    } catch (error) {
+      // Fallback to basic leader info if box score fetch fails
+      return getBasicTopPerformer(event.competitions[0]);
     }
+  }
+  
+  // Basic top performer fallback function
+  function getBasicTopPerformer(comp) {
+    // Safety checks
+    if (!comp || !comp.leaders || comp.leaders.length === 0) return "";
     
-    const comp = boxScoreData.competitions[0];
-    
-    // Get leaders from the box score data
-    if (!comp.leaders || comp.leaders.length === 0) return "";
-    
-    // Find the most impressive stat category (usually index 0)
-    const category = comp.leaders[0];
+    // ESPN API organizes leaders by category (Passing, Rushing, Points, Rebounds, etc.)
+    const category = comp.leaders[0]; 
     
     if (!category.leaders || category.leaders.length === 0) return "";
     
@@ -26,84 +395,175 @@ async function getTopPerformerWithBoxScore(event) {
     const name = player.athlete?.shortName || player.athlete?.displayName || "Player";
     const stat = player.displayValue;
     const statLabel = category.shortDisplayName || category.displayName || "";
-    
-    // Return formatted HTML with more detailed stats if available
+
+    // Return formatted HTML
     return `<span class="stat-pop">⭐ ${name}: ${stat} ${statLabel}</span>`;
-  } catch (error) {
-    // Fallback to basic leader info if box score fetch fails
-    return getTopPerformer(event.competitions[0]);
   }
-}
 
-// 3. Updated Score Builder to include box score data
-async function getScores() {
-  // Expanded Source List with sport type for box score URLs
-  const sources = [
-    { l: "NFL", u: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard", league: "football/nfl" },
-    { l: "CFB", u: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80", league: "football/college-football" },
-    { l: "NBA", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard", league: "basketball/nba" },
-    { l: "CBB", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50", league: "basketball/mens-college-basketball" },
-    { l: "MLB", u: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard", league: "baseball/mlb" },
-    { l: "NHL", u: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard", league: "hockey/nhl" }
-  ];
+  // 2. Fetch Utilities
+  async function fetchData(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return { events: [] };
+      return await res.json();
+    } catch { return { events: [] }; }
+  }
 
-  let items = [];
-  for (const s of sources) {
-    const data = await fetchData(PROXY + encodeURIComponent(s.u));
-    const events = data.events || [];
-    
-    // Process events (limit to 5 games per sport)
-    for (const ev of events.slice(0, 5)) {
-      const c = ev.competitions[0];
-      const s1 = c.competitors[0]; // Home
-      const s2 = c.competitors[1]; // Away
+  async function fetchText(url) {
+    try {
+      const res = await fetch(url);
+      return res.ok ? await res.text() : "";
+    } catch { return ""; }
+  }
+
+  // 3. Score Builder
+  async function getScores() {
+    // Expanded Source List with sport type for box score URLs
+    const sources = [
+      { l: "NFL", u: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard", sportType: "football/nfl" },
+      { l: "CFB", u: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80", sportType: "football/college-football" },
+      { l: "NBA", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard", sportType: "basketball/nba" },
+      { l: "CBB", u: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50", sportType: "basketball/mens-college-basketball" },
+      { l: "MLB", u: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard", sportType: "baseball/mlb" },
+      { l: "NHL", u: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard", sportType: "hockey/nhl" }
+    ];
+
+    let items = [];
+    for (const s of sources) {
+      const data = await fetchData(PROXY + encodeURIComponent(s.u));
+      const events = data.events || [];
       
-      // Team Names (Use Ranks if available)
-      let t1 = s1.team.abbreviation;
-      let t2 = s2.team.abbreviation;
-      if (s1.curatedRank?.current <= 25) t1 = `(#${s1.curatedRank.current}) ` + t1;
-      if (s2.curatedRank?.current <= 25) t2 = `(#${s2.curatedRank.current}) ` + t2;
+      // Process events (limit to 5 games per sport)
+      for (const ev of events.slice(0, 5)) {
+        const c = ev.competitions[0];
+        const s1 = c.competitors[0]; // Home
+        const s2 = c.competitors[1]; // Away
+        
+        // Team Names (Use Ranks if available)
+        let t1 = s1.team.abbreviation;
+        let t2 = s2.team.abbreviation;
+        if (s1.curatedRank?.current <= 25) t1 = `(#${s1.curatedRank.current}) ` + t1;
+        if (s2.curatedRank?.current <= 25) t2 = `(#${s2.curatedRank.current}) ` + t2;
 
-      const score1 = s1.score;
-      const score2 = s2.score;
-      
-      const status = ev.status.type.state; // pre, in, post
-      const detail = ev.status.type.shortDetail;
+        const score1 = s1.score;
+        const score2 = s2.score;
+        
+        const status = ev.status.type.state; // pre, in, post
+        const detail = ev.status.type.shortDetail;
 
-      let labelClass = "bg-betting"; // Default Green
-      let labelText = s.l;
-      let mainText = `${t2} vs ${t1}`;
-      
-      // Prepare event data for box score lookup
-      ev.league = s.league;
+        let labelClass = "bg-betting"; // Default Green
+        let labelText = s.l;
+        let mainText = `${t2} vs ${t1}`;
+        
+        // Get detailed player stats - only for in-progress or completed games
+        let leaderHTML = "";
+        if (status === "in" || status === "post") {
+          // For completed/in-progress games, get detailed box score stats
+          leaderHTML = await getTopPerformerStats(ev, s.sportType);
+        }
 
-      // Get detailed player stats - only for in-progress or completed games
-      let leaderHTML = "";
-      if (status === "in" || status === "post") {
-        // For completed/in-progress games, get detailed box score stats
-        leaderHTML = await getTopPerformerWithBoxScore(ev);
-      } else {
-        // For upcoming games, don't show stats
-        leaderHTML = "";
+        if (status === "post") {
+           labelClass = "bg-final";
+           labelText = "FINAL";
+           mainText = `${t2} ${score2} - ${t1} ${score1}`;
+        } else if (status === "in") {
+           labelClass = "bg-live";
+           labelText = "LIVE";
+           mainText = `${t2} ${score2} - ${t1} ${score1} <span style='color:#FF0033'>• ${detail}</span>`;
+        } else {
+           // Upcoming
+           mainText = `${t2} @ ${t1} [${detail}]`;
+           // Don't show stats for upcoming games
+           leaderHTML = "";
+        }
+
+        items.push({
+           html: `<div class="label ${labelClass}"><span>${labelText}</span></div> ${mainText} ${leaderHTML}`
+        });
       }
+    }
+    return items;
+  }
 
-      if (status === "post") {
-         labelClass = "bg-final";
-         labelText = "FINAL";
-         mainText = `${t2} ${score2} - ${t1} ${score1}`;
-      } else if (status === "in") {
-         labelClass = "bg-live";
-         labelText = "LIVE";
-         mainText = `${t2} ${score2} - ${t1} ${score1} <span style='color:#FF0033'>• ${detail}</span>`;
-      } else {
-         // Upcoming
-         mainText = `${t2} @ ${t1} [${detail}]`;
-      }
+  // 4. News/RSS Builder
+  async function getNews() {
+    const urls = ["https://www.espn.com/espn/rss/nfl/news", "https://www.espn.com/espn/rss/nba/news"];
+    let items = [];
+    const parser = new DOMParser();
 
-      items.push({
-         html: `<div class="label ${labelClass}"><span>${labelText}</span></div> ${mainText} ${leaderHTML}`
+    for (const u of urls) {
+      const xmlStr = await fetchText(PROXY + encodeURIComponent(u));
+      const xml = parser.parseFromString(xmlStr, "text/xml");
+      const rows = Array.from(xml.querySelectorAll("item")).slice(0, 3);
+      
+      rows.forEach(r => {
+         const title = r.querySelector("title").textContent.replace("<![CDATA[", "").replace("]]>", "");
+         items.push({
+           html: `<div class="label bg-news"><span>NEWS</span></div> ${title}`
+         });
       });
     }
+    return items;
   }
-  return items;
-}
+
+  // 5. Engagement/Chat Builder
+  function getEngagement() {
+    const msgs = [
+       "TIKTOK: DROP A FOLLOW TO SUPPORT THE STREAM!",
+       "CHAT: WHO IS YOUR MVP THIS SEASON?",
+       "POLL: TYPE '1' FOR CHIEFS, '2' FOR EAGLES"
+    ];
+    return msgs.map(m => ({
+       html: `<div class="label bg-social"><span>SOCIAL</span></div> ${m}`
+    }));
+  }
+
+  // ============ RENDER & ANIMATE ============
+  async function buildTicker() {
+    const [scores, news] = await Promise.all([getScores(), getNews()]);
+    const social = getEngagement();
+    
+    let all = [...social, ...scores, ...news];
+    // Randomize order
+    all.sort(() => Math.random() - 0.5);
+
+    if (all.length === 0) all.push({ html: "LOADING DATA..." });
+
+    track.innerHTML = "";
+    all.forEach(obj => {
+       const div = document.createElement("div");
+       div.className = "item";
+       div.innerHTML = obj.html;
+       track.appendChild(div);
+    });
+
+    // Duplicate for seamless loop
+    track.innerHTML += track.innerHTML;
+    
+    contentWidth = track.scrollWidth / 2;
+  }
+
+  function animate(now) {
+    if (!lastTime) lastTime = now;
+    const dt = now - lastTime;
+    
+    lastTime = now;
+    const move = (SPEED_PX_PER_SEC / 1000) * dt;
+    scrollPosition += move;
+    
+    if (scrollPosition >= contentWidth) {
+        scrollPosition = 0;
+    }
+    track.style.transform = `translateX(-${scrollPosition}px)`;
+
+    requestAnimationFrame(animate);
+  }
+
+  // Init
+  buildTicker();
+  setInterval(buildTicker, REFRESH_INTERVAL_MS);
+  requestAnimationFrame(animate);
+
+</script>
+</body>
+</html>
