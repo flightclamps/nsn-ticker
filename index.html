@@ -3,29 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NSN ELITE PERMANENT TICKER [REVAMPED]</title>
+    <title>NSN ELITE COSMIC TICKER</title>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Teko:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CORE VARIABLES --- */
         :root {
             --brand-blue: #00f2ff;
-            --brand-dark: #02040a;
-            --brand-glass: rgba(10, 15, 25, 0.9);
-            --brand-border: rgba(0, 242, 255, 0.15);
+            --brand-purple: #7f00ff;
+            --brand-pink: #ff00ff;
             --brand-gold: #ffd700;
             --brand-red: #ff004c;
             --brand-green: #00ff88;
-            --font-primary: 'Chakra Petch', sans-serif;
-            --font-display: 'Teko', sans-serif;
-            --font-data: 'Rajdhani', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background-color: transparent; /* For OBS */
-            font-family: var(--font-primary);
+            background: #000;
+            font-family: 'Chakra Petch', sans-serif;
             overflow: hidden;
             height: 100vh;
             width: 100vw;
@@ -33,460 +28,547 @@
             text-transform: uppercase;
         }
 
-        /* --- GRADIENT BORDER & BACKGROUND --- */
-        .ticker-container {
+        /* --- COSMIC UNIVERSE BACKGROUND --- */
+        #universe-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at 50% 30%, #1a0033 0%, #0a0015 30%, #000 100%);
+        }
+
+        /* Animated nebula overlay */
+        .nebula {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(127, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(0, 242, 255, 0.08) 0%, transparent 60%);
+            animation: nebula-pulse 15s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes nebula-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Star field */
+        .stars-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+            animation: twinkle var(--duration) ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        /* --- MAIN TICKER CONTAINER --- */
+        .ticker-wrapper {
             position: fixed;
             top: 0; left: 0;
             width: 100%;
-            height: 120px;
-            background: var(--brand-dark);
-            padding: 2px; /* Padding for the animated border */
-            z-index: 1;
-        }
-
-        .ticker-container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: conic-gradient(from 180deg at 50% 50%, var(--brand-blue), #0f1a2e, #0f1a2e, var(--brand-blue));
-            z-index: 2;
-            animation: spin 8s linear infinite;
-        }
-
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-
-        .ticker-interface {
-            position: relative;
+            height: 140px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(10, 0, 30, 0.8) 100%);
+            border-bottom: 2px solid var(--brand-blue);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), inset 0 -1px 10px rgba(127, 0, 255, 0.2);
+            z-index: 10;
             display: flex;
-            width: 100%; height: 100%;
-            background: var(--brand-dark);
-            z-index: 3;
+            flex-direction: column;
         }
 
-        /* --- LEFT: LOGO --- */
-        .logo-zone {
-            width: 140px;
-            background: linear-gradient(160deg, #000 30%, #0a1a30 100%);
+        /* Top Row: Primary Scores */
+        .ticker-row-1 {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Middle Row: Secondary Stats */
+        .ticker-row-2 {
+            height: 45px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(127, 0, 255, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Bottom Row: News & Engagement */
+        .ticker-row-3 {
+            height: 35px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Logo Section */
+        .ticker-logo {
+            width: 150px;
+            background: linear-gradient(160deg, #000 30%, #0a1a3a 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             border-right: 2px solid var(--brand-blue);
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
             z-index: 20;
+            min-width: 150px;
         }
 
         .logo-text {
-            font-family: var(--font-display);
-            font-size: 48px;
+            font-family: 'Teko', sans-serif;
+            font-size: 52px;
             font-weight: 700;
-            line-height: 0.8;
             color: #fff;
-            text-shadow: 0 0 12px var(--brand-blue);
+            text-shadow: 0 0 15px var(--brand-blue);
+            line-height: 0.9;
         }
-        
+
         .logo-sub {
             font-size: 10px;
-            color: var(--brand-blue);
-            letter-spacing: 2.5px;
+            color: var(--brand-pink);
+            letter-spacing: 3px;
             margin-top: 5px;
             font-weight: 700;
+            text-shadow: 0 0 8px var(--brand-pink);
         }
 
-        /* --- CENTER: DATA FEEDS --- */
-        .feed-zone {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feed-primary, .feed-secondary {
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .feed-primary {
-            height: 75px;
-            background: rgba(0, 5, 10, 0.7);
-            border-bottom: 1px solid var(--brand-border);
-            backdrop-filter: blur(6px);
-        }
-
-        .feed-secondary {
-            height: 45px;
-            background: rgba(0, 0, 0, 0.85);
-        }
-
-        /* Scrolling Animation */
+        /* Scroll Tracks */
         .scroll-track {
             display: flex;
             align-items: center;
             white-space: nowrap;
             will-change: transform;
             animation: scroll-left linear infinite;
-        }
-        
-        .scroll-track > * {
-            flex-shrink: 0; /* Prevent items from shrinking */
+            flex: 1;
+            padding: 0 20px;
         }
 
         @keyframes scroll-left {
             from { transform: translateX(0); }
-            to { transform: translateX(-50%); } /* Scroll one full copy */
+            to { transform: translateX(-50%); }
         }
 
-        /* --- GAME CARD STYLING --- */
+        /* Game Card */
         .game-card {
             display: inline-flex;
             align-items: center;
-            height: 55px;
-            margin: 0 35px;
+            margin-right: 40px;
             padding-right: 25px;
-            border-right: 1px solid var(--brand-border);
-            font-family: var(--font-data);
+            border-right: 1px solid rgba(0, 242, 255, 0.2);
+            flex-shrink: 0;
+            gap: 12px;
         }
 
         .league-tag {
             padding: 3px 8px;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             border-radius: 4px;
-            margin-right: 14px;
             min-width: 45px;
             text-align: center;
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            flex-shrink: 0;
         }
-        .nfl { background: #013369; }
-        .nba { background: #C9082A; }
-        .mlb { background: #002D72; }
-        .nhl { background: #111; }
 
-        .match-info {
+        .nfl { background: linear-gradient(135deg, #013369, #005eb8); }
+        .nba { background: linear-gradient(135deg, #C9082A, #ff1a47); }
+        .mlb { background: linear-gradient(135deg, #002D72, #0066cc); }
+        .nhl { background: linear-gradient(135deg, #111, #333); }
+        .ncaaf { background: linear-gradient(135deg, #7B6545, #a08060); }
+
+        .score-display {
             display: flex;
             align-items: center;
-            font-size: 24px;
+            gap: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
             font-weight: 700;
         }
 
-        .score {
-            color: #fff;
-            margin: 0 8px;
-            font-size: 28px;
-            font-family: var(--font-display);
-        }
-        
-        .vs, .status-text {
-            color: #999;
-            font-size: 14px;
-            margin: 0 10px;
+        .team-abbr {
+            color: #ddd;
+            min-width: 35px;
             font-weight: 600;
         }
-        
-        .broadcast {
-             color: var(--brand-blue);
-             font-size: 12px;
-             margin-left: 10px;
+
+        .score {
+            color: var(--brand-gold);
+            font-family: 'Teko', sans-serif;
+            font-size: 26px;
+            text-shadow: 0 0 8px var(--brand-gold);
         }
 
         .status-live {
             color: var(--brand-red);
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 800;
-            animation: pulse-red 1.5s infinite ease-in-out;
+            animation: pulse-red 1.5s infinite;
             border: 1px solid var(--brand-red);
             padding: 2px 5px;
             border-radius: 3px;
+            box-shadow: 0 0 8px var(--brand-red);
         }
 
-        .stat-box {
-            margin-left: 18px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            border-left: 3px solid var(--brand-gold);
-            padding-left: 10px;
-            height: 40px;
+        .vs-text {
+            color: #666;
+            font-size: 12px;
+            font-weight: 600;
         }
-        
-        .stat-player { font-size: 12px; color: #ccc; line-height: 1; font-weight: 600; }
-        .stat-val { font-size: 15px; color: var(--brand-gold); font-weight: 700; line-height: 1.1; margin-top: 3px; }
 
-        /* --- NEWS & ENGAGEMENT --- */
+        .stat-badge {
+            background: rgba(127, 0, 255, 0.2);
+            border: 1px solid var(--brand-purple);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #adf;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+
+        .stat-badge-value {
+            color: var(--brand-gold);
+            font-weight: 700;
+            margin-left: 4px;
+        }
+
+        /* News Items */
         .news-item {
-            margin: 0 25px;
-            font-size: 17px;
-            color: #ddd;
             display: inline-flex;
             align-items: center;
+            gap: 10px;
+            margin-right: 30px;
+            font-size: 15px;
+            color: #ddd;
+            flex-shrink: 0;
         }
-        
+
         .news-badge {
-            background: #333;
-            color: #aaa;
-            font-size: 10px;
-            padding: 3px 6px;
-            margin-right: 10px;
+            background: var(--brand-purple);
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 6px;
             border-radius: 3px;
+            font-weight: 700;
+            box-shadow: 0 0 6px var(--brand-purple);
         }
 
         .engage-item {
-            color: var(--brand-gold);
+            color: var(--brand-green);
             font-weight: 700;
-            font-size: 18px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 8px var(--brand-green);
+            font-size: 14px;
         }
-        
-        .engage-icon { margin-right: 10px; font-size: 20px; filter: drop-shadow(0 0 5px var(--brand-gold)); }
 
-        /* --- RIGHT: CLOCK --- */
-        .clock-zone {
-            width: 130px;
-            background: #050505;
+        /* Clock */
+        .ticker-clock {
+            width: 140px;
+            background: linear-gradient(160deg, #000, #0a0a2e);
             border-left: 2px solid var(--brand-blue);
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 20;
+            min-width: 140px;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
         }
 
-        #time-display {
-            font-family: var(--font-display);
-            font-size: 40px;
+        .time-display {
+            font-family: 'Teko', sans-serif;
+            font-size: 38px;
             font-weight: 600;
-            color: #fff;
-            letter-spacing: 1px;
-        }
-        
-        #date-display {
-            font-size: 12px;
             color: var(--brand-blue);
-            font-weight: 700;
+            text-shadow: 0 0 10px var(--brand-blue);
         }
 
-        @keyframes pulse-red { 0%, 100% { opacity: 1; text-shadow: 0 0 8px var(--brand-red); } 50% { opacity: 0.6; text-shadow: none; } }
+        .date-display {
+            font-size: 11px;
+            color: var(--brand-pink);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Hide content below ticker */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 140px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <div class="ticker-container">
-        <div class="ticker-interface">
-            <!-- LOGO -->
-            <div class="logo-zone">
+    <!-- Universe Background -->
+    <canvas id="universe-canvas"></canvas>
+    <div class="nebula"></div>
+    <div class="stars-container" id="stars-container"></div>
+
+    <!-- Main Ticker -->
+    <div class="ticker-wrapper">
+        <div class="ticker-row-1">
+            <div class="ticker-logo">
                 <div class="logo-text">NSN</div>
-                <div class="logo-sub">LIVE FEED</div>
+                <div class="logo-sub">COSMIC FEED</div>
             </div>
+            <div class="scroll-track" id="track-1"></div>
+            <div class="ticker-clock">
+                <div class="time-display" id="time-display">--:--</div>
+                <div class="date-display" id="date-display">--/--</div>
+            </div>
+        </div>
 
-            <!-- FEED -->
-            <div class="feed-zone">
-                <div class="feed-primary">
-                    <div class="scroll-track" id="score-track"><div class="game-card">LOADING SPORTS DATA...</div></div>
-                </div>
-                <div class="feed-secondary">
-                    <div class="scroll-track" id="news-track"><div class="news-item">INITIALIZING NEWS STREAM...</div></div>
-                </div>
-            </div>
+        <div class="ticker-row-2" id="track-2-container">
+            <div class="scroll-track" id="track-2"></div>
+        </div>
 
-            <!-- CLOCK -->
-            <div class="clock-zone">
-                <div id="time-display">--:--</div>
-                <div id="date-display">--/--</div>
-            </div>
+        <div class="ticker-row-3" id="track-3-container">
+            <div class="scroll-track" id="track-3"></div>
         </div>
     </div>
 
     <script>
         const CONFIG = {
-            PROXY_URL: "https://corsproxy.io/?",
-            REFRESH_INTERVAL_MS: 60000, // 1 minute
-            SCROLL_SPEED_PPS: 100, // Pixels per second
-            SPORTS: [
-                { tag: "NFL", url: `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard` },
-                { tag: "NBA", url: `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard` },
-                { tag: "MLB", url: `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard` },
-                { tag: "NHL", url: `https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard` }
+            PROXIES: [
+                "https://corsproxy.io/?",
+                "https://api.allorigins.win/get?url=",
             ],
-            NEWS_URL: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news",
-            ENGAGEMENT_HOOKS: [
-                `<div class="news-item engage-item"><span class="engage-icon">⭐️</span> FOLLOW FOR MORE ACTION</div>`,
-                `<div class="news-item engage-item"><span class="engage-icon">🎁</span> GIFT THE STREAM = LIVE SHOUTOUT</div>`,
-                `<div class="news-item engage-item"><span class="engage-icon">🔥</span> TAP THE SCREEN TO SHOW SUPPORT</div>`
+            CURRENT_PROXY: 0,
+            REFRESH_MS: 45000,
+            SCROLL_SPEED: 120, // pixels per second
+            SPORTS: [
+                { tag: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+                { tag: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
+                { tag: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
+                { tag: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" }
             ]
         };
 
-        // --- API HELPER ---
-        async function fetchData(url) {
-            try {
-                const response = await fetch(CONFIG.PROXY_URL + encodeURIComponent(url));
-                if (!response.ok) {
-                    console.error(`API request failed for ${url} with status: ${response.status}`);
-                    return null;
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("Fetch error:", error);
-                return null;
+        // --- COSMIC UNIVERSE GENERATION ---
+        function initUniverse() {
+            const container = document.getElementById('stars-container');
+            const starCount = 200;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                const size = Math.random() * 2.5;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.setProperty('--duration', (1.5 + Math.random() * 4) + 's');
+                container.appendChild(star);
             }
         }
 
-        // --- DATA PARSERS ---
+        // --- PROXY ROTATION ---
+        async function fetchWithProxy(url) {
+            const maxRetries = CONFIG.PROXIES.length;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const proxy = CONFIG.PROXIES[CONFIG.CURRENT_PROXY];
+                    let fullUrl = url;
+
+                    if (proxy.includes('allorigins')) {
+                        fullUrl = proxy + encodeURIComponent(url);
+                        const res = await fetch(fullUrl);
+                        if (res.ok) {
+                            const data = await res.json();
+                            return JSON.parse(data.contents);
+                        }
+                    } else {
+                        fullUrl = proxy + encodeURIComponent(url);
+                        const res = await fetch(fullUrl);
+                        if (res.ok) return await res.json();
+                    }
+                } catch (error) {
+                    console.error(`Proxy ${CONFIG.CURRENT_PROXY} failed:`, error);
+                    CONFIG.CURRENT_PROXY = (CONFIG.CURRENT_PROXY + 1) % CONFIG.PROXIES.length;
+                }
+            }
+            return null;
+        }
+
+        // --- DATA BUILDERS ---
         function buildGameCard(league, event) {
-            const competition = event.competitions[0];
-            const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
-            const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
-            const statusState = event.status.type.state; // "pre", "in", "post"
+            const comp = event.competitions;
+            const home = comp.competitors.find(c => c.homeAway === 'home');
+            const away = comp.competitors.find(c => c.homeAway === 'away');
+            const status = event.status.type.state;
 
-            let scoreHtml = '';
-            let statHtml = '';
+            let mainScore = '';
+            let statLine = '';
 
-            // Status & Scores
-            switch (statusState) {
-                case 'in': // Live game
-                    scoreHtml = `
-                        ${awayTeam.team.abbreviation} <span class="score">${awayTeam.score}</span> 
-                        <span class="status-live">LIVE</span> 
-                        <span class="score">${homeTeam.score}</span> ${homeTeam.team.abbreviation}`;
-                    break;
-                case 'post': // Finished game
-                    scoreHtml = `
-                        ${awayTeam.team.abbreviation} <span class="score">${awayTeam.score}</span> 
-                        <span class="status-text">FINAL</span> 
-                        <span class="score">${homeTeam.score}</span> ${homeTeam.team.abbreviation}`;
-                    break;
-                default: // Upcoming game
-                    const gameTime = new Date(event.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                    const broadcast = competition.broadcasts?.[0]?.names?.[0] || '';
-                    scoreHtml = `
-                        ${awayTeam.team.abbreviation} <span class="vs">@</span> ${homeTeam.team.abbreviation} 
-                        <span class="status-text">${gameTime}</span>
-                        ${broadcast ? `<span class="broadcast">${broadcast}</span>` : ''}`;
-                    break;
+            if (status === 'in') {
+                mainScore = `
+                    <span class="team-abbr">${away.team.abbreviation}</span>
+                    <span class="score">${away.score}</span>
+                    <span class="status-live">●LIVE</span>
+                    <span class="score">${home.score}</span>
+                    <span class="team-abbr">${home.team.abbreviation}</span>
+                `;
+            } else if (status === 'post') {
+                mainScore = `
+                    <span class="team-abbr">${away.team.abbreviation}</span>
+                    <span class="score">${away.score}</span>
+                    <span class="vs-text">FINAL</span>
+                    <span class="score">${home.score}</span>
+                    <span class="team-abbr">${home.team.abbreviation}</span>
+                `;
+            } else {
+                const time = new Date(event.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                mainScore = `
+                    <span class="team-abbr">${away.team.abbreviation}</span>
+                    <span class="vs-text">@</span>
+                    <span class="team-abbr">${home.team.abbreviation}</span>
+                    <span class="vs-text">${time}</span>
+                `;
             }
 
-            // Player Stats / Leaders
-            if (competition.leaders && statusState !== 'pre') {
-                // Find the most relevant stat leader (e.g., passing, points, batting avg)
-                const preferredLeaders = ['passingYards', 'points', 'homeRuns', 'goals'];
-                let leader = competition.leaders.find(l => preferredLeaders.includes(l.name)) || competition.leaders[competition.leaders.length - 1];
-                
-                if (leader && leader.leaders && leader.leaders.length > 0) {
-                    const topPlayer = leader.leaders[0];
-                    statHtml = `
-                        <div class="stat-box">
-                            <span class="stat-player">${topPlayer.athlete.shortName}</span>
-                            <span class="stat-val">${topPlayer.displayValue}</span>
-                        </div>`;
+            if (comp.leaders && status !== 'pre') {
+                const leader = comp.leaders[comp.leaders.length - 1];
+                if (leader?.leaders?.) {
+                    const p = leader.leaders;
+                    statLine = `<span class="stat-badge">${p.athlete.shortName} <span class="stat-badge-value">${p.displayValue}</span></span>`;
                 }
             }
 
             return `
                 <div class="game-card">
                     <span class="league-tag ${league.toLowerCase()}">${league}</span>
-                    <div class="match-info">${scoreHtml}</div>
-                    ${statHtml}
-                </div>`;
+                    <div class="score-display">${mainScore}</div>
+                    ${statLine}
+                </div>
+            `;
         }
 
-        // --- DOM & ANIMATION ENGINE ---
-        async function updateTrack(trackId, contentGenerator) {
+        async function updateTrack(trackId, generator) {
             const track = document.getElementById(trackId);
             if (!track) return;
 
-            let newHtml = await contentGenerator();
-            if (!newHtml) {
-                newHtml = `<div class="${trackId === 'score-track' ? 'game-card' : 'news-item'}">No current data available.</div>`;
-            }
+            let html = await generator();
+            if (!html) html = '<div class="news-item">Loading...</div>';
 
-            // To create a seamless loop, we duplicate the content.
-            const fullContent = newHtml + newHtml;
+            const fullHtml = html + html;
+            track.innerHTML = fullHtml;
 
-            // Smart update to avoid animation jumps
-            if (track.innerHTML !== fullContent) {
-                track.innerHTML = fullContent;
-                
-                // Dynamic animation speed
-                const contentWidth = track.scrollWidth / 2; // Width of one set of content
-                const duration = contentWidth / CONFIG.SCROLL_SPEED_PPS;
-                track.style.animationDuration = `${duration}s`;
-            }
+            const contentWidth = track.scrollWidth / 2;
+            const duration = contentWidth / CONFIG.SCROLL_SPEED;
+            track.style.animationDuration = `${duration}s`;
         }
 
-        // --- CONTENT GENERATORS ---
-        async function generateScoresHtml() {
-            let allGamesHtml = "";
-            const fetchPromises = CONFIG.SPORTS.map(sport => fetchData(sport.url));
-            const results = await Promise.all(fetchPromises);
-
-            results.forEach((data, index) => {
-                if (data && data.events) {
-                    const sportTag = CONFIG.SPORTS[index].tag;
-                    data.events.slice(0, 5).forEach(event => {
-                        allGamesHtml += buildGameCard(sportTag, event);
+        async function generateTrack1() {
+            let html = '';
+            for (const sport of CONFIG.SPORTS) {
+                const data = await fetchWithProxy(sport.url);
+                if (data?.events) {
+                    data.events.slice(0, 3).forEach(e => {
+                        html += buildGameCard(sport.tag, e);
                     });
                 }
-            });
-
-            return allGamesHtml || `<div class="game-card">No games scheduled. Checking again soon...</div>`;
+            }
+            return html || '<div class="game-card">Fetching cosmic data...</div>';
         }
 
-        async function generateNewsHtml() {
-            const newsData = await fetchData(CONFIG.NEWS_URL);
-            let newsItems = [];
+        async function generateTrack2() {
+            let html = '';
+            for (const sport of CONFIG.SPORTS) {
+                const data = await fetchWithProxy(sport.url);
+                if (data?.events) {
+                    data.events.slice(0, 2).forEach(e => {
+                        const comp = e.competitions;
+                        if (comp.leaders?.?.leaders?.) {
+                            const p = comp.leaders.leaders;
+                            html += `
+                                <div class="game-card" style="border: none;">
+                                    <span class="league-tag ${sport.tag.toLowerCase()}">${sport.tag}</span>
+                                    <span class="news-item"><strong>${p.athlete.shortName}</strong> - ${p.displayValue}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            }
+            return html || '<div class="news-item">Star stats loading...</div>';
+        }
 
-            if (newsData && newsData.articles) {
-                newsData.articles.slice(0, 4).forEach(article => {
-                    newsItems.push(`<div class="news-item"><span class="news-badge">NEWS</span> ${article.headline}</div>`);
+        async function generateTrack3() {
+            const news = await fetchWithProxy("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news");
+            let html = '';
+
+            if (news?.articles) {
+                news.articles.slice(0, 5).forEach(a => {
+                    html += `<div class="news-item"><span class="news-badge">★</span> ${a.headline}</div>`;
                 });
             }
-            if (newsItems.length === 0) {
-                 newsItems.push(`<div class="news-item">Welcome to the NSN Live Feed!</div>`);
-            }
 
-            // Mix news with engagement hooks
-            let finalHtml = "";
-            let hookIndex = 0;
-            newsItems.forEach(item => {
-                finalHtml += item;
-                if (CONFIG.ENGAGEMENT_HOOKS[hookIndex]) {
-                    finalHtml += CONFIG.ENGAGEMENT_HOOKS[hookIndex];
-                    hookIndex = (hookIndex + 1) % CONFIG.ENGAGEMENT_HOOKS.length;
-                }
-            });
-            return finalHtml;
+            const hooks = [
+                '<div class="engage-item">🌟 FOLLOW THE STREAM</div>',
+                '<div class="engage-item">💫 GIFT = SHOUTOUT</div>',
+                '<div class="engage-item">⚡ TAP TO ENGAGE</div>'
+            ];
+
+            hooks.forEach(hook => html += `<div class="news-item">${hook}</div>`);
+            return html || '<div class="news-item">Welcome to NSN Cosmic Feed</div>';
         }
 
-        // --- CLOCK ---
-        function tickClock() {
+        function updateClock() {
             const now = new Date();
-            document.getElementById('time-display').textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false });
+            document.getElementById('time-display').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
             document.getElementById('date-display').textContent = now.toLocaleDateString([], { month: 'short', day: 'numeric' }).toUpperCase();
         }
 
-        // --- INITIALIZATION ---
-        function init() {
-            tickClock();
-            setInterval(tickClock, 1000);
+        // --- INIT ---
+        initUniverse();
+        setInterval(updateClock, 1000);
+        updateClock();
 
-            updateTrack('score-track', generateScoresHtml);
-            updateTrack('news-track', generateNewsHtml);
+        updateTrack('track-1', generateTrack1);
+        updateTrack('track-2', generateTrack2);
+        updateTrack('track-3', generateTrack3);
 
-            setInterval(() => {
-                updateTrack('score-track', generateScoresHtml);
-                updateTrack('news-track', generateNewsHtml);
-            }, CONFIG.REFRESH_INTERVAL_MS);
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
+        setInterval(() => {
+            updateTrack('track-1', generateTrack1);
+            updateTrack('track-2', generateTrack2);
+            updateTrack('track-3', generateTrack3);
+        }, CONFIG.REFRESH_MS);
     </script>
 </body>
 </html>
