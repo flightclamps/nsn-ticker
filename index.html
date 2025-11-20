@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NSN Sports Ticker - RGB EDITION</title>
+<title>NSN COSMIC SPORTS TICKER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Exo+2:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
   /* --- CORE SETUP --- */
@@ -15,296 +15,368 @@
     font-family: 'Roboto Condensed', sans-serif;
   }
 
-  /* --- RGB BORDER ANIMATION --- */
-  @keyframes rgb-border-flow {
-    0% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
-    20% { border-color: #ff7700; box-shadow: 0 0 15px rgba(255, 119, 0, 0.7); }
-    40% { border-color: #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.7); }
-    60% { border-color: #0088ff; box-shadow: 0 0 15px rgba(0, 136, 255, 0.7); }
-    80% { border-color: #8800ff; box-shadow: 0 0 15px rgba(136, 0, 255, 0.7); }
-    100% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
-  }
-
-  /* --- SCANLINES EFFECT --- */
-  .broadcast-overlay {
+  /* --- COSMIC BACKGROUND --- */
+  .space-bg {
     position: absolute;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: 100;
-    background: 
-      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
-      linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.03));
-    background-size: 100% 2px, 6px 100%;
-    mix-blend-mode: overlay;
-  }
-
-  /* --- MAIN BAR CONTAINER --- */
-  .pro-ticker {
-    width: 100vw;
-    height: 68px; 
-    background: linear-gradient(180deg, #111111 0%, #0a0a0a 100%);
-    border-top: 3px solid #ff0000; 
-    border-bottom: 3px solid #ff0000; 
-    animation: rgb-border-flow 10s infinite linear;
-    display: flex;
-    align-items: center;
-    position: relative; 
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
-    overflow: hidden;
-  }
-
-  /* --- LEFT: LOGO --- */
-  .ticker-logo {
-    width: 200px; 
-    min-width: 200px;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background: #000;
-    border-right: 2px solid #222; 
-    display: flex;
-    flex-direction: column;
-    justify-content: center; 
-    align-items: center;     
-    z-index: 50; 
-    position: relative;
     overflow: hidden;
-  }
-
-  .logo-bg {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, #111 0%, #000 100%);
     z-index: 1;
   }
-
-  /* Typewriter effect for title */
-  .ticker-title-container {
-    position: relative;
+  
+  .stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect width='400' height='200' fill='%23000020'/%3E%3Ccircle cx='20' cy='30' r='1' fill='white'/%3E%3Ccircle cx='60' cy='70' r='1.2' fill='white'/%3E%3Ccircle cx='100' cy='40' r='0.8' fill='white'/%3E%3Ccircle cx='140' cy='90' r='1.1' fill='white'/%3E%3Ccircle cx='180' cy='30' r='0.9' fill='white'/%3E%3Ccircle cx='220' cy='70' r='1' fill='white'/%3E%3Ccircle cx='260' cy='40' r='0.6' fill='white'/%3E%3Ccircle cx='300' cy='90' r='1.2' fill='white'/%3E%3Ccircle cx='340' cy='30' r='0.8' fill='white'/%3E%3Ccircle cx='380' cy='70' r='1' fill='white'/%3E%3Ccircle cx='40' cy='140' r='0.7' fill='white'/%3E%3Ccircle cx='80' cy='110' r='1.1' fill='white'/%3E%3Ccircle cx='120' cy='160' r='0.9' fill='white'/%3E%3Ccircle cx='160' cy='130' r='0.6' fill='white'/%3E%3Ccircle cx='200' cy='180' r='1.2' fill='white'/%3E%3Ccircle cx='240' cy='150' r='0.8' fill='white'/%3E%3Ccircle cx='280' cy='110' r='1' fill='white'/%3E%3Ccircle cx='320' cy='160' r='0.7' fill='white'/%3E%3Ccircle cx='360' cy='130' r='1.1' fill='white'/%3E%3C/svg%3E");
+    background-size: 400px 200px;
+    animation: twinkle 10s linear infinite alternate;
+  }
+  
+  @keyframes twinkle {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+  }
+  
+  .nebula {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(25,0,100,0.3) 0%, rgba(25,0,100,0) 70%),
+                radial-gradient(ellipse at 30% 40%, rgba(0,50,200,0.3) 0%, rgba(0,50,200,0) 70%),
+                radial-gradient(ellipse at 70% 60%, rgba(50,0,150,0.3) 0%, rgba(50,0,150,0) 70%);
+    opacity: 0.6;
+    animation: nebula-drift 30s ease-in-out infinite alternate;
+  }
+  
+  @keyframes nebula-drift {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+  }
+  
+  .planet {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #006699, #00264d);
+    box-shadow: 0 0 20px rgba(0, 150, 255, 0.7);
+    top: -40px;
+    right: 10%;
     z-index: 2;
-    display: inline-block;
+    animation: planet-orbit 60s linear infinite;
+  }
+  
+  .planet::after {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 15px;
+    background: rgba(100, 200, 255, 0.1);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(30deg);
+  }
+  
+  @keyframes planet-orbit {
+    0% { transform: translateY(-40px) rotate(0deg); }
+    100% { transform: translateY(240px) rotate(360deg); }
+  }
+  
+  .shooting-star {
+    position: absolute;
+    width: 150px;
+    height: 2px;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+    z-index: 3;
+    opacity: 0;
+    transform-origin: 0 0;
+    animation: shooting 8s linear infinite;
+  }
+  
+  .shooting-star:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+  
+  .shooting-star:nth-child(2) {
+    top: 60%;
+    left: 30%;
+    animation-delay: 3s;
+  }
+  
+  .shooting-star:nth-child(3) {
+    top: 30%;
+    left: 60%;
+    animation-delay: 6s;
+  }
+  
+  @keyframes shooting {
+    0% { transform: translateX(0) translateY(0) rotate(35deg); opacity: 0; }
+    5% { opacity: 1; }
+    15% { transform: translateX(300px) translateY(300px) rotate(35deg); opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  /* --- MAIN TICKER CONTAINER --- */
+  .espn-ticker {
+    width: 100vw;
+    height: 70px;
+    position: relative;
+    z-index: 10;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 100, 255, 0.5);
+  }
+
+  /* --- LEFT: LOGO AREA --- */
+  .ticker-logo {
+    width: 180px;
+    min-width: 180px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-right: 2px solid #0066cc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 20;
   }
   
   .ticker-title {
-    font-family: 'Chakra Petch', sans-serif;
+    font-family: 'Exo 2', sans-serif;
     font-size: 28px;
-    font-weight: 700;
-    color: #FFF;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0, 150, 255, 0.8);
     letter-spacing: -1px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     white-space: nowrap;
     overflow: hidden;
-    border-right: 3px solid #00FFFF;
+    border-right: 3px solid #00a1ff;
     width: 0;
-    animation: typing 3.5s steps(11, end) forwards, blink-caret 0.75s step-end infinite;
+    animation: typing 3s steps(11, end) forwards, blink-caret 0.75s step-end infinite;
   }
   
   @keyframes typing {
     from { width: 0 }
-    to { width: 175px }
+    to { width: 160px }
   }
   
   @keyframes blink-caret {
     from, to { border-color: transparent }
-    50% { border-color: #00FFFF }
+    50% { border-color: #00a1ff }
   }
-
+  
   .ticker-tagline {
-    position: relative;
-    z-index: 2;
     font-size: 10px;
-    color: #999;
+    color: #7ad2ff;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 6px;
   }
 
-  /* --- CENTER: SCROLL AREA --- */
-  .scroll-area {
+  /* --- RIGHT: MAIN CONTENT AREA --- */
+  .ticker-content {
     flex: 1;
     height: 100%;
     position: relative;
-    background: linear-gradient(180deg, #0c0c0c 0%, #050505 100%);
-  }
-
-  .scroll-mask {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 40;
-    pointer-events: none;
-    background: linear-gradient(90deg, #090909 0%, transparent 5%, transparent 95%, #090909 100%);
-  }
-
-  .scroll-track {
-    position: absolute;
-    top: 0; left: 0;
-    height: 100%;
-    display: flex; 
-    align-items: center;
-    white-space: nowrap;
-    padding-left: 30px; 
-  }
-
-  /* --- CONTENT ITEMS --- */
-  .ticker-item {
-    padding-right: 80px; 
-    display: flex;
-    align-items: center;
-    font-size: 24px; 
-    font-weight: 600;
-    color: #FFFFFF;
-    font-family: 'Roboto Condensed', sans-serif;
-  }
-
-  .league-badge {
-    font-family: 'Chakra Petch', sans-serif;
-    font-weight: 700;
-    margin-right: 15px;
-    padding: 4px 10px;
-    font-size: 16px;
-    text-transform: uppercase;
-    border-radius: 3px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 60px;
-    height: 26px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.85);
   }
   
-  /* League-specific colors */
-  .nfl { background: #013369; color: white; }
-  .nba { background: #C9082A; color: white; }
-  .mlb { background: #041E42; color: white; }
-  .nhl { background: #000000; color: white; border: 1px solid #ccc; }
-  .mls { background: #1EB53A; color: white; }
-  .pga { background: #001D59; color: white; }
-  .uefa { background: #000A4E; color: white; }
-  .f1 { background: #E10600; color: white; }
-  .news { background: #7D3C98; color: white; }
-  .live { background: #FF0000; color: white; }
-  .final { background: #FFD700; color: black; }
-
-  /* Status indicators */
-  .status {
-    font-size: 14px;
+  /* SportsCenter-style two-line format */
+  .ticker-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .ticker-line {
+    height: 50%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .ticker-line:first-child {
+    border-bottom: 1px solid #0066cc;
+  }
+  
+  .line-items {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    left: 0;
+    animation: scroll-line 30s linear infinite;
+  }
+  
+  @keyframes scroll-line {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  
+  .line-item {
+    display: flex;
+    align-items: center;
+    margin-right: 40px;
+    font-size: 18px;
+    color: white;
+  }
+  
+  /* League labels like SportsCenter */
+  .league-label {
+    background-color: #0066cc;
+    color: white;
     font-weight: 700;
-    padding: 3px 8px;
-    margin-left: 12px;
-    border-radius: 3px;
-    text-transform: uppercase;
+    padding: 2px 6px;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+  
+  /* Houston team highlight */
+  .houston {
+    color: #FF3E00;
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(255, 62, 0, 0.3);
+  }
+  
+  /* Game status styles */
+  .status {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 5px;
+    margin-left: 8px;
   }
   
   .status-live {
-    background: #FF0000;
+    background-color: #cc0000;
     color: white;
-    animation: pulse 2s infinite;
-  }
-  
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
   }
   
   .status-final {
-    background: #333;
+    background-color: #333;
     color: white;
   }
   
-  .status-upcoming {
-    background: #555;
-    color: white;
-  }
-
-  /* Highlight content */
+  /* Scores and teams */
   .team-name { font-weight: 700; }
-  .team-score { font-weight: 900; margin: 0 5px; }
-  .player-stats { color: #00FFFF; font-weight: 700; margin-left: 15px; }
+  .score { font-weight: 700; margin: 0 4px; }
+  .player-stat { color: #7ad2ff; margin-left: 10px; font-size: 16px; }
   
-  /* --- RIGHT: CLOCK --- */
+  /* Separator dot - SportsCenter style */
+  .separator {
+    width: 4px;
+    height: 4px;
+    background-color: #0066cc;
+    border-radius: 50%;
+    margin: 0 15px;
+    display: inline-block;
+  }
+  
+  /* --- RIGHT: CLOCK AREA --- */
   .ticker-clock {
-    width: 130px;
-    min-width: 130px;
+    width: 110px;
+    min-width: 110px;
     height: 100%;
-    background: linear-gradient(135deg, #111 0%, #000 100%);
-    border-left: 2px solid #222;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-left: 2px solid #0066cc;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 50;
     position: relative;
+    z-index: 20;
   }
   
-  #clock-time { 
-    font-family: 'Chakra Petch', sans-serif;
-    font-size: 24px; 
-    font-weight: 700; 
-    color: #FFF; 
-    letter-spacing: 1px; 
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  #clock-time {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 0 8px rgba(0, 150, 255, 0.5);
   }
   
-  #clock-date { 
-    font-size: 12px; 
-    color: #999; 
-    font-weight: 700; 
-    margin-top: 2px; 
-    text-transform: uppercase; 
+  #clock-date {
+    font-size: 12px;
+    color: #7ad2ff;
+    font-weight: 700;
+    margin-top: 2px;
   }
 </style>
 </head>
 
 <body>
 
-<div class="broadcast-overlay"></div>
+<!-- Space Background -->
+<div class="space-bg">
+  <div class="stars"></div>
+  <div class="nebula"></div>
+  <div class="planet"></div>
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
+  <div class="shooting-star"></div>
+</div>
 
-<div class="pro-ticker" id="main-ticker">
+<!-- Main Ticker -->
+<div class="espn-ticker">
   
+  <!-- Logo Area -->
   <div class="ticker-logo">
-    <div class="logo-bg"></div>
-    <div class="ticker-title-container">
-      <div class="ticker-title">NSN SPORTS</div>
-    </div>
+    <div class="ticker-title">NSN SPORTS</div>
     <div class="ticker-tagline">Powered by NotSoCj⭐️</div>
   </div>
-
-  <div class="scroll-area">
-    <div class="scroll-mask"></div>
-    <div class="scroll-track" id="track"></div>
+  
+  <!-- Content Area with Two Lines -->
+  <div class="ticker-content">
+    <div class="ticker-lines">
+      <!-- Top Line -->
+      <div class="ticker-line">
+        <div class="line-items" id="line1">
+          <!-- Line 1 content will be inserted here by JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Bottom Line -->
+      <div class="ticker-line">
+        <div class="line-items" id="line2">
+          <!-- Line 2 content will be inserted here by JavaScript -->
+        </div>
+      </div>
+    </div>
   </div>
-
+  
+  <!-- Clock Area -->
   <div class="ticker-clock">
     <div id="clock-time">--:--</div>
     <div id="clock-date">--/--</div>
   </div>
-
+  
 </div>
 
 <script>
   // ============ CONFIGURATION ============
-  const SPEED_PX_PER_SEC = 100; 
   const PROXY_URLS = [
     "https://corsproxy.io/?",
-    "https://api.allorigins.win/raw?url=",
-    "https://cors-anywhere.herokuapp.com/",
-    "https://crossorigin.me/",
-    "https://thingproxy.freeboard.io/fetch/"
+    "https://api.allorigins.win/raw?url="
   ];
   
-  // Pick a random proxy to distribute load and have fallbacks
-  function getProxy() {
-    return PROXY_URLS[Math.floor(Math.random() * PROXY_URLS.length)];
-  }
-  
   const REFRESH_INTERVAL_MS = 120000; // 2 mins
+  const HOUSTON_TEAMS = [
+    "HOU", "Rockets", "Texans", "Astros", "Dynamo", "Dash", "Cougars", "Owls", "Houston"
+  ];
   
-  const track = document.getElementById("track");
-  
-  let scrollPosition = 0;
-  let contentWidth = 0; 
-  let lastTime = 0;
-
   // ============ CLOCK ============
   function updateClock() {
     const now = new Date();
@@ -317,82 +389,54 @@
   updateClock();
 
   // ============ TYPEWRITER RESET ============
-  // Reset typewriter animation periodically
   function resetTypewriter() {
     const title = document.querySelector('.ticker-title');
     title.style.animation = 'none';
     void title.offsetWidth; // Trigger reflow
-    title.style.animation = 'typing 3.5s steps(11, end) forwards, blink-caret 0.75s step-end infinite';
+    title.style.animation = 'typing 3s steps(11, end) forwards, blink-caret 0.75s step-end infinite';
   }
   
-  // Reset every 10 seconds
   setInterval(resetTypewriter, 10000);
 
   // ============ DATA FETCHING ============
-  
-  // Fetch Utilities
   async function fetchData(url) {
-    // Try each proxy until one works
-    for (let i = 0; i < PROXY_URLS.length; i++) {
+    for (let proxy of PROXY_URLS) {
       try {
-        const proxy = PROXY_URLS[i];
-        const res = await fetch(proxy + encodeURIComponent(url), { 
-          timeout: 5000, 
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } 
-        });
-        if (res.ok) {
-          return await res.json();
-        }
+        const res = await fetch(proxy + encodeURIComponent(url), { timeout: 5000 });
+        if (res.ok) return await res.json();
       } catch (e) {
-        console.log("Proxy failed, trying next one");
+        console.log("Proxy failed, trying next");
       }
     }
-    return { events: [] }; // Return empty data if all proxies fail
+    return { events: [] };
   }
 
   async function fetchText(url) {
-    // Try each proxy until one works
-    for (let i = 0; i < PROXY_URLS.length; i++) {
+    for (let proxy of PROXY_URLS) {
       try {
-        const proxy = PROXY_URLS[i];
-        const res = await fetch(proxy + encodeURIComponent(url), { 
-          timeout: 5000,
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-        });
-        if (res.ok) {
-          return await res.text();
-        }
+        const res = await fetch(proxy + encodeURIComponent(url), { timeout: 5000 });
+        if (res.ok) return await res.text();
       } catch (e) {
-        console.log("Proxy failed, trying next one");
+        console.log("Proxy failed, trying next");
       }
     }
     return "";
   }
 
-  // 1. Sports Data Sources
+  // Check if a team is from Houston
+  function isHoustonTeam(teamName) {
+    return HOUSTON_TEAMS.some(name => teamName.includes(name));
+  }
+
+  // Sports Data Sources
   async function getSportsData() {
-    // Multiple sources for different leagues
     const sources = [
-      // ESPN Sources
-      { league: "NFL", label: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
-      { league: "NBA", label: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
-      { league: "MLB", label: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
-      { league: "NHL", label: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
-      { league: "MLS", label: "MLS", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard" },
-      
-      // College Sports
-      { league: "NCAAF", label: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
-      { league: "NCAAB", label: "CBB", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" },
-      
-      // International Soccer
-      { league: "EPL", label: "EPL", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard" },
-      { league: "LALIGA", label: "LIGA", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard" },
-      { league: "BUNDESLIGA", label: "BUND", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard" },
-      { league: "SERIEA", label: "SERIE", url: "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard" },
-      
-      // Other Major Sports
-      { league: "F1", label: "F1", url: "https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard" },
-      { league: "PGA", label: "PGA", url: "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard" }
+      { league: "NFL", url: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard" },
+      { league: "NBA", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard" },
+      { league: "MLB", url: "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard" },
+      { league: "NHL", url: "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard" },
+      { league: "CFB", url: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=25&groups=80" },
+      { league: "CBB", url: "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?limit=25&groups=50" }
     ];
 
     let items = [];
@@ -402,22 +446,11 @@
         const data = await fetchData(source.url);
         const events = data.events || [];
         
-        // Process up to 3 games per league to keep the rotation diverse
-        for (const ev of events.slice(0, 3)) {
+        for (const ev of events.slice(0, 5)) {
           const comp = ev.competitions[0];
           const status = ev.status.type.state; // pre, in, post
           const detail = ev.status.type.shortDetail;
           
-          // Skip events that are too far in the future (more than 1 day away)
-          if (status === "pre") {
-            const eventDate = new Date(ev.date);
-            const now = new Date();
-            const diffTime = Math.abs(eventDate - now);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays > 1) continue;
-          }
-          
-          // Process competitors
           if (comp.competitors && comp.competitors.length >= 2) {
             const home = comp.competitors.find(team => team.homeAway === "home") || comp.competitors[0];
             const away = comp.competitors.find(team => team.homeAway === "away") || comp.competitors[1];
@@ -426,53 +459,61 @@
             let homeName = home.team.abbreviation || home.team.shortDisplayName;
             let awayName = away.team.abbreviation || away.team.shortDisplayName;
             
-            if (home.curatedRank && home.curatedRank.current <= 25) {
+            // Check for Houston teams
+            const homeIsHouston = isHoustonTeam(home.team.displayName);
+            const awayIsHouston = isHoustonTeam(away.team.displayName);
+            
+            if (home.curatedRank?.current <= 25) {
               homeName = `#${home.curatedRank.current} ${homeName}`;
             }
             
-            if (away.curatedRank && away.curatedRank.current <= 25) {
+            if (away.curatedRank?.current <= 25) {
               awayName = `#${away.curatedRank.current} ${awayName}`;
             }
             
             const homeScore = home.score;
             const awayScore = away.score;
             
-            // Create the HTML for this event
-            let statusClass = "";
-            let statusText = "";
-            let mainHtml = "";
+            // Format the HTML based on game status
+            let statusHtml = "";
+            let gameHtml = "";
+            
+            // Format the team names with Houston highlight
+            const homeNameHtml = homeIsHouston ? 
+              `<span class="houston">${homeName}</span>` : 
+              `<span class="team-name">${homeName}</span>`;
+              
+            const awayNameHtml = awayIsHouston ? 
+              `<span class="houston">${awayName}</span>` : 
+              `<span class="team-name">${awayName}</span>`;
             
             if (status === "in") {
-              statusClass = "status status-live";
-              statusText = "LIVE";
-              mainHtml = `<span class="team-name">${awayName}</span> <span class="team-score">${awayScore}</span> @ <span class="team-name">${homeName}</span> <span class="team-score">${homeScore}</span> <span style="color:#FF5555; margin-left:8px;">${detail}</span>`;
+              statusHtml = `<span class="status status-live">LIVE</span>`;
+              gameHtml = `${awayNameHtml} <span class="score">${awayScore}</span> @ ${homeNameHtml} <span class="score">${homeScore}</span> ${detail}`;
             } else if (status === "post") {
-              statusClass = "status status-final";
-              statusText = "FINAL";
-              mainHtml = `<span class="team-name">${awayName}</span> <span class="team-score">${awayScore}</span> @ <span class="team-name">${homeName}</span> <span class="team-score">${homeScore}</span>`;
+              statusHtml = `<span class="status status-final">FINAL</span>`;
+              gameHtml = `${awayNameHtml} <span class="score">${awayScore}</span> @ ${homeNameHtml} <span class="score">${homeScore}</span>`;
             } else {
-              statusClass = "status status-upcoming";
-              statusText = detail;
-              mainHtml = `<span class="team-name">${awayName}</span> @ <span class="team-name">${homeName}</span>`;
+              gameHtml = `${awayNameHtml} @ ${homeNameHtml} ${detail}`;
             }
             
-            // Get top performer stats if game is in progress or completed
+            // Get top performer if game is in progress or completed
             let playerStatsHtml = "";
-            if (status === "in" || status === "post") {
-              if (comp.leaders && comp.leaders.length > 0 && comp.leaders[0].leaders && comp.leaders[0].leaders.length > 0) {
-                const topCategory = comp.leaders[0];
-                const topPlayer = topCategory.leaders[0];
-                const playerName = topPlayer.athlete?.shortName || topPlayer.athlete?.displayName || "Player";
-                const statValue = topPlayer.displayValue;
-                const statName = topCategory.shortDisplayName || topCategory.displayName;
-                
-                playerStatsHtml = `<span class="player-stats">⭐ ${playerName}: ${statValue} ${statName}</span>`;
-              }
+            if ((status === "in" || status === "post") && comp.leaders && comp.leaders.length > 0 && comp.leaders[0].leaders && comp.leaders[0].leaders.length > 0) {
+              const topCategory = comp.leaders[0];
+              const topPlayer = topCategory.leaders[0];
+              const playerName = topPlayer.athlete?.shortName || topPlayer.athlete?.displayName || "Player";
+              const statValue = topPlayer.displayValue;
+              const statName = topCategory.shortDisplayName || topCategory.displayName;
+              
+              playerStatsHtml = `<span class="player-stat">⭐ ${playerName}: ${statValue} ${statName}</span>`;
             }
             
-            // Add to items array
+            // SportsCenter style item
             items.push({
-              html: `<div class="league-badge ${source.league.toLowerCase()}">${source.label}</div> ${mainHtml} <span class="${statusClass}">${statusText}</span> ${playerStatsHtml}`
+              html: `<span class="league-label">${source.league}</span> ${gameHtml} ${statusHtml} ${playerStatsHtml}`,
+              priority: (homeIsHouston || awayIsHouston) ? 10 : 1, // Prioritize Houston teams
+              status: status // To sort by game status
             });
           }
         }
@@ -481,39 +522,52 @@
       }
     }
     
-    return items;
+    // Sort items - Houston teams first, then LIVE games, then upcoming/completed
+    items.sort((a, b) => {
+      // Priority first (Houston teams)
+      if (a.priority !== b.priority) return b.priority - a.priority;
+      
+      // Then by status (in > pre > post)
+      if (a.status !== b.status) {
+        if (a.status === "in") return -1;
+        if (b.status === "in") return 1;
+        if (a.status === "pre") return -1;
+        if (b.status === "pre") return 1;
+      }
+      
+      return 0;
+    });
+    
+    return items.map(item => item.html);
   }
 
-  // 2. News from Multiple Sources
+  // News Sources
   async function getSportsNews() {
-    // Multiple news sources
     const sources = [
-      { name: "ESPN NFL", url: "https://www.espn.com/espn/rss/nfl/news" },
-      { name: "ESPN NBA", url: "https://www.espn.com/espn/rss/nba/news" },
-      { name: "ESPN MLB", url: "https://www.espn.com/espn/rss/mlb/news" },
-      { name: "ESPN NHL", url: "https://www.espn.com/espn/rss/nhl/news" },
-      { name: "CBS Sports", url: "https://www.cbssports.com/rss/headlines/" },
-      { name: "Yahoo Sports", url: "https://sports.yahoo.com/rss/" },
-      { name: "FOX Sports", url: "https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU" }
+      { name: "ESPN", url: "https://www.espn.com/espn/rss/news" },
+      { name: "CBS Sports", url: "https://www.cbssports.com/rss/headlines/" }
     ];
     
     let newsItems = [];
     const parser = new DOMParser();
     
-    // Get 2 news items from each source
     for (const source of sources) {
       try {
         const xmlStr = await fetchText(source.url);
         if (!xmlStr) continue;
         
         const xml = parser.parseFromString(xmlStr, "text/xml");
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, 2);
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 3);
         
         for (const item of items) {
           const title = item.querySelector("title")?.textContent.replace("<![CDATA[", "").replace("]]>", "") || "";
           if (title) {
+            // Check if news is about Houston teams
+            const isHoustonNews = HOUSTON_TEAMS.some(team => title.includes(team));
+            
             newsItems.push({
-              html: `<div class="league-badge news">NEWS</div> ${title}`
+              html: `<span class="league-label">NEWS</span> ${title}`,
+              priority: isHoustonNews ? 10 : 1 // Prioritize Houston news
             });
           }
         }
@@ -522,31 +576,13 @@
       }
     }
     
-    return newsItems;
-  }
-
-  // 3. Generate Engagement Content
-  function getEngagementContent() {
-    const messages = [
-      "POLL: Who will win MVP this season? Reply with your pick!",
-      "SOCIAL: Follow @NotSoCj on all platforms for more updates",
-      "TRIVIA: Which team has the most championships in NBA history?",
-      "INTERACT: Drop a 🔥 if you're enjoying the stream!",
-      "QUESTION: Who's your all-time favorite athlete?",
-      "PREDICTION: Will we see a new champion this year?",
-      "DISCUSS: Greatest sports comeback of all time?",
-      "DEBATE: Jordan vs LeBron - who's the GOAT?",
-      "POLL: Best sports city in America? Reply with your pick!"
-    ];
+    // Sort by priority
+    newsItems.sort((a, b) => b.priority - a.priority);
     
-    // Shuffle and take 3 random engagement messages
-    const shuffled = [...messages].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3).map(msg => ({
-      html: `<div class="league-badge live">LIVE</div> ${msg}`
-    }));
+    return newsItems.map(item => item.html);
   }
 
-  // ============ RENDER & ANIMATE ============
+  // Build the ticker content
   async function buildTicker() {
     try {
       // Get all data in parallel
@@ -555,63 +591,78 @@
         getSportsNews()
       ]);
       
-      const engagementData = getEngagementContent();
-      
-      // Combine all data
-      let allItems = [...sportsData, ...newsData, ...engagementData];
-      
-      // Shuffle to mix different content types
-      allItems.sort(() => Math.random() - 0.5);
-      
       // If no data, show loading message
-      if (allItems.length === 0) {
-        allItems = [{ html: "<div class='league-badge'>INFO</div> Loading sports data... Please wait." }];
+      if (sportsData.length === 0 && newsData.length === 0) {
+        document.getElementById('line1').innerHTML = '<div class="line-item"><span class="league-label">INFO</span> Loading sports data... Please wait.</div>';
+        document.getElementById('line2').innerHTML = '<div class="line-item"><span class="league-label">INFO</span> Connecting to sports networks...</div>';
+        return;
       }
       
-      // Clear and rebuild the track
-      track.innerHTML = "";
+      // SportsCenter style - split content between two lines
+      // Line 1: Scores and game updates
+      // Line 2: News and additional info
       
-      allItems.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "ticker-item";
-        div.innerHTML = item.html;
-        track.appendChild(div);
-      });
+      // Clear existing content
+      document.getElementById('line1').innerHTML = '';
+      document.getElementById('line2').innerHTML = '';
       
-      // Duplicate content for seamless loop
-      track.innerHTML += track.innerHTML;
+      // Build line 1 with scores
+      let line1Html = '';
+      for (let i = 0; i < sportsData.length; i++) {
+        line1Html += `<div class="line-item">${sportsData[i]}`;
+        
+        // Add separator dot between items except last one
+        if (i < sportsData.length - 1) {
+          line1Html += `<span class="separator"></span>`;
+        }
+        
+        line1Html += `</div>`;
+      }
       
-      // Update content width for animation
-      contentWidth = track.scrollWidth / 2;
+      // Build line 2 with news
+      let line2Html = '';
+      for (let i = 0; i < newsData.length; i++) {
+        line2Html += `<div class="line-item">${newsData[i]}`;
+        
+        // Add separator dot between items except last one
+        if (i < newsData.length - 1) {
+          line2Html += `<span class="separator"></span>`;
+        }
+        
+        line2Html += `</div>`;
+      }
+      
+      // Update the DOM
+      document.getElementById('line1').innerHTML = line1Html;
+      document.getElementById('line2').innerHTML = line2Html;
+      
+      // Reset animations
+      document.getElementById('line1').style.animation = 'none';
+      document.getElementById('line2').style.animation = 'none';
+      
+      void document.getElementById('line1').offsetWidth; // Trigger reflow
+      void document.getElementById('line2').offsetWidth; // Trigger reflow
+      
+      // Adjust animation duration based on content length
+      const line1Width = document.getElementById('line1').scrollWidth;
+      const line2Width = document.getElementById('line2').scrollWidth;
+      const viewportWidth = window.innerWidth;
+      
+      const line1Duration = Math.max(30, line1Width / viewportWidth * 30);
+      const line2Duration = Math.max(30, line2Width / viewportWidth * 30);
+      
+      document.getElementById('line1').style.animation = `scroll-line ${line1Duration}s linear infinite`;
+      document.getElementById('line2').style.animation = `scroll-line ${line2Duration}s linear infinite`;
       
     } catch (error) {
       console.error("Error building ticker:", error);
-      track.innerHTML = "<div class='ticker-item'><div class='league-badge'>ERROR</div> Unable to load sports data. Retrying...</div>";
+      document.getElementById('line1').innerHTML = '<div class="line-item"><span class="league-label">ERROR</span> Unable to load data. Retrying...</div>';
     }
-  }
-
-  function animate(now) {
-    if (!lastTime) lastTime = now;
-    const dt = now - lastTime;
-    
-    lastTime = now;
-    const move = (SPEED_PX_PER_SEC / 1000) * dt;
-    scrollPosition += move;
-    
-    if (scrollPosition >= contentWidth) {
-      scrollPosition = 0;
-    }
-    
-    track.style.transform = `translateX(-${scrollPosition}px)`;
-    requestAnimationFrame(animate);
   }
 
   // Initialize
   buildTicker();
   setInterval(buildTicker, REFRESH_INTERVAL_MS);
-  requestAnimationFrame(animate);
-  
-  // Start typewriter animation
   resetTypewriter();
 </script>
 </body>
