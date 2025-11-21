@@ -453,7 +453,7 @@
                 this.data = newData.sort(() => Math.random() - 0.5);
             }
             animate() {
-                this.items.forEach(i => { i.x -= 1.5; i.el.style.left = i.x+'px'; });
+                this.items.forEach(i => { i.x -= 0.75; i.el.style.left = i.x+'px'; }); // Adjusted speed here
                 if(this.items.length && this.items[0].x < -1000) { this.items[0].el.remove(); this.items.shift(); }
                 let last = this.items[this.items.length-1];
                 let right = last ? last.x + last.el.offsetWidth : 0;
