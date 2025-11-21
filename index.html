@@ -15,8 +15,10 @@
             --brand-red: #E50914;
             --brand-dark: #0a0a0a;
             --brand-gold: #FFD700;
-            --glass-bg: rgba(10, 10, 10, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --brand-cyan: #00f2ff;
+            --brand-purple: #d400ff;
+            --glass-bg: rgba(8, 8, 8, 0.94);
+            --glass-border: rgba(255, 255, 255, 0.12);
             --text-main: #ffffff;
         }
 
@@ -126,7 +128,7 @@
         .battle-text { font-family: 'Oswald'; font-size: 12px; font-weight: 700; text-transform: uppercase; white-space: nowrap; opacity: 0.8; }
         .battle-marker { width: 4px; height: 100%; background: #fff; box-shadow: 0 0 10px white; z-index: 5; }
 
-        /* --- 5. NEWS TICKER --- */
+        /* --- 5. WIRED TICKER (Bottom of Stack) --- */
         .news-ticker-wrapper {
             width: 96%; height: 45px;
             margin-top: 8px; 
@@ -134,51 +136,24 @@
             z-index: 10;
         }
         .news-label {
-            width: 90px; height: 100%; background: var(--brand-gold); color: black;
+            width: 130px; height: 100%; background: var(--brand-gold); color: black;
             display: flex; justify-content: center; align-items: center;
             font-family: 'Oswald'; font-weight: 700; font-size: 16px;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); z-index: 5;
+            box-shadow: 5px 0 10px rgba(0,0,0,0.5);
         }
         .ticker-content { flex: 1; height: 100%; position: relative; overflow: hidden; }
         .ticker-item {
             position: absolute; top: 50%; transform: translateY(-50%);
             white-space: nowrap; font-size: 18px; font-weight: 600; display: flex; gap: 10px;
         }
+        
+        /* Text Styles */
         .t-news { color: white; }
         .t-injury { color: #ff4444; font-weight: 700; }
-
-        /* --- 6. PLAYER SPOTLIGHT (UPDATED FOR REAL DATA) --- */
-        .player-card {
-            position: absolute; right: -450px; top: 250px;
-            width: 380px; height: 120px;
-            background: rgba(15,15,15,0.95);
-            border-left: 6px solid var(--brand-gold);
-            padding: 0; border-radius: 8px;
-            box-shadow: -10px 10px 30px rgba(0,0,0,0.5);
-            transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 5;
-            display: flex; overflow: hidden;
-        }
-        .player-card.active { right: 20px; }
-        
-        .pc-img-container {
-            width: 120px; height: 100%;
-            background: #222;
-            position: relative;
-        }
-        .pc-img-container img {
-            width: 100%; height: 100%; object-fit: cover; object-position: top;
-        }
-        
-        .pc-info {
-            flex: 1; padding: 15px;
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        
-        .pc-header { font-family: 'Oswald'; color: var(--brand-gold); font-size: 12px; margin-bottom: 2px; text-transform: uppercase;}
-        .pc-name { font-size: 20px; font-weight: 800; color: white; line-height: 1.1; margin-bottom: 4px;}
-        .pc-stat { font-family: 'Inter'; font-size: 14px; color: #ccc; font-weight: 600; }
-        .pc-team { position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-weight: 900; }
+        .t-impact { color: var(--brand-purple); font-weight: 800; text-shadow: 0 0 5px rgba(212, 0, 255, 0.3); }
+        .t-score { color: #eee; font-weight: 700; font-family: 'Oswald'; letter-spacing: 0.5px; }
+        .t-question { color: var(--brand-cyan); font-weight: 800; font-family: 'Oswald'; letter-spacing: 1px; text-shadow: 0 0 10px rgba(0, 242, 255, 0.4); }
 
         /* --- 7. ADMIN --- */
         .admin-panel {
@@ -206,7 +181,7 @@
                 <div class="brand-handle">@notso_cj</div>
             </div>
             <div class="matchup-container" id="matchupDisplay">
-                <div style="width:100%; text-align:center; opacity:0.5">LOADING DATA...</div>
+                <div style="width:100%; text-align:center; opacity:0.5">LOADING FEEDS...</div>
             </div>
         </div>
 
@@ -223,34 +198,20 @@
 
         <!-- NEWS TICKER -->
         <div class="glass-panel news-ticker-wrapper">
-            <div class="news-label">NEWS</div>
+            <div class="news-label">WIRED BY CJ</div>
             <div class="ticker-content">
                 <div class="ticker-track" id="newsTrack"></div>
             </div>
         </div>
     </div>
 
-    <!-- PLAYER SPOTLIGHT POPUP -->
-    <div class="glass-panel player-card" id="playerCard">
-        <div class="pc-img-container">
-            <img id="pcImg" src="" onerror="this.style.display='none'">
-        </div>
-        <div class="pc-info">
-            <div class="pc-header" id="pcLabel">IMPACT PLAYER</div>
-            <div class="pc-name" id="pcName">LOADING...</div>
-            <div class="pc-stat" id="pcStat">WAITING FOR DATA</div>
-            <div class="pc-team" id="pcTeam">ESPN</div>
-        </div>
-    </div>
-
     <!-- ADMIN PANEL -->
     <div class="admin-panel" id="adminPanel">
-        <div style="color:#888; font-size:12px;">COMMAND CENTER v10.0</div>
+        <div style="color:#888; font-size:12px;">COMMAND CENTER v14.0</div>
         <div class="grid-btns">
             <button class="btn" onclick="dataService.manualNext()">NEXT GAME</button>
             <button class="btn" onclick="battleSystem.push('home')">PUSH HOME</button>
             <button class="btn" onclick="battleSystem.push('away')">PUSH AWAY</button>
-            <button class="btn" onclick="spotlight.trigger()">SHOW PLAYER</button>
         </div>
     </div>
 
@@ -277,15 +238,25 @@
             }
         }
 
-        // --- 2. DATA SERVICE (REAL STATS) ---
+        // --- 2. DATA SERVICE (REAL STATS INTEGRATED) ---
         class DataService {
             constructor() {
                 this.api = 'https://site.api.espn.com/apis/site/v2/sports';
                 this.games = [];
-                this.news = [];
-                this.impactPlayers = []; // STORE REAL PLAYERS
                 this.idx = 0;
-                this.leagues = [{s:'football',l:'nfl',n:'NFL'}, {s:'basketball',l:'nba',n:'NBA'}];
+                this.leagues = [
+                    {s:'football',l:'nfl',n:'NFL', icon:'🏈'}, 
+                    {s:'basketball',l:'nba',n:'NBA', icon:'🏀'},
+                    {s:'hockey',l:'nhl',n:'NHL', icon:'🏒'}
+                ];
+                // Pre-baked engagement questions
+                this.questions = [
+                    "CHAT: Who wins the Championship this year?",
+                    "DEBATE: Who is the current MVP?",
+                    "POLL: Over or Under on the next game?",
+                    "CHAT: What's your favorite team? Type it now!",
+                    "TRIVIA: Who has the most rings in history?"
+                ];
                 this.start();
             }
             
@@ -296,27 +267,59 @@
             }
 
             async fetch() {
-                let g = [], n = [], p = [];
+                let g = [], n = [];
                 for(let lg of this.leagues) {
                     try {
                         let sRes = await fetch(`${this.api}/${lg.s}/${lg.l}/scoreboard`);
                         let sData = await sRes.json();
+                        let players = [];
+                        
                         if(sData.events) {
                             sData.events.forEach(e => {
-                                g.push(this.parseGame(e, lg.n));
-                                p.push(...this.extractPlayers(e)); // GET PLAYERS
+                                const parsed = this.parseGame(e, lg.n);
+                                g.push(parsed);
+                                players.push(...this.extractPlayers(e, lg.n));
+                                
+                                // Add Live Score to News Feed
+                                n.push({
+                                    text: `${parsed.aT} ${parsed.aS} - ${parsed.hT} ${parsed.hS} (${parsed.time})`,
+                                    type: 't-score',
+                                    icon: lg.icon
+                                });
                             });
                         }
 
                         let nRes = await fetch(`${this.api}/${lg.s}/${lg.l}/news`);
                         let nData = await nRes.json();
-                        if(nData.articles) n.push(...nData.articles.map(a=>({text:a.headline, type:'news'})));
+                        if(nData.articles) n.push(...nData.articles.map(a=>({text:a.headline, type:'t-news', icon:lg.icon})));
+                        
+                        // IMPACT PLAYERS
+                        if(players.length) {
+                            const impact = players.map(p => ({
+                                text: `IMPACT: ${p.name} (${p.team}) - ${p.stat}`,
+                                type: 't-impact',
+                                icon: '⚡'
+                            }));
+                            n.push(...impact);
+                        }
+
                     } catch(e) {}
                 }
+                
+                // INJECT QUESTIONS (Every 5th item roughly)
+                if(n.length > 0) {
+                    for(let i=0; i<3; i++) {
+                        n.push({
+                            text: this.questions[Math.floor(Math.random() * this.questions.length)],
+                            type: 't-question',
+                            icon: '💬'
+                        });
+                    }
+                }
+
                 g.sort((a,b) => (a.live===b.live)?0 : a.live?-1:1);
                 if(g.length) this.games = g;
-                if(n.length) { this.news = n; if(window.ticker) window.ticker.update(n); }
-                if(p.length) this.impactPlayers = p; // UPDATE PLAYER POOL
+                if(n.length) { if(window.ticker) window.ticker.update(n); }
                 this.updateUI();
             }
 
@@ -324,39 +327,54 @@
                 let c = e.competitions[0];
                 let h = c.competitors.find(x=>x.homeAway==='home');
                 let a = c.competitors.find(x=>x.homeAway==='away');
+                let tStr = e.status.type.shortDetail.replace(' - ', ' '); 
+                
                 return {
                     league: lg,
-                    time: e.status.type.shortDetail,
+                    time: tStr,
                     hT: h.team.abbreviation, hS: h.score, hL: h.team.logo,
                     aT: a.team.abbreviation, aS: a.score, aL: a.team.logo,
                     live: e.status.type.state === 'in'
                 };
             }
 
-            extractPlayers(e) {
-                // Extracts Leaders from the API Response
+            extractPlayers(e, league) {
                 let players = [];
                 let c = e.competitions[0];
+                
                 if(c.competitors) {
                     c.competitors.forEach(team => {
                         if(team.leaders) {
+                            // STAT LABELS MAP
+                            const statMap = {
+                                'goals': 'GOALS', 'assists': 'AST', 'points': 'PTS',
+                                'rebounds': 'REB', 'passingYards': 'PASS YDS',
+                                'rushingYards': 'RUSH YDS', 'receivingYards': 'REC YDS'
+                            };
+
                             team.leaders.forEach(cat => {
-                                if(cat.leaders) {
-                                    cat.leaders.forEach(ldr => {
-                                        players.push({
-                                            name: ldr.athlete.displayName,
-                                            stat: ldr.displayValue,
-                                            desc: cat.displayName, // e.g. Passing, Receiving
-                                            headshot: ldr.athlete.headshot ? ldr.athlete.headshot.href : '',
-                                            team: team.team.abbreviation
+                                if(statMap[cat.name] || cat.name === 'points') {
+                                    if(cat.leaders) {
+                                        cat.leaders.forEach(ldr => {
+                                            // STRICT FORMATTING: Number + Label
+                                            let rawVal = ldr.displayValue;
+                                            let label = statMap[cat.name] || "STATS";
+                                            // Check if rawVal already has text (unlikely in raw API but good safety)
+                                            let finalStat = rawVal.match(/[a-z]/i) ? rawVal : `${rawVal} ${label}`;
+
+                                            players.push({
+                                                name: ldr.athlete.displayName,
+                                                stat: finalStat,
+                                                team: team.team.abbreviation
+                                            });
                                         });
-                                    });
+                                    }
                                 }
                             });
                         }
                     });
                 }
-                return players;
+                return players.slice(0, 2);
             }
 
             cycleGame() {
@@ -370,10 +388,14 @@
             updateUI() {
                 if(!this.games.length) return;
                 let g = this.games[this.idx];
-                let tParts = g.time.split(" - ");
-                let topT = tParts[0] || g.time; 
-                let botT = tParts[1] || "";
-                
+                let topT = g.time;
+                let botT = "";
+                if(g.time.length > 10 && g.time.includes(' ')) {
+                    let split = g.time.indexOf(' ');
+                    topT = g.time.substring(0, split);
+                    botT = g.time.substring(split+1);
+                }
+
                 document.getElementById('matchupDisplay').innerHTML = `
                     <div class="team-group away">
                         <div class="team-score">${g.aS}</div>
@@ -426,10 +448,13 @@
                 this.data = ["Waiting for ESPN News..."];
                 this.animate();
             }
-            update(newData) { this.data = newData; }
+            update(newData) { 
+                // Shuffle news
+                this.data = newData.sort(() => Math.random() - 0.5);
+            }
             animate() {
                 this.items.forEach(i => { i.x -= 1.5; i.el.style.left = i.x+'px'; });
-                if(this.items.length && this.items[0].x < -800) { this.items[0].el.remove(); this.items.shift(); }
+                if(this.items.length && this.items[0].x < -1000) { this.items[0].el.remove(); this.items.shift(); }
                 let last = this.items[this.items.length-1];
                 let right = last ? last.x + last.el.offsetWidth : 0;
                 if(right < window.innerWidth) this.spawn(right + 50);
@@ -438,41 +463,21 @@
             spawn(x) {
                 let item = this.data[Math.floor(Math.random()*this.data.length)];
                 let text = item.text || item;
-                let isInj = text.toLowerCase().includes('injury');
+                let type = item.type || 't-news';
+                
+                // Auto-detect Injury
+                if(text.toLowerCase().includes('injury')) type = 't-injury';
+                
+                let icon = item.icon || "📰";
+                if(type === 't-impact') icon = "⚡";
+                if(type === 't-injury') icon = "🚑";
+                if(type === 't-question') icon = "💬";
+
                 let el = document.createElement('div');
-                el.className = 'ticker-item';
-                el.innerHTML = `<span style="color:${isInj?'#f00':'#fb0'}">>></span> <span style="color:${isInj?'#faa':'#fff'}">${text}</span>`;
+                el.className = `ticker-item ${type}`;
+                el.innerHTML = `<span style="margin-right:5px; opacity:0.7;">${icon}</span> ${text}`;
                 this.track.appendChild(el);
                 this.items.push({el, x});
-            }
-        }
-
-        // --- 5. PLAYER SPOTLIGHT (REAL DATA) ---
-        class Spotlight {
-            constructor() {
-                setInterval(() => { if(Math.random()>0.6) this.trigger(); }, 45000); 
-            }
-            trigger() {
-                // Get random player from real pool
-                if(!dataService.impactPlayers.length) return;
-                let p = dataService.impactPlayers[Math.floor(Math.random()*dataService.impactPlayers.length)];
-                
-                document.getElementById('pcName').innerText = p.name;
-                document.getElementById('pcStat').innerText = p.stat;
-                document.getElementById('pcLabel').innerText = p.desc.toUpperCase() + " LEADER";
-                document.getElementById('pcTeam').innerText = p.team;
-                
-                let img = document.getElementById('pcImg');
-                if(p.headshot) {
-                    img.src = p.headshot;
-                    img.style.display = 'block';
-                } else {
-                    img.style.display = 'none';
-                }
-                
-                let card = document.getElementById('playerCard');
-                card.classList.add('active');
-                setTimeout(() => card.classList.remove('active'), 8000);
             }
         }
 
@@ -481,7 +486,6 @@
         const dataService = new DataService();
         const battleSystem = new BattleSystem();
         window.ticker = new NewsTicker();
-        const spotlight = new Spotlight();
 
         document.addEventListener('keydown', e => { 
             if(e.key==='`') document.getElementById('adminPanel').classList.toggle('visible'); 
@@ -490,5 +494,4 @@
     </script>
 </body>
 </html>
-
 
