@@ -37,7 +37,7 @@
             transition: filter 1s ease;
         }
 
-        /* --- 3. BROADCAST HEADER (TOP) --- */
+        /* --- 3. BROADCAST HEADER (TOP STACK) --- */
         .broadcast-island {
             position: absolute;
             top: 80px; left: 50%; transform: translateX(-50%);
@@ -96,17 +96,17 @@
         .clock-main { font-family: 'Oswald'; font-size: 20px; color: var(--brand-gold); font-weight: 700; }
         .quarter-sub { font-family: 'Inter'; font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; }
 
-        /* --- 4. NEW FEATURE: BATTLE BAR (Engagement) --- */
-        /* Attached directly under the scoreboard */
+        /* --- 4. BATTLE BAR (Engagement) --- */
         .battle-bar-wrapper {
             width: 94%; height: 30px;
-            margin-top: -5px; /* Tuck under */
+            margin-top: -5px; 
             background: black;
             border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
             position: relative; overflow: hidden;
             display: flex; align-items: center;
             border: 1px solid var(--glass-border);
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 15;
         }
         
         .battle-fill {
@@ -124,28 +124,22 @@
         }
         
         .battle-text { font-family: 'Oswald'; font-size: 12px; font-weight: 700; text-transform: uppercase; white-space: nowrap; opacity: 0.8; }
-        
-        /* The Divider */
-        .battle-marker {
-            width: 4px; height: 100%; background: #fff;
-            box-shadow: 0 0 10px white; z-index: 5;
-        }
+        .battle-marker { width: 4px; height: 100%; background: #fff; box-shadow: 0 0 10px white; z-index: 5; }
 
-        /* --- 5. NEWS TICKER (Bottom) --- */
+        /* --- 5. NEWS TICKER --- */
         .news-ticker-wrapper {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            width: 96%; height: 50px;
+            width: 96%; height: 45px;
+            margin-top: 8px; 
             display: flex; align-items: center;
             z-index: 10;
         }
         .news-label {
-            width: 100px; height: 100%; background: var(--brand-gold); color: black;
+            width: 90px; height: 100%; background: var(--brand-gold); color: black;
             display: flex; justify-content: center; align-items: center;
             font-family: 'Oswald'; font-weight: 700; font-size: 16px;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); z-index: 5;
         }
         .ticker-content { flex: 1; height: 100%; position: relative; overflow: hidden; }
-        
         .ticker-item {
             position: absolute; top: 50%; transform: translateY(-50%);
             white-space: nowrap; font-size: 18px; font-weight: 600; display: flex; gap: 10px;
@@ -153,20 +147,38 @@
         .t-news { color: white; }
         .t-injury { color: #ff4444; font-weight: 700; }
 
-        /* --- 6. PLAYER SPOTLIGHT (Surprise Popup) --- */
+        /* --- 6. PLAYER SPOTLIGHT (UPDATED FOR REAL DATA) --- */
         .player-card {
-            position: absolute; right: -400px; top: 230px;
-            width: 320px; background: rgba(15,15,15,0.95);
+            position: absolute; right: -450px; top: 250px;
+            width: 380px; height: 120px;
+            background: rgba(15,15,15,0.95);
             border-left: 6px solid var(--brand-gold);
-            padding: 15px; border-radius: 8px;
+            padding: 0; border-radius: 8px;
             box-shadow: -10px 10px 30px rgba(0,0,0,0.5);
             transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 5;
+            display: flex; overflow: hidden;
         }
         .player-card.active { right: 20px; }
-        .pc-header { font-family: 'Oswald'; color: var(--brand-gold); font-size: 14px; margin-bottom: 5px; }
-        .pc-name { font-size: 22px; font-weight: 800; color: white; line-height: 1.1; }
-        .pc-stat { font-family: 'Inter'; font-size: 14px; color: #ccc; margin-top: 5px; }
+        
+        .pc-img-container {
+            width: 120px; height: 100%;
+            background: #222;
+            position: relative;
+        }
+        .pc-img-container img {
+            width: 100%; height: 100%; object-fit: cover; object-position: top;
+        }
+        
+        .pc-info {
+            flex: 1; padding: 15px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        
+        .pc-header { font-family: 'Oswald'; color: var(--brand-gold); font-size: 12px; margin-bottom: 2px; text-transform: uppercase;}
+        .pc-name { font-size: 20px; font-weight: 800; color: white; line-height: 1.1; margin-bottom: 4px;}
+        .pc-stat { font-family: 'Inter'; font-size: 14px; color: #ccc; font-weight: 600; }
+        .pc-team { position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #555; font-weight: 900; }
 
         /* --- 7. ADMIN --- */
         .admin-panel {
@@ -187,20 +199,18 @@
 
     <!-- TOP BROADCAST ISLAND -->
     <div class="broadcast-island">
-        
         <!-- SCOREBOARD -->
         <div class="glass-panel score-row">
             <div class="brand-box">
                 <div class="brand-title">NOTSO CJ</div>
                 <div class="brand-handle">@notso_cj</div>
             </div>
-            
             <div class="matchup-container" id="matchupDisplay">
                 <div style="width:100%; text-align:center; opacity:0.5">LOADING DATA...</div>
             </div>
         </div>
 
-        <!-- BATTLE BAR (ATTACHED) -->
+        <!-- BATTLE BAR -->
         <div class="battle-bar-wrapper">
             <div class="battle-fill battle-left" id="battleLeft" style="width: 50%;">
                 <span class="battle-text" id="battleTextLeft">HOME 50%</span>
@@ -211,26 +221,31 @@
             </div>
         </div>
 
+        <!-- NEWS TICKER -->
+        <div class="glass-panel news-ticker-wrapper">
+            <div class="news-label">NEWS</div>
+            <div class="ticker-content">
+                <div class="ticker-track" id="newsTrack"></div>
+            </div>
+        </div>
     </div>
 
-    <!-- SURPRISE POPUP -->
-    <div class="player-card" id="playerCard">
-        <div class="pc-header">🔥 IMPACT PLAYER</div>
-        <div class="pc-name" id="pcName">Patrick Mahomes</div>
-        <div class="pc-stat" id="pcStat">320 YDS - 3 TDs</div>
-    </div>
-
-    <!-- BOTTOM NEWS TICKER -->
-    <div class="glass-panel news-ticker-wrapper">
-        <div class="news-label">NEWS</div>
-        <div class="ticker-content">
-            <div class="ticker-track" id="newsTrack"></div>
+    <!-- PLAYER SPOTLIGHT POPUP -->
+    <div class="glass-panel player-card" id="playerCard">
+        <div class="pc-img-container">
+            <img id="pcImg" src="" onerror="this.style.display='none'">
+        </div>
+        <div class="pc-info">
+            <div class="pc-header" id="pcLabel">IMPACT PLAYER</div>
+            <div class="pc-name" id="pcName">LOADING...</div>
+            <div class="pc-stat" id="pcStat">WAITING FOR DATA</div>
+            <div class="pc-team" id="pcTeam">ESPN</div>
         </div>
     </div>
 
     <!-- ADMIN PANEL -->
     <div class="admin-panel" id="adminPanel">
-        <div style="color:#888; font-size:12px;">COMMAND CENTER v8.0</div>
+        <div style="color:#888; font-size:12px;">COMMAND CENTER v10.0</div>
         <div class="grid-btns">
             <button class="btn" onclick="dataService.manualNext()">NEXT GAME</button>
             <button class="btn" onclick="battleSystem.push('home')">PUSH HOME</button>
@@ -240,9 +255,7 @@
     </div>
 
     <script>
-        /**
-         * 1. GALAXY BACKGROUND
-         */
+        // --- 1. GALAXY ---
         class Galaxy {
             constructor() {
                 this.canvas = document.getElementById('galaxyCanvas');
@@ -264,14 +277,13 @@
             }
         }
 
-        /**
-         * 2. DATA SERVICE (ESPN API)
-         */
+        // --- 2. DATA SERVICE (REAL STATS) ---
         class DataService {
             constructor() {
                 this.api = 'https://site.api.espn.com/apis/site/v2/sports';
                 this.games = [];
                 this.news = [];
+                this.impactPlayers = []; // STORE REAL PLAYERS
                 this.idx = 0;
                 this.leagues = [{s:'football',l:'nfl',n:'NFL'}, {s:'basketball',l:'nba',n:'NBA'}];
                 this.start();
@@ -284,22 +296,27 @@
             }
 
             async fetch() {
-                let g = [], n = [];
+                let g = [], n = [], p = [];
                 for(let lg of this.leagues) {
                     try {
                         let sRes = await fetch(`${this.api}/${lg.s}/${lg.l}/scoreboard`);
                         let sData = await sRes.json();
-                        if(sData.events) g.push(...sData.events.map(e=>this.parseGame(e, lg.n)));
+                        if(sData.events) {
+                            sData.events.forEach(e => {
+                                g.push(this.parseGame(e, lg.n));
+                                p.push(...this.extractPlayers(e)); // GET PLAYERS
+                            });
+                        }
 
                         let nRes = await fetch(`${this.api}/${lg.s}/${lg.l}/news`);
                         let nData = await nRes.json();
                         if(nData.articles) n.push(...nData.articles.map(a=>({text:a.headline, type:'news'})));
                     } catch(e) {}
                 }
-                // Live games first
                 g.sort((a,b) => (a.live===b.live)?0 : a.live?-1:1);
                 if(g.length) this.games = g;
                 if(n.length) { this.news = n; if(window.ticker) window.ticker.update(n); }
+                if(p.length) this.impactPlayers = p; // UPDATE PLAYER POOL
                 this.updateUI();
             }
 
@@ -314,6 +331,32 @@
                     aT: a.team.abbreviation, aS: a.score, aL: a.team.logo,
                     live: e.status.type.state === 'in'
                 };
+            }
+
+            extractPlayers(e) {
+                // Extracts Leaders from the API Response
+                let players = [];
+                let c = e.competitions[0];
+                if(c.competitors) {
+                    c.competitors.forEach(team => {
+                        if(team.leaders) {
+                            team.leaders.forEach(cat => {
+                                if(cat.leaders) {
+                                    cat.leaders.forEach(ldr => {
+                                        players.push({
+                                            name: ldr.athlete.displayName,
+                                            stat: ldr.displayValue,
+                                            desc: cat.displayName, // e.g. Passing, Receiving
+                                            headshot: ldr.athlete.headshot ? ldr.athlete.headshot.href : '',
+                                            team: team.team.abbreviation
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                return players;
             }
 
             cycleGame() {
@@ -349,32 +392,25 @@
             }
         }
 
-        /**
-         * 3. BATTLE SYSTEM (Tug of War)
-         */
+        // --- 3. BATTLE SYSTEM ---
         class BattleSystem {
             constructor() {
-                this.val = 50; // 0 to 100
+                this.val = 50; 
                 this.bar = document.getElementById('battleLeft');
                 this.txtL = document.getElementById('battleTextLeft');
                 this.txtR = document.getElementById('battleTextRight');
-                // Drift loop
                 setInterval(() => this.drift(), 2000);
             }
-            
             push(side) {
                 if(side === 'home') this.val = Math.min(90, this.val + 5);
                 else this.val = Math.max(10, this.val - 5);
                 this.render();
             }
-
             drift() {
-                // Random slight movement to look alive
                 let move = (Math.random() * 4) - 2; 
                 this.val = Math.min(90, Math.max(10, this.val + move));
                 this.render();
             }
-
             render() {
                 this.bar.style.width = this.val + '%';
                 this.txtL.innerText = `HOME ${Math.round(this.val)}%`;
@@ -382,9 +418,7 @@
             }
         }
 
-        /**
-         * 4. NEWS TICKER (Pure News)
-         */
+        // --- 4. NEWS TICKER ---
         class NewsTicker {
             constructor() {
                 this.track = document.getElementById('newsTrack');
@@ -393,23 +427,18 @@
                 this.animate();
             }
             update(newData) { this.data = newData; }
-            
             animate() {
                 this.items.forEach(i => { i.x -= 1.5; i.el.style.left = i.x+'px'; });
                 if(this.items.length && this.items[0].x < -800) { this.items[0].el.remove(); this.items.shift(); }
-                
                 let last = this.items[this.items.length-1];
                 let right = last ? last.x + last.el.offsetWidth : 0;
                 if(right < window.innerWidth) this.spawn(right + 50);
-                
                 requestAnimationFrame(()=>this.animate());
             }
-
             spawn(x) {
                 let item = this.data[Math.floor(Math.random()*this.data.length)];
                 let text = item.text || item;
                 let isInj = text.toLowerCase().includes('injury');
-                
                 let el = document.createElement('div');
                 el.className = 'ticker-item';
                 el.innerHTML = `<span style="color:${isInj?'#f00':'#fb0'}">>></span> <span style="color:${isInj?'#faa':'#fff'}">${text}</span>`;
@@ -418,22 +447,28 @@
             }
         }
 
-        /**
-         * 5. PLAYER SPOTLIGHT
-         */
+        // --- 5. PLAYER SPOTLIGHT (REAL DATA) ---
         class Spotlight {
             constructor() {
-                this.names = ["LeBron James", "Patrick Mahomes", "Luka Doncic", "Lamar Jackson", "Shohei Ohtani"];
-                this.stats = ["35 PTS - 10 AST", "4 TD - 300 YDS", "Triple Double", "Rush: 100 YDS", "HR - 450 FT"];
-                // Trigger randomly
-                setInterval(() => { if(Math.random()>0.7) this.trigger(); }, 45000); 
+                setInterval(() => { if(Math.random()>0.6) this.trigger(); }, 45000); 
             }
             trigger() {
-                let n = this.names[Math.floor(Math.random()*this.names.length)];
-                let s = this.stats[Math.floor(Math.random()*this.stats.length)];
+                // Get random player from real pool
+                if(!dataService.impactPlayers.length) return;
+                let p = dataService.impactPlayers[Math.floor(Math.random()*dataService.impactPlayers.length)];
                 
-                document.getElementById('pcName').innerText = n;
-                document.getElementById('pcStat').innerText = s;
+                document.getElementById('pcName').innerText = p.name;
+                document.getElementById('pcStat').innerText = p.stat;
+                document.getElementById('pcLabel').innerText = p.desc.toUpperCase() + " LEADER";
+                document.getElementById('pcTeam').innerText = p.team;
+                
+                let img = document.getElementById('pcImg');
+                if(p.headshot) {
+                    img.src = p.headshot;
+                    img.style.display = 'block';
+                } else {
+                    img.style.display = 'none';
+                }
                 
                 let card = document.getElementById('playerCard');
                 card.classList.add('active');
