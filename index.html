@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0">
-    <title>NotsoCJ Pro Broadcast System</title>
+    <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+    <title>NotsoCJ Pro PC Broadcast</title>
     
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. CORE SYSTEM --- */
+        /* --- 1. CORE SYSTEM (LANDSCAPE 1920x1080) --- */
         :root {
             --brand-red: #E50914;
-            --brand-dark: #0a0a0a;
+            --brand-dark: #050505;
             --brand-gold: #FFD700;
             --brand-cyan: #00f2ff;
             --brand-purple: #d400ff;
-            --glass-bg: rgba(8, 8, 8, 0.94);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-bg: rgba(10, 10, 10, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.15);
             --text-main: #ffffff;
         }
 
@@ -36,134 +36,141 @@
         #galaxyCanvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
-            transition: filter 1s ease;
         }
 
-        /* --- 3. BROADCAST HEADER (TOP STACK) --- */
-        .broadcast-island {
+        /* --- 3. THE "SUPER BAR" (TOP ANCHOR) --- */
+        .broadcast-header {
             position: absolute;
-            top: 80px; left: 50%; transform: translateX(-50%);
-            width: 96%;
+            top: 40px; left: 50%; transform: translateX(-50%);
+            width: 90%; /* Wide but with margins */
+            max-width: 1800px;
             display: flex; flex-direction: column;
-            align-items: center;
             z-index: 10;
         }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--glass-border);
-            overflow: hidden;
-        }
-
-        /* SCOREBOARD ROW */
-        .score-row {
-            width: 100%; height: 120px;
+        /* COMPONENT: BATTLE BAR (Top Layer) */
+        .battle-bar-wrapper {
+            width: 100%; height: 12px;
+            background: black;
             display: flex; align-items: center;
+            border-top-left-radius: 8px; border-top-right-radius: 8px;
+            overflow: hidden; position: relative;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+        }
+        .battle-fill { height: 100%; transition: width 0.5s ease-out; }
+        .battle-left { background: var(--brand-cyan); box-shadow: 0 0 10px var(--brand-cyan); }
+        .battle-right { background: var(--brand-red); box-shadow: 0 0 10px var(--brand-red); flex-grow: 1; }
+        .battle-marker { width: 4px; height: 150%; background: white; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; }
+
+        /* COMPONENT: MAIN SCOREBOARD (Middle Layer) */
+        .main-board {
+            height: 140px; width: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            display: flex; align-items: center;
+            border: 1px solid var(--glass-border);
+            border-bottom: none;
             position: relative;
-            z-index: 20;
         }
 
-        /* BRANDING */
-        .brand-box {
-            width: 130px; height: 100%;
-            background: var(--brand-red);
+        /* BRANDING (Left) */
+        .brand-zone {
+            width: 280px; height: 100%;
+            background: linear-gradient(135deg, var(--brand-red), #900);
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
-            padding-right: 15px; z-index: 5;
+            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
+            padding-right: 20px;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.5);
+            z-index: 5;
         }
-        .brand-title { font-family: 'Oswald'; font-weight: 700; font-size: 22px; line-height: 1; }
-        .brand-handle { font-size: 10px; opacity: 0.9; margin-top: 4px; font-weight: 600; }
+        .brand-title { font-family: 'Oswald'; font-size: 36px; font-weight: 800; letter-spacing: 1px; line-height: 1; }
+        .brand-sub { font-family: 'Inter'; font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 5px; }
 
-        /* TEAMS */
-        .matchup-container {
-            flex: 1; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px 0 5px; height: 100%;
+        /* SCORE AREA (Center) */
+        .score-area {
+            flex: 1; height: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
         }
-        .team-group { display: flex; align-items: center; gap: 10px; width: 35%; }
-        .team-group.away { justify-content: flex-end; text-align: right; }
+
+        .team-container { display: flex; align-items: center; gap: 25px; width: 35%; }
+        .team-container.away { justify-content: flex-end; text-align: right; }
         
-        .team-logo img { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
-        .team-score { font-family: 'Oswald'; font-size: 42px; font-weight: 700; line-height: 1; }
+        .team-logo-large { 
+            width: 100px; height: 100px; 
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+            display: flex; justify-content: center; align-items: center;
+        }
+        .team-logo-large img { width: 100%; height: 100%; object-fit: contain; }
         
-        /* CLOCK (CENTER STACK) */
-        .game-info {
+        .team-score-large { 
+            font-family: 'Oswald'; font-size: 80px; font-weight: 700; 
+            line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+        }
+
+        .game-clock-large {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            width: 20%; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 6px;
+            background: rgba(255,255,255,0.05);
+            width: 200px; height: 80%; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .clock-main { font-family: 'Oswald'; font-size: 20px; color: var(--brand-gold); font-weight: 700; }
-        .quarter-sub { font-family: 'Inter'; font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; }
+        .clock-display { font-family: 'Oswald'; font-size: 32px; color: var(--brand-gold); font-weight: 700; }
+        .period-display { font-family: 'Inter'; font-size: 16px; color: #aaa; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
 
-        /* --- 4. BATTLE BAR (Engagement) --- */
-        .battle-bar-wrapper {
-            width: 94%; height: 30px;
-            margin-top: -5px; 
+        /* COMPONENT: NEWS TICKER (Bottom Layer) */
+        .ticker-bar {
+            height: 60px; width: 100%;
             background: black;
             border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
-            position: relative; overflow: hidden;
             display: flex; align-items: center;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            z-index: 15;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         
-        .battle-fill {
-            height: 100%; transition: width 0.5s ease-out;
-            display: flex; align-items: center; overflow: hidden;
-        }
-        .battle-left { 
-            background: linear-gradient(90deg, #1a1a1a, #333); 
-            justify-content: flex-start; padding-left: 10px;
-        }
-        .battle-right { 
-            background: linear-gradient(90deg, #333, #1a1a1a); 
-            justify-content: flex-end; padding-right: 10px; 
-            flex-grow: 1;
-        }
-        
-        .battle-text { font-family: 'Oswald'; font-size: 12px; font-weight: 700; text-transform: uppercase; white-space: nowrap; opacity: 0.8; }
-        .battle-marker { width: 4px; height: 100%; background: #fff; box-shadow: 0 0 10px white; z-index: 5; }
-
-        /* --- 5. WIRED TICKER (Bottom of Stack) --- */
-        .news-ticker-wrapper {
-            width: 96%; height: 45px;
-            margin-top: 8px; 
-            display: flex; align-items: center;
-            z-index: 10;
-        }
-        .news-label {
-            width: 130px; height: 100%; background: var(--brand-gold); color: black;
+        .ticker-label {
+            width: 200px; height: 100%;
+            background: var(--brand-gold); color: black;
             display: flex; justify-content: center; align-items: center;
-            font-family: 'Oswald'; font-weight: 700; font-size: 16px;
-            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); z-index: 5;
-            box-shadow: 5px 0 10px rgba(0,0,0,0.5);
-        }
-        .ticker-content { flex: 1; height: 100%; position: relative; overflow: hidden; }
-        .ticker-item {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            white-space: nowrap; font-size: 18px; font-weight: 600; display: flex; gap: 10px;
+            font-family: 'Oswald'; font-size: 24px; font-weight: 700;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+            z-index: 5;
         }
         
-        /* Text Styles */
+        .ticker-viewport {
+            flex: 1; height: 100%; overflow: hidden; position: relative;
+            display: flex; align-items: center;
+        }
+        
+        .ticker-track {
+            white-space: nowrap; position: absolute; left: 0;
+            display: flex; gap: 80px;
+            /* We move items via JS transforms for infinite loop */
+        }
+        
+        .ticker-item {
+            font-family: 'Inter'; font-size: 26px; font-weight: 600;
+            display: flex; align-items: center; gap: 15px;
+            position: absolute; /* Important for JS smooth movement */
+            will-change: transform;
+        }
+        
+        /* TYPES */
         .t-news { color: white; }
-        .t-injury { color: #ff4444; font-weight: 700; }
-        .t-impact { color: var(--brand-purple); font-weight: 800; text-shadow: 0 0 5px rgba(212, 0, 255, 0.3); }
-        .t-score { color: #eee; font-weight: 700; font-family: 'Oswald'; letter-spacing: 0.5px; }
-        .t-question { color: var(--brand-cyan); font-weight: 800; font-family: 'Oswald'; letter-spacing: 1px; text-shadow: 0 0 10px rgba(0, 242, 255, 0.4); }
+        .t-score { color: #ccc; font-family: 'Oswald'; font-weight: 700; letter-spacing: 1px; }
+        .t-impact { color: var(--brand-purple); font-weight: 800; text-shadow: 0 0 10px rgba(212,0,255,0.4); }
+        .t-question { color: var(--brand-cyan); font-weight: 800; font-style: italic; }
 
-        /* --- 7. ADMIN --- */
+        /* --- 4. ADMIN PANEL --- */
         .admin-panel {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 600px; background: #111; border: 1px solid #333;
+            position: fixed; bottom: 20px; right: 20px;
+            width: 300px; background: rgba(10,10,10,0.95); border: 1px solid #444;
             padding: 20px; display: none; flex-direction: column; gap: 10px; z-index: 9999;
+            border-radius: 10px;
         }
         .admin-panel.visible { display: flex; }
-        .grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { padding: 10px; background: #333; color: white; border:none; cursor: pointer; font-family: 'Oswald'; }
+        .btn { padding: 12px; background: #333; color: white; border:none; cursor: pointer; font-weight: bold; border-radius: 5px; }
+        .btn:hover { background: #444; }
 
     </style>
 </head>
@@ -172,98 +179,85 @@
     <!-- BACKGROUND -->
     <canvas id="galaxyCanvas"></canvas>
 
-    <!-- TOP BROADCAST ISLAND -->
-    <div class="broadcast-island">
-        <!-- SCOREBOARD -->
-        <div class="glass-panel score-row">
-            <div class="brand-box">
-                <div class="brand-title">NOTSO CJ</div>
-                <div class="brand-handle">@notso_cj</div>
-            </div>
-            <div class="matchup-container" id="matchupDisplay">
-                <div style="width:100%; text-align:center; opacity:0.5">LOADING FEEDS...</div>
-            </div>
-        </div>
-
-        <!-- BATTLE BAR -->
+    <!-- BROADCAST HEADER (Top Anchor) -->
+    <div class="broadcast-header">
+        
+        <!-- 1. BATTLE BAR -->
         <div class="battle-bar-wrapper">
-            <div class="battle-fill battle-left" id="battleLeft" style="width: 50%;">
-                <span class="battle-text" id="battleTextLeft">HOME 50%</span>
-            </div>
+            <div class="battle-fill battle-left" id="battleLeft" style="width: 50%;"></div>
             <div class="battle-marker"></div>
-            <div class="battle-right">
-                <span class="battle-text" id="battleTextRight" style="margin-right:10px;">AWAY 50%</span>
+            <div class="battle-fill battle-right"></div>
+        </div>
+
+        <!-- 2. MAIN SCOREBOARD -->
+        <div class="main-board">
+            <div class="brand-zone">
+                <div class="brand-title">WIRED BY CJ</div>
+                <div class="brand-sub">LIVE SPORTS & NEWS</div>
+            </div>
+
+            <div class="score-area" id="scoreArea">
+                <div style="font-size:30px; opacity:0.5; width:100%; text-align:center;">CONNECTING TO SATELLITE...</div>
             </div>
         </div>
 
-        <!-- NEWS TICKER -->
-        <div class="glass-panel news-ticker-wrapper">
-            <div class="news-label">WIRED BY CJ</div>
-            <div class="ticker-content">
-                <div class="ticker-track" id="newsTrack"></div>
+        <!-- 3. SCROLLING TICKER -->
+        <div class="ticker-bar">
+            <div class="ticker-label">UPDATES</div>
+            <div class="ticker-viewport">
+                <div class="ticker-track" id="tickerTrack"></div>
             </div>
         </div>
+
     </div>
 
     <!-- ADMIN PANEL -->
     <div class="admin-panel" id="adminPanel">
-        <div style="color:#888; font-size:12px;">COMMAND CENTER v14.0</div>
-        <div class="grid-btns">
-            <button class="btn" onclick="dataService.manualNext()">NEXT GAME</button>
-            <button class="btn" onclick="battleSystem.push('home')">PUSH HOME</button>
-            <button class="btn" onclick="battleSystem.push('away')">PUSH AWAY</button>
-        </div>
+        <div style="color:#888; font-size:12px; margin-bottom:5px;">COMMAND CENTER PC v16.2</div>
+        <button class="btn" onclick="dataService.manualNext()">⏩ NEXT GAME</button>
+        <button class="btn" style="background:var(--brand-cyan); color:black;" onclick="battleSystem.push('home')">👈 HOME PUSH</button>
+        <button class="btn" style="background:var(--brand-red);" onclick="battleSystem.push('away')">AWAY PUSH 👉</button>
     </div>
 
     <script>
         // --- 1. GALAXY ---
         class Galaxy {
             constructor() {
-                this.canvas = document.getElementById('galaxyCanvas');
-                this.ctx = this.canvas.getContext('2d');
+                this.c = document.getElementById('galaxyCanvas');
+                this.ctx = this.c.getContext('2d');
                 this.stars = [];
-                this.resize(); window.addEventListener('resize', ()=>this.resize());
-                this.init(); this.loop();
+                this.resize(); window.onresize = ()=>this.resize();
+                this.init(); this.animate();
             }
-            resize() { this.canvas.width = innerWidth; this.canvas.height = innerHeight; }
-            init() { for(let i=0; i<200; i++) this.stars.push({x:Math.random()*this.canvas.width, y:Math.random()*this.canvas.height, s:Math.random()*1.5, v:Math.random()*0.5}); }
-            loop() {
-                this.ctx.fillStyle = '#000'; this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+            resize() { this.c.width = innerWidth; this.c.height = innerHeight; }
+            init() { for(let i=0; i<400; i++) this.stars.push({x:Math.random()*this.c.width, y:Math.random()*this.c.height, s:Math.random()*2, v:Math.random()*0.2}); }
+            animate() {
+                this.ctx.fillStyle = '#000'; this.ctx.fillRect(0,0,this.c.width,this.c.height);
                 this.ctx.fillStyle = '#fff';
-                this.stars.forEach(st => {
-                    st.y -= st.v; if(st.y<0) st.y = this.canvas.height;
-                    this.ctx.beginPath(); this.ctx.arc(st.x, st.y, st.s, 0, Math.PI*2); this.ctx.fill();
+                this.stars.forEach(s => {
+                    s.x -= s.v; if(s.x<0) s.x = this.c.width;
+                    this.ctx.globalAlpha = Math.random()*0.5 + 0.5;
+                    this.ctx.beginPath(); this.ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); this.ctx.fill();
                 });
-                requestAnimationFrame(()=>this.loop());
+                requestAnimationFrame(()=>this.animate());
             }
         }
 
-        // --- 2. DATA SERVICE (REAL STATS INTEGRATED) ---
+        // --- 2. DATA SERVICE (PC FORMATTED) ---
         class DataService {
             constructor() {
                 this.api = 'https://site.api.espn.com/apis/site/v2/sports';
                 this.games = [];
+                this.news = [];
                 this.idx = 0;
-                this.leagues = [
-                    {s:'football',l:'nfl',n:'NFL', icon:'🏈'}, 
-                    {s:'basketball',l:'nba',n:'NBA', icon:'🏀'},
-                    {s:'hockey',l:'nhl',n:'NHL', icon:'🏒'}
-                ];
-                // Pre-baked engagement questions
-                this.questions = [
-                    "CHAT: Who wins the Championship this year?",
-                    "DEBATE: Who is the current MVP?",
-                    "POLL: Over or Under on the next game?",
-                    "CHAT: What's your favorite team? Type it now!",
-                    "TRIVIA: Who has the most rings in history?"
-                ];
+                this.leagues = [{s:'football',l:'nfl',n:'NFL'}, {s:'basketball',l:'nba',n:'NBA'}, {s:'hockey',l:'nhl',n:'NHL'}];
                 this.start();
             }
             
             async start() {
                 await this.fetch();
                 setInterval(()=>this.fetch(), 60000);
-                setInterval(()=>this.cycleGame(), 15000);
+                setInterval(()=>this.cycleGame(), 12000);
             }
 
             async fetch() {
@@ -273,27 +267,20 @@
                         let sRes = await fetch(`${this.api}/${lg.s}/${lg.l}/scoreboard`);
                         let sData = await sRes.json();
                         let players = [];
-                        
+
                         if(sData.events) {
                             sData.events.forEach(e => {
-                                const parsed = this.parseGame(e, lg.n);
-                                g.push(parsed);
-                                players.push(...this.extractPlayers(e, lg.n));
-                                
-                                // Add Live Score to News Feed
-                                n.push({
-                                    text: `${parsed.aT} ${parsed.aS} - ${parsed.hT} ${parsed.hS} (${parsed.time})`,
-                                    type: 't-score',
-                                    icon: lg.icon
-                                });
+                                const p = this.parseGame(e, lg.n);
+                                g.push(p);
+                                n.push({ text: `${lg.n}: ${p.aT} ${p.aS} - ${p.hT} ${p.hS} (${p.time})`, type: 't-score' });
+                                players.push(...this.extractPlayers(e, lg.n)); // EXTRACT REAL PLAYERS
                             });
                         }
-
                         let nRes = await fetch(`${this.api}/${lg.s}/${lg.l}/news`);
                         let nData = await nRes.json();
-                        if(nData.articles) n.push(...nData.articles.map(a=>({text:a.headline, type:'t-news', icon:lg.icon})));
-                        
-                        // IMPACT PLAYERS
+                        if(nData.articles) n.push(...nData.articles.map(a=>({text:a.headline, type:'t-news'})));
+
+                        // ADD IMPACT PLAYERS TO TICKER
                         if(players.length) {
                             const impact = players.map(p => ({
                                 text: `IMPACT: ${p.name} (${p.team}) - ${p.stat}`,
@@ -303,23 +290,11 @@
                             n.push(...impact);
                         }
 
-                    } catch(e) {}
+                    } catch(e){}
                 }
-                
-                // INJECT QUESTIONS (Every 5th item roughly)
-                if(n.length > 0) {
-                    for(let i=0; i<3; i++) {
-                        n.push({
-                            text: this.questions[Math.floor(Math.random() * this.questions.length)],
-                            type: 't-question',
-                            icon: '💬'
-                        });
-                    }
-                }
-
                 g.sort((a,b) => (a.live===b.live)?0 : a.live?-1:1);
                 if(g.length) this.games = g;
-                if(n.length) { if(window.ticker) window.ticker.update(n); }
+                if(n.length && window.ticker) window.ticker.update(n);
                 this.updateUI();
             }
 
@@ -327,41 +302,34 @@
                 let c = e.competitions[0];
                 let h = c.competitors.find(x=>x.homeAway==='home');
                 let a = c.competitors.find(x=>x.homeAway==='away');
-                let tStr = e.status.type.shortDetail.replace(' - ', ' '); 
-                
+                let time = e.status.type.shortDetail.replace(' - ', ' ');
                 return {
-                    league: lg,
-                    time: tStr,
+                    league: lg, time: time,
                     hT: h.team.abbreviation, hS: h.score, hL: h.team.logo,
                     aT: a.team.abbreviation, aS: a.score, aL: a.team.logo,
                     live: e.status.type.state === 'in'
                 };
             }
 
+            // --- REAL PLAYER STAT EXTRACTION ---
             extractPlayers(e, league) {
                 let players = [];
                 let c = e.competitions[0];
-                
                 if(c.competitors) {
                     c.competitors.forEach(team => {
                         if(team.leaders) {
-                            // STAT LABELS MAP
                             const statMap = {
                                 'goals': 'GOALS', 'assists': 'AST', 'points': 'PTS',
                                 'rebounds': 'REB', 'passingYards': 'PASS YDS',
                                 'rushingYards': 'RUSH YDS', 'receivingYards': 'REC YDS'
                             };
-
                             team.leaders.forEach(cat => {
                                 if(statMap[cat.name] || cat.name === 'points') {
                                     if(cat.leaders) {
                                         cat.leaders.forEach(ldr => {
-                                            // STRICT FORMATTING: Number + Label
                                             let rawVal = ldr.displayValue;
                                             let label = statMap[cat.name] || "STATS";
-                                            // Check if rawVal already has text (unlikely in raw API but good safety)
                                             let finalStat = rawVal.match(/[a-z]/i) ? rawVal : `${rawVal} ${label}`;
-
                                             players.push({
                                                 name: ldr.athlete.displayName,
                                                 stat: finalStat,
@@ -377,119 +345,116 @@
                 return players.slice(0, 2);
             }
 
-            cycleGame() {
-                if(!this.games.length) return;
-                this.idx = (this.idx + 1) % this.games.length;
-                this.updateUI();
-            }
-            
+            cycleGame() { if(this.games.length) { this.idx = (this.idx+1)%this.games.length; this.updateUI(); } }
             manualNext() { this.cycleGame(); }
 
             updateUI() {
                 if(!this.games.length) return;
                 let g = this.games[this.idx];
-                let topT = g.time;
-                let botT = "";
-                if(g.time.length > 10 && g.time.includes(' ')) {
-                    let split = g.time.indexOf(' ');
-                    topT = g.time.substring(0, split);
-                    botT = g.time.substring(split+1);
-                }
-
-                document.getElementById('matchupDisplay').innerHTML = `
-                    <div class="team-group away">
-                        <div class="team-score">${g.aS}</div>
-                        <div class="team-logo"><img src="${g.aL}"></div>
+                let timeSplit = g.time.length > 10 ? g.time.split(' ') : [g.time, ''];
+                
+                document.getElementById('scoreArea').innerHTML = `
+                    <div class="team-container away">
+                        <div class="team-score-large">${g.aS}</div>
+                        <div class="team-logo-large"><img src="${g.aL}"></div>
                     </div>
-                    <div class="game-info">
-                        <div class="quarter-sub">${g.league}</div>
-                        <div class="clock-main">${topT}</div>
-                        <div class="quarter-sub">${botT}</div>
+                    <div class="game-clock-large">
+                        <div class="clock-display">${timeSplit[0]}</div>
+                        <div class="period-display">${timeSplit.slice(1).join(' ')}</div>
                     </div>
-                    <div class="team-group home">
-                        <div class="team-logo"><img src="${g.hL}"></div>
-                        <div class="team-score">${g.hS}</div>
+                    <div class="team-container home">
+                        <div class="team-logo-large"><img src="${g.hL}"></div>
+                        <div class="team-score-large">${g.hS}</div>
                     </div>
                 `;
             }
         }
 
-        // --- 3. BATTLE SYSTEM ---
-        class BattleSystem {
+        // --- 3. PC TICKER (HORIZONTAL SCROLL - 255s DURATION) ---
+        class Ticker {
             constructor() {
-                this.val = 50; 
-                this.bar = document.getElementById('battleLeft');
-                this.txtL = document.getElementById('battleTextLeft');
-                this.txtR = document.getElementById('battleTextRight');
-                setInterval(() => this.drift(), 2000);
-            }
-            push(side) {
-                if(side === 'home') this.val = Math.min(90, this.val + 5);
-                else this.val = Math.max(10, this.val - 5);
-                this.render();
-            }
-            drift() {
-                let move = (Math.random() * 4) - 2; 
-                this.val = Math.min(90, Math.max(10, this.val + move));
-                this.render();
-            }
-            render() {
-                this.bar.style.width = this.val + '%';
-                this.txtL.innerText = `HOME ${Math.round(this.val)}%`;
-                this.txtR.innerText = `AWAY ${Math.round(100-this.val)}%`;
-            }
-        }
-
-        // --- 4. NEWS TICKER ---
-        class NewsTicker {
-            constructor() {
-                this.track = document.getElementById('newsTrack');
+                this.track = document.getElementById('tickerTrack');
                 this.items = [];
-                this.data = ["Waiting for ESPN News..."];
+                this.data = ["WIRED BY CJ - INITIALIZING STREAM..."];
+                this.pos = window.innerWidth;
+                
+                // SPEED CALCULATION:
+                // 1920px (screen) + ~2000px (buffer) / 255 seconds
+                // = ~15px per second / 60fps = ~0.25px per frame
+                const TARGET_DURATION_SEC = 255;
+                const SCREEN_W = window.innerWidth;
+                // Approx speed to cross screen in 255s
+                this.speed = SCREEN_W / (TARGET_DURATION_SEC * 60); 
+                
                 this.animate();
             }
-            update(newData) { 
-                // Shuffle news
-                this.data = newData.sort(() => Math.random() - 0.5);
-            }
+            update(d) { this.data = d.sort(()=>Math.random()-0.5); }
+            
             animate() {
-                this.items.forEach(i => { i.x -= 0.75; i.el.style.left = i.x+'px'; }); // Adjusted speed here
-                if(this.items.length && this.items[0].x < -1000) { this.items[0].el.remove(); this.items.shift(); }
+                // Move items left using TRANSFORM for sub-pixel smoothness at low speeds
+                this.items.forEach(i => { 
+                    i.x -= this.speed; 
+                    i.el.style.transform = `translateX(${i.x}px)`; 
+                });
+                
+                // Remove offscreen
+                if(this.items.length && this.items[0].x < -2000) { 
+                    this.items[0].el.remove(); 
+                    this.items.shift(); 
+                }
+                
+                // Add new
                 let last = this.items[this.items.length-1];
-                let right = last ? last.x + last.el.offsetWidth : 0;
-                if(right < window.innerWidth) this.spawn(right + 50);
+                let rightEdge = last ? last.x + last.el.offsetWidth : 0;
+                // 100px gap
+                if(rightEdge < window.innerWidth) this.spawn(rightEdge + 100);
+                
                 requestAnimationFrame(()=>this.animate());
             }
-            spawn(x) {
-                let item = this.data[Math.floor(Math.random()*this.data.length)];
-                let text = item.text || item;
-                let type = item.type || 't-news';
-                
-                // Auto-detect Injury
-                if(text.toLowerCase().includes('injury')) type = 't-injury';
-                
-                let icon = item.icon || "📰";
-                if(type === 't-impact') icon = "⚡";
-                if(type === 't-injury') icon = "🚑";
-                if(type === 't-question') icon = "💬";
 
+            spawn(x) {
+                let d = this.data[Math.floor(Math.random()*this.data.length)];
+                let text = d.text || d;
+                let type = d.type || 't-news';
+                if(text.includes('Injury')) type = 't-impact';
+                
                 let el = document.createElement('div');
                 el.className = `ticker-item ${type}`;
-                el.innerHTML = `<span style="margin-right:5px; opacity:0.7;">${icon}</span> ${text}`;
+                // Using translateX so we don't need 'left'
+                // Initial position via transform will be set in loop or here
+                let icon = "📰";
+                if(type==='t-score') icon = "🔴";
+                if(type==='t-impact') icon = "⚡";
+                
+                el.innerHTML = `<span style="opacity:0.7">${icon}</span> ${text}`;
                 this.track.appendChild(el);
+                
+                // Immediate placement
+                el.style.transform = `translateX(${x}px)`;
+                
                 this.items.push({el, x});
             }
         }
 
-        // --- INIT ---
-        const galaxy = new Galaxy();
-        const dataService = new DataService();
-        const battleSystem = new BattleSystem();
-        window.ticker = new NewsTicker();
+        // --- 4. BATTLE ---
+        class Battle {
+            constructor() {
+                this.val = 50;
+                this.bar = document.getElementById('battleLeft');
+                setInterval(()=>this.drift(), 1000);
+            }
+            push(s) { this.val = s==='home' ? Math.min(90, this.val+5) : Math.max(10, this.val-5); this.render(); }
+            drift() { this.val += (Math.random()*2 - 1); this.render(); }
+            render() { this.bar.style.width = this.val + '%'; }
+        }
 
-        document.addEventListener('keydown', e => { 
-            if(e.key==='`') document.getElementById('adminPanel').classList.toggle('visible'); 
-        });
+        // --- INIT ---
+        new Galaxy();
+        const dataService = new DataService();
+        window.ticker = new Ticker();
+        const battleSystem = new Battle();
+
+        document.addEventListener('keydown', e => { if(e.key==='`') document.getElementById('adminPanel').classList.toggle('visible'); });
 
     </script>
 </body>
