@@ -1,333 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0">
-    <title>NOTSOCJ TikTok Dual Stream</title>
-    
-    <!-- FONTS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>NSN LIVE WIDGET</title>
+<style>
+    :root {
+        --width: 380px;
+        --bg: #0f0f0f; /* Change to transparent for see-through */
+        --card-bg: #1a1a1a;
+        --border: #333;
+        --accent: #00ff88;
+        --text-main: #ffffff;
+        --text-sub: #aaaaaa;
+        --font: 'Segoe UI', system-ui, sans-serif;
+    }
 
-    <style>
-        /* --- 1. THEME: CYBER DATA --- */
-        :root {
-            --neon-cyan: #00f2ea;
-            --neon-pink: #ff0050;
-            --neon-orange: #ff9900;
-            --neon-purple: #bc13fe; 
-            --glass-panel: rgba(10, 10, 15, 0.95);
-        }
+    body {
+        margin: 0;
+        padding: 10px;
+        width: var(--width);
+        background: var(--bg);
+        font-family: var(--font);
+        color: var(--text-main);
+        overflow: hidden;
+    }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        
-        body {
-            background-color: transparent; 
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
-                repeating-linear-gradient(45deg, #111 0px, #111 2px, #000 2px, #000 8px);
-            font-family: 'Oswald', sans-serif;
-            overflow: hidden;
-            width: 100vw; height: 100vh;
-            color: white;
-        }
+    /* Header Pulse */
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--accent);
+        margin-bottom: 15px;
+    }
+    .live-dot {
+        width: 10px; height: 10px;
+        background: #ff0044;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #ff0044;
+        animation: pulse 1.5s infinite;
+    }
+    .title {
+        font-weight: 800;
+        font-size: 18px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 
-        /* --- 2. TOP ANCHOR HUB --- */
-        .broadcast-hub {
-            position: absolute; top: 140px; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 900px;
-            display: flex; flex-direction: column;
-            gap: 12px;
-            z-index: 100;
-        }
+    /* Game Card */
+    .game-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: relative;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
 
-        /* --- 3. THE DOUBLE SCROLLER --- */
-        .double-ticker {
-            display: flex; flex-direction: column;
-            border-radius: 12px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            position: relative;
-        }
+    /* League Badge */
+    .league-tag {
+        position: absolute;
+        top: 8px; right: 8px;
+        font-size: 10px;
+        font-weight: bold;
+        background: #333;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #ccc;
+    }
 
-        /* NEXT GEN SCANNER EFFECT */
-        .double-ticker::after {
-            content: '';
-            position: absolute; top: 0; left: -50%; width: 20%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transform: skewX(-20deg);
-            animation: scanBeam 4s infinite ease-in-out;
-            pointer-events: none;
-            z-index: 50;
-        }
-        @keyframes scanBeam { 
-            0% { left: -50%; opacity: 0; } 
-            50% { opacity: 1; }
-            100% { left: 150%; opacity: 0; } 
-        }
+    /* Score Row */
+    .score-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .team {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 16px;
+    }
+    .team img { width: 24px; height: 24px; }
+    .score { font-size: 20px; font-weight: 800; }
+    .winner { color: var(--accent); }
 
-        /* SHARED TRACK STYLES */
-        .ticker-row {
-            position: relative; overflow: hidden; display: flex; align-items: center;
-            width: 100%;
-        }
-        
-        .track-container {
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
-            /* GPU ACCELERATION ON */
-            will-change: transform;
-        }
+    /* Game Status */
+    .status {
+        font-size: 11px;
+        color: var(--text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
 
-        /* CSS KEYFRAMES FOR SMOOTH SCROLLING */
-        @keyframes scrollMarquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
+    /* MVP Section */
+    .mvp-box {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px dashed #333;
+        font-size: 11px;
+        color: var(--text-sub);
+        display: flex;
+        justify-content: space-between;
+    }
+    .mvp-name { color: #fff; font-weight: 600; }
+    .mvp-stat { color: var(--accent); }
 
-        /* LINE 1: SCORES */
-        .ticker-row.line-1 {
-            height: 60px; background: rgba(0, 40, 80, 0.95);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .score-chip {
-            display: flex; align-items: center; gap: 10px;
-            padding: 0 25px; color: #fff; font-size: 24px; font-weight: 700;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-        .tiny-logo { width: 30px; height: 30px; object-fit: contain; }
-        .live-indicator { color: var(--neon-cyan); font-size: 14px; margin-left: 5px; animation: pulse 1s infinite; }
-        .sport-icon { font-size: 16px; opacity: 0.7; margin-right: 5px; }
-        
-        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    /* Scroll Animation for many games */
+    #container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
 
-        /* LINE 2: STATS & AI */
-        .ticker-row.line-2 {
-            height: 50px; background: rgba(5, 5, 10, 0.98);
-        }
-        .stat-chip {
-            display: flex; align-items: center; gap: 8px;
-            padding: 0 20px; color: #ccc; font-size: 18px; font-weight: 500;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-val { color: var(--neon-pink); font-weight: 700; }
-        .stat-val.nba { color: var(--neon-orange); }
-        
-        .ai-chip {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--neon-purple);
-            text-shadow: 0 0 5px var(--neon-purple);
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .engage-chip { 
-            color: var(--neon-cyan); font-weight: 700; text-transform: uppercase; 
-            animation: glowText 2s infinite; 
-        }
-        
-        @keyframes glowText { 0%,100%{text-shadow: 0 0 5px var(--neon-cyan);} 50%{text-shadow: none;} }
-
-    </style>
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+</style>
 </head>
 <body>
 
-    <!-- BROADCAST HUB -->
-    <div class="broadcast-hub">
-
-        <!-- DOUBLE SCROLLER -->
-        <div class="double-ticker">
-            <!-- LINE 1: SCORES -->
-            <div class="ticker-row line-1">
-                <div class="track-container" id="track1"></div>
-            </div>
-            <!-- LINE 2: STATS / AI / ENGAGEMENT -->
-            <div class="ticker-row line-2">
-                <div class="track-container" id="track2"></div>
-            </div>
-        </div>
-
+    <div class="header">
+        <div class="live-dot"></div>
+        <div class="title">NSN SPORTS TICKER</div>
     </div>
 
-    <script>
-        class DualStreamOverlay {
-            constructor() {
-                this.nflApi = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
-                this.nbaApi = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard';
+    <div id="container">
+        <div style="color:#666; font-size:12px; text-align:center;">INITIALIZING FEED...</div>
+    </div>
+
+<script>
+    // --- CONFIG ---
+    const ENDPOINTS = [
+        'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
+        'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
+        'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard'
+    ];
+
+    async function fetchAllSports() {
+        const container = document.getElementById('container');
+        const cards = [];
+
+        for (const url of ENDPOINTS) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const league = data.leagues[0].abbreviation; // NFL, NBA, etc.
                 
-                this.t1 = document.getElementById('track1');
-                this.t2 = document.getElementById('track2');
-                
-                this.init();
-            }
-
-            async init() {
-                await this.fetchData();
-                setInterval(() => this.fetchData(), 20000); 
-            }
-
-            async fetchData() {
-                try {
-                    const [nflRes, nbaRes] = await Promise.all([
-                        fetch(this.nflApi),
-                        fetch(this.nbaApi)
-                    ]);
-                    
-                    const nflData = await nflRes.json();
-                    const nbaData = await nbaRes.json();
-                    
-                    this.games = [];
-                    this.stats = [];
-
-                    if(nflData.events) this.processEvents(nflData.events, 'nfl');
-                    if(nbaData.events) this.processEvents(nbaData.events, 'nba');
-                    
-                    // Add Engagement
-                    const eng = ["TAP THE SCREEN", "FOLLOW NOTSOCJ", "W CHAT", "NOTSOCJ LIVE"];
-                    eng.forEach(e => this.stats.push({txt: e, type: 'engage'}));
-
-                    // Rebuild content periodically or if empty
-                    this.updateDOM();
-
-                } catch(e) { console.error(e); }
-            }
-
-            processEvents(events, sport) {
-                events.forEach(e => {
-                    const c = e.competitions[0];
-                    const h = c.competitors.find(x => x.homeAway === 'home');
-                    const a = c.competitors.find(x => x.homeAway === 'away');
-                    const isLive = e.status.type.state === 'in';
-                    const isPre = e.status.type.state === 'pre';
-
-                    // 1. Add Game
-                    this.games.push({
-                        sport: sport,
-                        hT: h.team.abbreviation, hS: h.score, hL: h.team.logo,
-                        aT: a.team.abbreviation, aS: a.score, aL: a.team.logo,
-                        status: e.status,
-                        isLive: isLive
-                    });
-
-                    // 2. CORTEX v2.0 Logic
-                    if(isLive || isPre) {
-                        let aiMsg = "";
-                        
-                        if (isPre) {
-                            const homeFav = Math.random() > 0.5;
-                            const favTeam = homeFav ? h.team.abbreviation : a.team.abbreviation;
-                            const prob = Math.floor(Math.random() * 25) + 50; 
-                            aiMsg = `CORTEX v2.0 [${sport.toUpperCase()}]: PRE-GAME SIM - ${favTeam} ${prob}% FAVORITE`;
-                        } 
-                        else {
-                            const hScore = parseInt(h.score);
-                            const aScore = parseInt(a.score);
-                            const diff = Math.abs(hScore - aScore);
-                            const leader = hScore > aScore ? h.team.abbreviation : a.team.abbreviation;
-                            let prob = 50;
-    
-                            if (sport === 'nfl') {
-                                if (diff === 0) aiMsg = `CORTEX v2.0 [NFL]: TIED GAME - HIGH TENSION`;
-                                else if (diff <= 8) aiMsg = `CORTEX v2.0 [NFL]: ONE POSSESSION GAME - ${leader} LEADING`;
-                                else {
-                                    prob = Math.min(99, 55 + diff);
-                                    aiMsg = `CORTEX v2.0 [NFL]: ${leader} CONTROL (${prob}% WIN PROB)`;
-                                }
-                            } else if (sport === 'nba') {
-                                if (diff <= 3) aiMsg = `CORTEX v2.0 [NBA]: CLUTCH TIME - DEAD HEAT`;
-                                else if (diff <= 10) aiMsg = `CORTEX v2.0 [NBA]: CLOSE CONTEST - ${leader} EDGE`;
-                                else {
-                                    prob = Math.min(99, 50 + (diff/2));
-                                    aiMsg = `CORTEX v2.0 [NBA]: ${leader} DOMINATING (${Math.floor(prob)}%)`;
-                                }
-                            }
-                        }
-                        
-                        this.stats.push({ txt: aiMsg, type: 'ai' });
-                    }
-
-                    // 3. Add Top Performers
-                    if(c.leaders) {
-                        c.leaders.forEach(cat => {
-                            if(cat.leaders && cat.leaders[0]) {
-                                const p = cat.leaders[0];
-                                const statName = cat.abbreviation || cat.name;
-                                this.stats.push({
-                                    txt: `${p.athlete.shortName}: ${p.displayValue} ${statName}`,
-                                    type: 'stat',
-                                    sport: sport
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-
-            updateDOM() {
-                // GENERATE LINE 1 (SCORES)
-                let html1 = '';
-                if(this.games.length === 0) {
-                     html1 = `<div class="score-chip">WAITING FOR LIVE DATA...</div>`;
-                } else {
-                    this.games.forEach(g => {
-                        const liveDot = g.isLive ? '<span class="live-indicator">● LIVE</span>' : '';
-                        const clock = g.isLive ? (g.status.displayClock || '') : g.status.type.shortDetail;
-                        const icon = g.sport === 'nfl' ? '🏈' : '🏀';
-                        html1 += `
-                            <div class="score-chip">
-                                <span class="sport-icon">${icon}</span>
-                                <img src="${g.aL}" class="tiny-logo"> ${g.aT} ${g.aS}
-                                <span style="margin:0 8px; color:#555; font-size:16px;">@</span>
-                                ${g.hS} ${g.hT} <img src="${g.hL}" class="tiny-logo">
-                                <span style="font-size:14px; color:#aaa; margin-left:10px;">${clock}</span>
-                                ${liveDot}
-                            </div>`;
+                if (data.events) {
+                    data.events.forEach(game => {
+                        cards.push(createCard(game, league));
                     });
                 }
-                
-                // GENERATE LINE 2 (STATS)
-                let html2 = '';
-                this.stats.sort(()=>Math.random()-0.5).forEach(s => {
-                    if(s.type === 'stat') {
-                        const colorClass = s.sport === 'nba' ? 'nba' : '';
-                        html2 += `<div class="stat-chip">⚡ ${s.txt.split(':')[0]}: <span class="stat-val ${colorClass}">${s.txt.split(':')[1]}</span></div>`;
-                    } else if (s.type === 'ai') {
-                        html2 += `<div class="stat-chip ai-chip">🤖 ${s.txt}</div>`;
-                    } else {
-                        html2 += `<div class="stat-chip engage-chip">💬 ${s.txt}</div>`;
-                    }
-                });
-                if(!html2) html2 = '<div class="stat-chip engage-chip">NOTSOCJ LIVE BROADCAST</div>';
-
-                // APPLY TO DOM
-                // We use 2 copies to create the seamless infinite loop
-                this.t1.innerHTML = html1 + html1;
-                this.t2.innerHTML = html2 + html2;
-
-                // RESTART ANIMATIONS
-                this.startCSSAnimation(this.t1, 60); // 60px/sec speed reference
-                this.startCSSAnimation(this.t2, 50); // 50px/sec (slower)
-            }
-
-            startCSSAnimation(element, speedFactor) {
-                // Remove animation to reset
-                element.style.animation = 'none';
-                element.offsetHeight; /* trigger reflow */
-                
-                // Calculate width to determine duration
-                // We only need the width of ONE set of content (half the total width)
-                const totalWidth = element.scrollWidth;
-                const singleSetWidth = totalWidth / 2;
-                
-                // Duration = Distance / Speed
-                const duration = singleSetWidth / speedFactor; 
-                
-                element.style.animation = `scrollMarquee ${duration}s linear infinite`;
+            } catch (e) {
+                console.error("Feed Error", e);
             }
         }
 
-        const app = new DualStreamOverlay();
-    </script>
+        // Render
+        if (cards.length > 0) {
+            container.innerHTML = cards.join('');
+        } else {
+            container.innerHTML = '<div style="text-align:center; color:#555; margin-top:20px;">NO LIVE GAMES FOUND</div>';
+        }
+    }
+
+    function createCard(game, league) {
+        const c = game.competitions[0];
+        const home = c.competitors.find(t => t.homeAway === 'home');
+        const away = c.competitors.find(t => t.homeAway === 'away');
+        const status = game.status.type.shortDetail; // "Final", "10:32 - 1st", etc.
+        
+        // MVP / Leader Logic
+        let leaderTxt = "";
+        try {
+            // Usually leaders are in the competitors array or separate leaders block
+            // ESPN structure varies, checking the standard location:
+            const lArr = c.leaders ? c.leaders : (home.leaders ? home.leaders.concat(away.leaders || []) : []);
+            
+            if (lArr && lArr.length > 0) {
+                // Get the top leader (usually index 0 is Passing/Points)
+                const p = lArr[0].leaders[0]; // Player object
+                const statVal = p.value; // e.g. "240" or "32"
+                const statName = lArr[0].displayName; // "Passing Yards" or "Points"
+                // Shorten text
+                const shortStat = statName.replace('Passing Yards','YDS').replace('Points','PTS').replace('Assists','AST');
+                leaderTxt = `
+                    <div class="mvp-box">
+                        <span>⭐ ${p.athlete.shortName}</span>
+                        <span class="mvp-stat">${p.displayValue} ${shortStat}</span>
+                    </div>`;
+            }
+        } catch(e) { /* No leader data yet */ }
+
+        // Formatting
+        const isLive = game.status.type.state === 'in';
+        const liveClass = isLive ? 'color:#00ff88' : '';
+
+        return `
+        <div class="game-card">
+            <div class="league-tag">${league}</div>
+            
+            <div class="score-row">
+                <div class="team">
+                    <img src="${away.team.logo}" onerror="this.style.display='none'">
+                    ${away.team.abbreviation}
+                </div>
+                <div class="score" style="${Number(away.score) > Number(home.score) ? 'color:#fff' : 'color:#888'}">
+                    ${away.score}
+                </div>
+            </div>
+
+            <div class="score-row">
+                <div class="team">
+                    <img src="${home.team.logo}" onerror="this.style.display='none'">
+                    ${home.team.abbreviation}
+                </div>
+                <div class="score" style="${Number(home.score) > Number(away.score) ? 'color:#fff' : 'color:#888'}">
+                    ${home.score}
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                <span class="status" style="${liveClass}">${status}</span>
+            </div>
+            ${leaderTxt}
+        </div>
+        `;
+    }
+
+    // --- RUN ---
+    fetchAllSports(); // Run immediately
+    setInterval(fetchAllSports, 30000); // Auto-refresh every 30s
+</script>
 </body>
 </html>
