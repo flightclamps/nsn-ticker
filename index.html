@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NSN PRO TICKER</title>
+<title>NSN PRO TICKER (SLOW)</title>
 <style>
     /* --- THEME SETTINGS --- */
     :root {
         --height: 70px;
         --bg-color: #000000;       /* Deep Black */
         --card-bg: #111111;        /* Separator color */
-        --accent: #00ff88;         /* NSN Green from your screenshot */
+        --accent: #00ff88;         /* NSN Green */
         --text-main: #ffffff;
         --text-sub: #a1a1aa;
         --border: #333;
@@ -22,7 +22,7 @@
         background: var(--bg-color);
         color: var(--text-main);
         font-family: var(--font);
-        overflow: hidden; /* Hides the scrollbar */
+        overflow: hidden;
         display: flex;
         border-top: 1px solid var(--border);
     }
@@ -36,7 +36,7 @@
         justify-content: center;
         gap: 10px;
         z-index: 10;
-        box-shadow: 5px 0 20px rgba(0,0,0,0.8); /* Shadow over the ticker */
+        box-shadow: 5px 0 20px rgba(0,0,0,0.8);
         border-right: 3px solid var(--accent);
     }
 
@@ -75,8 +75,8 @@
 
     .ticker-belt {
         display: flex;
-        /* Speed: 45s for full loop. Adjust if too fast/slow */
-        animation: scroll 45s linear infinite;
+        /* SPEED CONTROL: Changed from 45s to 65s (30% Slower) */
+        animation: scroll 65s linear infinite;
         will-change: transform;
     }
 
@@ -88,12 +88,11 @@
         padding: 0 25px;
         background: var(--bg-color);
         border-right: 1px solid var(--border);
-        white-space: nowrap; /* PREVENTS WRAPPING */
-        flex-shrink: 0;      /* PREVENTS SQUISHING */
+        white-space: nowrap;
+        flex-shrink: 0;
         gap: 20px;
     }
 
-    /* League Tag (NFL, NBA...) */
     .league-badge {
         font-size: 10px;
         font-weight: 800;
@@ -105,13 +104,12 @@
         text-align: center;
     }
 
-    /* Scoreboard Area */
     .scores {
         display: flex;
         flex-direction: column;
         justify-content: center;
         gap: 2px;
-        min-width: 100px; /* Forces space for names */
+        min-width: 100px;
     }
 
     .team-row {
@@ -127,7 +125,6 @@
     .winning { color: var(--accent); }
     .losing { color: #666; }
 
-    /* Info Area (Time / Leaders) */
     .meta {
         display: flex;
         flex-direction: column;
@@ -150,8 +147,6 @@
     .leader b { color: #fff; }
 
     /* --- ANIMATIONS --- */
-    /* Moves -50% because we duplicate the content. 
-       This creates a perfect seamless loop. */
     @keyframes scroll {
         0% { transform: translateX(0); }
         100% { transform: translateX(-50%); }
@@ -178,8 +173,7 @@
     </div>
 
 <script>
-    // Config
-    const REFRESH_RATE = 60000; // 60 seconds
+    const REFRESH_RATE = 60000; 
     const ENDPOINTS = [
         'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
         'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
@@ -191,12 +185,10 @@
         let cards = [];
 
         try {
-            // 1. Fetch All Data
             const responses = await Promise.all(
                 ENDPOINTS.map(url => fetch(url).then(res => res.json()))
             );
 
-            // 2. Parse Games
             responses.forEach(data => {
                 const league = data.leagues[0].abbreviation;
                 if(data.events) {
@@ -207,14 +199,11 @@
             });
 
         } catch (e) {
-            console.error("Feed Error:", e); // Silent fail to keep ticker running
+            console.error("Feed Error:", e);
         }
 
-        // 3. Render (Seamless Loop Tech)
         if (cards.length > 0) {
             const html = cards.join('');
-            // DUPLICATE CONTENT: Item A, Item B, Item A, Item B
-            // This allows us to scroll 50% and snap back instantly.
             container.innerHTML = html + html; 
         } else {
             container.innerHTML = `<div class="game-item">NO LIVE GAMES SCHEDULED</div><div class="game-item">NO LIVE GAMES SCHEDULED</div>`;
@@ -222,7 +211,6 @@
     }
 
     function buildCard(game, league) {
-        // Safe Data Access
         const c = game.competitions?.[0];
         if(!c) return '';
 
@@ -231,20 +219,15 @@
         const status = game.status.type.shortDetail;
         const isLive = game.status.type.state === 'in';
 
-        // Scores
         const hScore = parseInt(home.score) || 0;
         const aScore = parseInt(away.score) || 0;
 
-        // MVP/Leader Logic (Protected against crashes)
         let leaderTxt = "";
         try {
-            // Try to find a leader list
             let leaders = c.leaders;
             if (!leaders && home.leaders && away.leaders) {
                 leaders = [...home.leaders, ...away.leaders];
             }
-            
-            // If leaders found, grab first one
             if (leaders && leaders.length > 0) {
                 const p = leaders[0].leaders[0];
                 const stat = leaders[0].displayName
@@ -255,14 +238,12 @@
                 leaderTxt = `<b>${p.athlete.shortName}</b> ${p.displayValue} ${stat}`;
             }
         } catch(e) {
-            // If leader fails, show venue instead so it's not empty
             leaderTxt = c.venue?.fullName || ""; 
         }
 
         return `
         <div class="game-item">
             <div class="league-badge">${league}</div>
-            
             <div class="scores">
                 <div class="team-row">
                     <span>${away.team.abbreviation}</span>
@@ -273,7 +254,6 @@
                     <span class="score ${hScore > aScore ? 'winning' : 'losing'}">${home.score}</span>
                 </div>
             </div>
-
             <div class="meta">
                 <div class="status ${isLive ? 'live' : ''}">${status}</div>
                 <div class="leader">${leaderTxt}</div>
@@ -282,7 +262,6 @@
         `;
     }
 
-    // Start
     loadTicker();
     setInterval(loadTicker, REFRESH_RATE);
 </script>
