@@ -2,241 +2,318 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NSN LIVE WIDGET</title>
+<title>PRO SPORTS TICKER</title>
 <style>
+    /* --- CSS VARIABLES FOR EASY THEMIING --- */
     :root {
-        --width: 380px;
-        --bg: #0f0f0f; /* Change to transparent for see-through */
-        --card-bg: #1a1a1a;
-        --border: #333;
-        --accent: #00ff88;
-        --text-main: #ffffff;
-        --text-sub: #aaaaaa;
-        --font: 'Segoe UI', system-ui, sans-serif;
+        --height: 70px;
+        --bg-main: #0a0a0a;    /* Deep Black */
+        --bg-card: #141414;    /* Slightly Lighter Card Background */
+        --border-color: #2a2a2a;
+        --accent-color: #00ff88; /* Neon Green Accent */
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    /* --- MAIN CONTAINER SETUP --- */
     body {
-        margin: 0;
-        padding: 10px;
-        width: var(--width);
-        background: var(--bg);
-        font-family: var(--font);
-        color: var(--text-main);
-        overflow: hidden;
+        margin: 0; padding: 0;
+        height: var(--height);
+        background: var(--bg-main);
+        color: var(--text-primary);
+        font-family: var(--font-stack);
+        overflow: hidden; /* Hides anything outside the ticker area */
+        display: flex;
+        border-top: 2px solid var(--border-color);
+        border-bottom: 2px solid var(--border-color);
     }
 
-    /* Header Pulse */
-    .header {
+    /* --- FIXED LEFT LABEL ("SPORTS CENTER" STYLE) --- */
+    .ticker-label {
+        background: linear-gradient(135deg, #000 0%, #111 100%);
+        color: var(--text-primary);
+        padding: 0 30px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid var(--accent);
-        margin-bottom: 15px;
+        gap: 12px;
+        font-weight: 900;
+        font-size: 24px;
+        letter-spacing: -1px;
+        z-index: 10; /* Keeps it on top of scrolling text */
+        box-shadow: 5px 0 20px rgba(0,0,0,0.8); /* Depth shadow */
+        border-right: 3px solid var(--accent-color);
     }
-    .live-dot {
+    
+    /* Pulsing "LIVE" Dot */
+    .live-indicator {
         width: 10px; height: 10px;
-        background: #ff0044;
+        background: var(--accent-color);
         border-radius: 50%;
-        box-shadow: 0 0 10px #ff0044;
-        animation: pulse 1.5s infinite;
+        box-shadow: 0 0 10px var(--accent-color);
+        animation: pulse 2s infinite ease-in-out;
     }
-    .title {
+
+    /* --- SCROLLING ANIMATION CONTAINER --- */
+    .ticker-wrap {
+        flex: 1; /* Takes up remaining width */
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Gradient Fade on the Far Right for Smooth Exit */
+    .ticker-wrap::after {
+        content: "";
+        position: absolute; top: 0; bottom: 0; right: 0;
+        width: 150px;
+        background: linear-gradient(to right, transparent, var(--bg-main));
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    /* The Moving Element */
+    .ticker-move {
+        display: flex;
+        /* IMPORTANT: animation duration controls speed. */
+        animation: ticker-scroll 45s linear infinite;
+        will-change: transform; /* Performance optimization */
+    }
+
+    /* --- INDIVIDUAL GAME CARD DESIGN --- */
+    .ticker-item {
+        display: flex;
+        align-items: center;
+        background: var(--bg-card);
+        border-right: 1px solid var(--border-color);
+        padding: 0 25px;
+        height: var(--height);
+        white-space: nowrap; /* Keeps text on one line */
+        gap: 25px; /* Spacing between game elements */
+        flex-shrink: 0; /* Prevents squishing */
+        position: relative;
+    }
+
+    /* League Badge (e.g., NFL, NBA) */
+    .league-badge {
+        font-size: 10px;
         font-weight: 800;
-        font-size: 18px;
+        color: var(--text-secondary);
+        background: #222;
+        padding: 4px 8px;
+        border-radius: 4px;
         text-transform: uppercase;
         letter-spacing: 1px;
+        position: absolute;
+        top: 5px; left: 10px;
     }
 
-    /* Game Card */
-    .game-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
+    /* Score Block */
+    .score-block {
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        position: relative;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        justify-content: center;
+        gap: 4px;
+        min-width: 110px; /* Ensures enough width so no overlap */
+        margin-top: 10px; /* Space for league badge */
     }
 
-    /* League Badge */
-    .league-tag {
-        position: absolute;
-        top: 8px; right: 8px;
-        font-size: 10px;
-        font-weight: bold;
-        background: #333;
-        padding: 2px 6px;
-        border-radius: 4px;
-        color: #ccc;
-    }
-
-    /* Score Row */
-    .score-row {
+    .team-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-    .team {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        font-size: 15px;
         font-weight: 700;
+    }
+
+    .score-val {
+        font-variant-numeric: tabular-nums; /* Aligns numbers nicely */
+        font-weight: 800;
         font-size: 16px;
     }
-    .team img { width: 24px; height: 24px; }
-    .score { font-size: 20px; font-weight: 800; }
-    .winner { color: var(--accent); }
+    /* Color styling for winning/losing scores */
+    .score-val.winning { color: var(--accent-color); }
+    .score-val.losing { color: var(--text-secondary); opacity: 0.8; }
 
-    /* Game Status */
-    .status {
-        font-size: 11px;
-        color: var(--text-sub);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-    }
-
-    /* MVP Section */
-    .mvp-box {
-        margin-top: 6px;
-        padding-top: 6px;
-        border-top: 1px dashed #333;
-        font-size: 11px;
-        color: var(--text-sub);
-        display: flex;
-        justify-content: space-between;
-    }
-    .mvp-name { color: #fff; font-weight: 600; }
-    .mvp-stat { color: var(--accent); }
-
-    /* Scroll Animation for many games */
-    #container {
+    /* Game Status & Leader Info */
+    .game-meta {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        align-items: flex-end;
+        justify-content: center;
+        text-align: right;
+        min-width: 160px; /* Prevents overlap with next card */
+        gap: 4px;
     }
+    
+    .status-txt {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+    .status-txt.live { color: #ff3333; } /* Red for live games */
+    
+    .leader-txt { 
+        font-size: 12px; 
+        color: var(--text-secondary); 
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Adds "..." if text is too long */
+    }
+    .leader-txt span { color: var(--text-primary); font-weight: 600; }
 
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    /* --- ANIMATIONS --- */
+    /* Infinite scroll animation */
+    @keyframes ticker-scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); } /* Moves half the total width */
+    }
+    
+    /* Pulsing dot animation */
+    @keyframes pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.9); }
+        100% { opacity: 1; transform: scale(1); }
+    }
 </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="live-dot"></div>
-        <div class="title">NSN SPORTS TICKER</div>
+    <div class="ticker-label">
+        <div class="live-indicator"></div>
+        <span>NSN LIVE</span>
     </div>
 
-    <div id="container">
-        <div style="color:#666; font-size:12px; text-align:center;">INITIALIZING FEED...</div>
+    <div class="ticker-wrap">
+        <div id="ticker-container" class="ticker-move">
+            <div class="ticker-item" style="color:var(--text-secondary); font-style:italic;">
+                INITIALIZING SPORTS FEED...
+            </div>
+        </div>
     </div>
 
 <script>
-    // --- CONFIG ---
-    const ENDPOINTS = [
+    // --- CONFIGURATION ---
+    const REFRESH_RATE_MS = 60000; // Fetch new data every 60 seconds
+    const API_ENDPOINTS = [
         'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
         'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
         'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard'
     ];
 
-    async function fetchAllSports() {
-        const container = document.getElementById('container');
-        const cards = [];
+    // --- MAIN FETCH FUNCTION ---
+    async function fetchAndRenderTicker() {
+        const container = document.getElementById('ticker-container');
+        let gameCardsHTML = [];
 
-        for (const url of ENDPOINTS) {
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                const league = data.leagues[0].abbreviation; // NFL, NBA, etc.
-                
-                if (data.events) {
+        try {
+            // Fetch all sports data in parallel for speed
+            const responses = await Promise.all(
+                API_ENDPOINTS.map(url => fetch(url).then(res => {
+                    if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+                    return res.json();
+                }))
+            );
+            
+            // Process each sport's data
+            responses.forEach(data => {
+                const leagueAbbrev = data.leagues[0]?.abbreviation || 'GAME';
+                if(data.events && data.events.length > 0) {
                     data.events.forEach(game => {
-                        cards.push(createCard(game, league));
+                        gameCardsHTML.push(createGameCard(game, leagueAbbrev));
                     });
                 }
-            } catch (e) {
-                console.error("Feed Error", e);
-            }
+            });
+
+        } catch(error) {
+            console.error("Ticker Data Error:", error);
+            // Optional: Render an error message in the ticker
+            // gameCardsHTML.push('<div class="ticker-item" style="color:red;">DATA ERROR - RETRYING...</div>');
         }
 
-        // Render
-        if (cards.length > 0) {
-            container.innerHTML = cards.join('');
+        // RENDER TO DOM
+        if(gameCardsHTML.length > 0) {
+            const finalHTML = gameCardsHTML.join('');
+            // **CRITICAL for seamless loop:** Duplicate the content.
+            // The animation scrolls 50% of the width, showing the first set,
+            // then instantly resets to 0% where the identical second set begins.
+            container.innerHTML = finalHTML + finalHTML; 
         } else {
-            container.innerHTML = '<div style="text-align:center; color:#555; margin-top:20px;">NO LIVE GAMES FOUND</div>';
+            container.innerHTML = '<div class="ticker-item">NO LIVE GAMES SCHEDULED RIGHT NOW</div><div class="ticker-item">NO LIVE GAMES SCHEDULED RIGHT NOW</div>';
         }
     }
 
-    function createCard(game, league) {
-        const c = game.competitions[0];
-        const home = c.competitors.find(t => t.homeAway === 'home');
-        const away = c.competitors.find(t => t.homeAway === 'away');
-        const status = game.status.type.shortDetail; // "Final", "10:32 - 1st", etc.
+    // --- HELPER: CREATE INDIVIDUAL GAME CARD HTML ---
+    function createGameCard(game, league) {
+        const competition = game.competitions[0];
+        const homeTeam = competition.competitors.find(t => t.homeAway === 'home');
+        const awayTeam = competition.competitors.find(t => t.homeAway === 'away');
+        const statusText = game.status.type.shortDetail; // e.g., "Final", "10:45 1st"
+        const isGameLive = game.status.type.state === 'in';
         
-        // MVP / Leader Logic
-        let leaderTxt = "";
+        // Parse scores, defaulting to 0 if game hasn't started
+        const homeScore = parseInt(homeTeam.score) || 0;
+        const awayScore = parseInt(awayTeam.score) || 0;
+
+        // Logic to determine a "leader" or "MVP" to display
+        let leaderDisplay = "";
         try {
-            // Usually leaders are in the competitors array or separate leaders block
-            // ESPN structure varies, checking the standard location:
-            const lArr = c.leaders ? c.leaders : (home.leaders ? home.leaders.concat(away.leaders || []) : []);
-            
-            if (lArr && lArr.length > 0) {
-                // Get the top leader (usually index 0 is Passing/Points)
-                const p = lArr[0].leaders[0]; // Player object
-                const statVal = p.value; // e.g. "240" or "32"
-                const statName = lArr[0].displayName; // "Passing Yards" or "Points"
-                // Shorten text
-                const shortStat = statName.replace('Passing Yards','YDS').replace('Points','PTS').replace('Assists','AST');
-                leaderTxt = `
-                    <div class="mvp-box">
-                        <span>⭐ ${p.athlete.shortName}</span>
-                        <span class="mvp-stat">${p.displayValue} ${shortStat}</span>
-                    </div>`;
+            // Combine leaders from both teams if available
+            let potentialLeaders = [];
+            if (competition.leaders) {
+                potentialLeaders = competition.leaders;
+            } else if (homeTeam.leaders && awayTeam.leaders) {
+                potentialLeaders = [...homeTeam.leaders, ...awayTeam.leaders];
             }
-        } catch(e) { /* No leader data yet */ }
-
-        // Formatting
-        const isLive = game.status.type.state === 'in';
-        const liveClass = isLive ? 'color:#00ff88' : '';
-
-        return `
-        <div class="game-card">
-            <div class="league-tag">${league}</div>
             
-            <div class="score-row">
-                <div class="team">
-                    <img src="${away.team.logo}" onerror="this.style.display='none'">
-                    ${away.team.abbreviation}
+            // Find the first valid leader entry
+            const topLeader = potentialLeaders.find(l => l.leaders && l.leaders.length > 0);
+            if(topLeader) {
+                const player = topLeader.leaders[0];
+                // Shorten stat names for space
+                const statName = topLeader.displayName
+                    .replace('Passing Yards','Yds')
+                    .replace('Rushing Yards','Rush Yds')
+                    .replace('Receiving Yards','Rec Yds')
+                    .replace('Points','Pts')
+                    .replace('Assists','Ast')
+                    .replace('Rebounds','Reb')
+                    .replace('Saves','Sv');
+                leaderDisplay = `<span>${player.athlete.shortName}</span>: ${player.displayValue} ${statName}`;
+            }
+        } catch(e) {
+            // Fail silently if no leader data, just leave blank
+        }
+
+        // Build the HTML string
+        return `
+        <div class="ticker-item">
+            <div class="league-badge">${league}</div>
+            
+            <div class="score-block">
+                <div class="team-row">
+                    <span>${awayTeam.team.abbreviation}</span>
+                    <span class="score-val ${awayScore > homeScore ? 'winning' : 'losing'}">${awayTeam.score}</span>
                 </div>
-                <div class="score" style="${Number(away.score) > Number(home.score) ? 'color:#fff' : 'color:#888'}">
-                    ${away.score}
+                <div class="team-row">
+                    <span>${homeTeam.team.abbreviation}</span>
+                    <span class="score-val ${homeScore > awayScore ? 'winning' : 'losing'}">${homeTeam.score}</span>
                 </div>
             </div>
 
-            <div class="score-row">
-                <div class="team">
-                    <img src="${home.team.logo}" onerror="this.style.display='none'">
-                    ${home.team.abbreviation}
-                </div>
-                <div class="score" style="${Number(home.score) > Number(away.score) ? 'color:#fff' : 'color:#888'}">
-                    ${home.score}
-                </div>
+            <div class="game-meta">
+                <div class="status-txt ${isGameLive ? 'live' : ''}">${statusText}</div>
+                <div class="leader-txt">${leaderDisplay}</div>
             </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                <span class="status" style="${liveClass}">${status}</span>
-            </div>
-            ${leaderTxt}
         </div>
         `;
     }
 
-    // --- RUN ---
-    fetchAllSports(); // Run immediately
-    setInterval(fetchAllSports, 30000); // Auto-refresh every 30s
+    // --- INITIALIZATION ---
+    fetchAndRenderTicker(); // Run immediately on load
+    setInterval(fetchAndRenderTicker, REFRESH_RATE_MS); // Schedule regular updates
 </script>
 </body>
 </html>
