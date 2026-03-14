@@ -1,269 +1,333 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>NSN PRO TICKER (SLOW)</title>
-<style>
-    /* --- THEME SETTINGS --- */
-    :root {
-        --height: 70px;
-        --bg-color: #000000;       /* Deep Black */
-        --card-bg: #111111;        /* Separator color */
-        --accent: #00ff88;         /* NSN Green */
-        --text-main: #ffffff;
-        --text-sub: #a1a1aa;
-        --border: #333;
-        --font: 'Inter', -apple-system, system-ui, sans-serif;
-    }
-
-    body {
-        margin: 0; padding: 0;
-        height: var(--height);
-        background: var(--bg-color);
-        color: var(--text-main);
-        font-family: var(--font);
-        overflow: hidden;
-        display: flex;
-        border-top: 1px solid var(--border);
-    }
-
-    /* --- THE "NSN LIVE" LABEL (Fixed Left) --- */
-    .label-box {
-        background: var(--bg-color);
-        width: 160px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        z-index: 10;
-        box-shadow: 5px 0 20px rgba(0,0,0,0.8);
-        border-right: 3px solid var(--accent);
-    }
-
-    .label-text {
-        font-weight: 900;
-        font-size: 20px;
-        font-style: italic;
-        letter-spacing: -1px;
-    }
-
-    .live-dot {
-        width: 10px; height: 10px;
-        background: var(--accent);
-        border-radius: 50%;
-        box-shadow: 0 0 10px var(--accent);
-        animation: pulse 2s infinite;
-    }
-
-    /* --- THE TICKER TRACK --- */
-    .ticker-viewport {
-        flex: 1;
-        overflow: hidden;
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    /* Fade Mask on Right Edge */
-    .ticker-viewport::after {
-        content: "";
-        position: absolute; right: 0; top: 0; bottom: 0;
-        width: 100px;
-        background: linear-gradient(to right, transparent, var(--bg-color));
-        pointer-events: none;
-    }
-
-    .ticker-belt {
-        display: flex;
-        /* SPEED CONTROL: Changed from 45s to 65s (30% Slower) */
-        animation: scroll 65s linear infinite;
-        will-change: transform;
-    }
-
-    /* --- THE GAME CARD --- */
-    .game-item {
-        display: flex;
-        align-items: center;
-        height: var(--height);
-        padding: 0 25px;
-        background: var(--bg-color);
-        border-right: 1px solid var(--border);
-        white-space: nowrap;
-        flex-shrink: 0;
-        gap: 20px;
-    }
-
-    .league-badge {
-        font-size: 10px;
-        font-weight: 800;
-        background: #222;
-        color: #888;
-        padding: 3px 6px;
-        border-radius: 4px;
-        min-width: 30px;
-        text-align: center;
-    }
-
-    .scores {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 2px;
-        min-width: 100px;
-    }
-
-    .team-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 14px;
-        font-weight: 700;
-        gap: 15px;
-    }
-
-    .score { font-variant-numeric: tabular-nums; }
-    .winning { color: var(--accent); }
-    .losing { color: #666; }
-
-    .meta {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        text-align: right;
-        font-size: 11px;
-        color: var(--text-sub);
-        min-width: 140px;
-    }
-
-    .status { font-weight: 700; text-transform: uppercase; }
-    .live { color: #ff4444; }
-
-    .leader { 
-        max-width: 180px; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        margin-top: 2px;
-    }
-    .leader b { color: #fff; }
-
-    /* --- ANIMATIONS --- */
-    @keyframes scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-</style>
-</head>
-<body>
-
-    <div class="label-box">
-        <div class="live-dot"></div>
-        <div class="label-text">NSN <span style="color:var(--accent)">LIVE</span></div>
+  {/* Main Ticker */}
+  <div style={{
+    height: '70px',
+    backgroundColor: '#000',
+    borderTop: '1px solid #333',
+    borderBottom: '3px solid #00ff88',
+    display: 'flex',
+    overflow: 'hidden',
+  }}>
+    {/* Live Label */}
+    <div style={{
+      width: '160px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      backgroundColor: '#000',
+      borderRight: '3px solid #00ff88',
+      boxShadow: '5px 0 20px rgba(0,0,0,0.8)',
+      zIndex: 10,
+      flexShrink: 0,
+    }}>
+      <div style={{
+        width: '10px',
+        height: '10px',
+        backgroundColor: '#00ff88',
+        borderRadius: '50%',
+        boxShadow: '0 0 10px #00ff88',
+        animation: 'pulse 2s infinite',
+      }} />
+      <span style={{
+        fontWeight: 900,
+        fontSize: '20px',
+        fontStyle: 'italic',
+        letterSpacing: '-1px',
+      }}>
+        NSN <span style={{ color: '#00ff88' }}>AI</span>
+      </span>
     </div>
 
-    <div class="ticker-viewport">
-        <div id="ticker" class="ticker-belt">
-            <div class="game-item" style="font-style:italic; color:#555;">Initializing Sports Feed...</div>
+    {/* Ticker Track */}
+    <div style={{
+      flex: 1,
+      overflow: 'hidden',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+    }}>
+      {/* Fade mask */}
+      <div style={{
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: '100px',
+        background: 'linear-gradient(to right, transparent, #000)',
+        pointerEvents: 'none',
+        zIndex: 5,
+      }} />
+
+      {loading && items.length === 0 ? (
+        <div style={{
+          padding: '0 30px',
+          color: '#555',
+          fontStyle: 'italic',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}>
+          <div style={{
+            width: '16px',
+            height: '16px',
+            border: '2px solid #333',
+            borderTopColor: '#00ff88',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }} />
+          AI is fetching live sports data...
         </div>
-    </div>
+      ) : (
+        <div
+          ref={tickerRef}
+          style={{
+            display: 'flex',
+            animation: duplicatedItems.length > 0 ? 'scroll 90s linear infinite' : 'none',
+            willChange: 'transform',
+          }}
+        >
+          {duplicatedItems.map((item, index) => {
+            const config = typeConfig[item.type] || typeConfig.score;
+            return (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '70px',
+                  padding: '0 25px',
+                  borderRight: '1px solid #222',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  gap: '15px',
+                }}
+              >
+                {/* League Badge */}
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  backgroundColor: '#222',
+                  color: '#888',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  minWidth: '36px',
+                  textAlign: 'center',
+                }}>
+                  {item.league || 'LIVE'}
+                </span>
 
-<script>
-    const REFRESH_RATE = 60000; 
-    const ENDPOINTS = [
-        'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
-        'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
-        'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard'
-    ];
+                {/* Type Badge */}
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  backgroundColor: config.color + '22',
+                  color: config.color,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}>
+                  {config.icon} {config.label}
+                </span>
 
-    async function loadTicker() {
-        const container = document.getElementById('ticker');
-        let cards = [];
-
-        try {
-            const responses = await Promise.all(
-                ENDPOINTS.map(url => fetch(url).then(res => res.json()))
+                {/* Content */}
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#fff',
+                  maxWidth: '400px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {item.text}
+                </span>
+              </div>
             );
-
-            responses.forEach(data => {
-                const league = data.leagues[0].abbreviation;
-                if(data.events) {
-                    data.events.forEach(game => {
-                        cards.push(buildCard(game, league));
-                    });
-                }
-            });
-
-        } catch (e) {
-            console.error("Feed Error:", e);
-        }
-
-        if (cards.length > 0) {
-            const html = cards.join('');
-            container.innerHTML = html + html; 
-        } else {
-            container.innerHTML = `<div class="game-item">NO LIVE GAMES SCHEDULED</div><div class="game-item">NO LIVE GAMES SCHEDULED</div>`;
-        }
-    }
-
-    function buildCard(game, league) {
-        const c = game.competitions?.[0];
-        if(!c) return '';
-
-        const home = c.competitors.find(t => t.homeAway === 'home');
-        const away = c.competitors.find(t => t.homeAway === 'away');
-        const status = game.status.type.shortDetail;
-        const isLive = game.status.type.state === 'in';
-
-        const hScore = parseInt(home.score) || 0;
-        const aScore = parseInt(away.score) || 0;
-
-        let leaderTxt = "";
-        try {
-            let leaders = c.leaders;
-            if (!leaders && home.leaders && away.leaders) {
-                leaders = [...home.leaders, ...away.leaders];
-            }
-            if (leaders && leaders.length > 0) {
-                const p = leaders[0].leaders[0];
-                const stat = leaders[0].displayName
-                    .replace('Passing Yards','Yds')
-                    .replace('Points','Pts')
-                    .replace('Assists','Ast')
-                    .replace('Saves','Sv');
-                leaderTxt = `<b>${p.athlete.shortName}</b> ${p.displayValue} ${stat}`;
-            }
-        } catch(e) {
-            leaderTxt = c.venue?.fullName || ""; 
-        }
-
-        return `
-        <div class="game-item">
-            <div class="league-badge">${league}</div>
-            <div class="scores">
-                <div class="team-row">
-                    <span>${away.team.abbreviation}</span>
-                    <span class="score ${aScore > hScore ? 'winning' : 'losing'}">${away.score}</span>
-                </div>
-                <div class="team-row">
-                    <span>${home.team.abbreviation}</span>
-                    <span class="score ${hScore > aScore ? 'winning' : 'losing'}">${home.score}</span>
-                </div>
-            </div>
-            <div class="meta">
-                <div class="status ${isLive ? 'live' : ''}">${status}</div>
-                <div class="leader">${leaderTxt}</div>
-            </div>
+          })}
         </div>
-        `;
-    }
+      )}
+    </div>
+  </div>
 
-    loadTicker();
-    setInterval(loadTicker, REFRESH_RATE);
-</script>
-</body>
-</html>
+  {/* Control Panel */}
+  <div style={{
+    padding: '30px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  }}>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '15px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <button
+          onClick={fetchSportsUpdates}
+          disabled={loading}
+          style={{
+            background: loading ? '#333' : '#00ff88',
+            color: loading ? '#666' : '#000',
+            border: 'none',
+            padding: '12px 24px',
+            fontWeight: 800,
+            fontSize: '13px',
+            letterSpacing: '1px',
+            textTransform: 'uppercase',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          {loading ? (
+            <>
+              <span style={{
+                width: '14px',
+                height: '14px',
+                border: '2px solid #555',
+                borderTopColor: '#888',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }} />
+              UPDATING...
+            </>
+          ) : (
+            <>⚡ REFRESH NOW</>
+          )}
+        </button>
+
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          color: '#888',
+          fontSize: '13px',
+          cursor: 'pointer',
+        }}>
+          <input
+            type="checkbox"
+            checked={autoRefresh}
+            onChange={(e) => setAutoRefresh(e.target.checked)}
+            style={{ accentColor: '#00ff88' }}
+          />
+          Auto-refresh (2 min)
+        </label>
+      </div>
+
+      {lastUpdate && (
+        <span style={{
+          color: '#555',
+          fontSize: '12px',
+        }}>
+          Last updated: {lastUpdate.toLocaleTimeString()}
+        </span>
+      )}
+    </div>
+
+    {error && (
+      <div style={{
+        background: '#ff444422',
+        border: '1px solid #ff4444',
+        color: '#ff4444',
+        padding: '12px 16px',
+        fontSize: '13px',
+        borderRadius: '4px',
+      }}>
+        {error}
+      </div>
+    )}
+
+    {/* Current Items Display */}
+    {items.length > 0 && (
+      <div style={{
+        background: '#111',
+        border: '1px solid #222',
+        padding: '20px',
+        borderRadius: '4px',
+      }}>
+        <h3 style={{
+          color: '#00ff88',
+          fontSize: '12px',
+          fontWeight: 800,
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          marginBottom: '15px',
+        }}>
+          🤖 AI-GENERATED FEED ({items.length} items)
+        </h3>
+        
+        <div style={{
+          display: 'grid',
+          gap: '8px',
+          maxHeight: '300px',
+          overflowY: 'auto',
+        }}>
+          {items.map((item, index) => {
+            const config = typeConfig[item.type] || typeConfig.score;
+            return (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  background: '#0a0a0a',
+                  borderLeft: `3px solid ${config.color}`,
+                }}
+              >
+                <span style={{
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  color: '#666',
+                  minWidth: '35px',
+                }}>
+                  {item.league}
+                </span>
+                <span style={{
+                  fontSize: '16px',
+                }}>
+                  {config.icon}
+                </span>
+                <span style={{
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                }}>
+                  {item.text}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <style>{`
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-33.33%); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    * { box-sizing: border-box; }
+    
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; }
+    ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+  `}</style>
+</div>
