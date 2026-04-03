@@ -10,498 +10,330 @@
   <title>NSN AI · SportsCenter Ticker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;0,900;1,900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-
-    body {
-      background: #050505;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #111; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
-    @keyframes ticker-scroll {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; box-shadow: 0 0 8px #00ff88; }
-      50%       { opacity: 0.35; box-shadow: none; }
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    @keyframes flash-badge {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.55; }
-    }
-    @keyframes slide-down {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; }
+    body { background:#050505; color:#fff; font-family:'Inter',sans-serif; min-height:100vh; min-height:-webkit-fill-available; -webkit-text-size-adjust:100%; }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:#111; }
+    ::-webkit-scrollbar-thumb { background:#333; border-radius:2px; }
+    @keyframes ticker-scroll { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+    @keyframes pulse-dot { 0%,100% { opacity:1; box-shadow:0 0 8px #00ff88; } 50% { opacity:0.3; box-shadow:none; } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes flash { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="app"></div>
+<script>
+/* ── Badge config ── */
+const BADGE = {
+  LIVE:      { color:'#00ff88', flash:true  },
+  FINAL:     { color:'#aaaaaa', flash:false },
+  TONIGHT:   { color:'#4488ff', flash:false },
+  BREAKING:  { color:'#ff4444', flash:true  },
+  PREDICTED: { color:'#bb44ff', flash:false },
+  INJURY:    { color:'#ff8800', flash:false },
+  ROSTER:    { color:'#00ccaa', flash:false },
+  VEGAS:     { color:'#FFD700', flash:false },
+  WATCH:     { color:'#ffcc00', flash:false },
+  WEATHER:   { color:'#44aaff', flash:false },
+  REVENGE:   { color:'#ff6644', flash:false },
+  DFS:       { color:'#00cc66', flash:false },
+  ROOKIE:    { color:'#00eeff', flash:false },
+  SLUMP:     { color:'#ff3333', flash:false },
+  HOT:       { color:'#ff6600', flash:true  },
+  RANK:      { color:'#cc88ff', flash:false },
+};
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
+/* ── ESPN public JSON scoreboards (no proxy, CORS-open) ── */
+const ESPN_SCORES = [
+  { league:'NFL', url:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard' },
+  { league:'NBA', url:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard' },
+  { league:'MLB', url:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard' },
+  { league:'NHL', url:'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard' },
+  { league:'CFB', url:'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard' },
+  { league:'CBB', url:'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard' },
+  { league:'MLS', url:'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard' },
+];
 
-    /* ── Badge config ── */
-    const BADGE = {
-      LIVE:      { color: '#00ff88', flash: true  },
-      FINAL:     { color: '#aaaaaa', flash: false },
-      TONIGHT:   { color: '#4488ff', flash: false },
-      BREAKING:  { color: '#ff4444', flash: true  },
-      PREDICTED: { color: '#bb44ff', flash: false },
-      INJURY:    { color: '#ff8800', flash: false },
-      ROSTER:    { color: '#00ccaa', flash: false },
-      VEGAS:     { color: '#FFD700', flash: false },
-      WATCH:     { color: '#ffcc00', flash: false },
-      WEATHER:   { color: '#44aaff', flash: false },
-      REVENGE:   { color: '#ff6644', flash: false },
-      DFS:       { color: '#00cc66', flash: false },
-      ROOKIE:    { color: '#00eeff', flash: false },
-      SLUMP:     { color: '#ff3333', flash: false },
-      HOT:       { color: '#ff6600', flash: true  },
-    };
-    const DEFAULT_BADGE = { color: '#888', flash: false };
+const ESPN_RANKINGS = [
+  { label:'CFB', url:'https://site.web.api.espn.com/apis/v2/sports/football/college-football/rankings' },
+  { label:'CBB', url:'https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/rankings' },
+];
 
-    /* ── System prompt ── */
-    const SYSTEM_PROMPT = `You are the ESPN SportsCenter bottom ticker — an elite, unbiased sports intelligence engine. You think like a Vegas sharp, analyze like a quant, and deliver like a broadcaster. You pull data from RotoWire, ESPN, CBS Sports, Baseball Savant, Baseball Reference, DraftKings, and FanDuel to generate the most informed ticker in sports.
+/* ── RSS feeds (via CORS proxy) ── */
+const RSS_FEEDS = [
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/news',                      max:5 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/nfl/news',                  max:4 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/nba/news',                  max:4 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/mlb/news',                  max:4 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/nhl/news',                  max:3 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/ncf/news',                  max:3 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/ncb/news',                  max:3 },
+  { src:'ESPN',   url:'https://www.espn.com/espn/rss/soccer/news',               max:2 },
+  { src:'YAHOO',  url:'https://sports.yahoo.com/rss/',                            max:5 },
+  { src:'CBS',    url:'https://www.cbssports.com/rss/headlines/',                 max:4 },
+  { src:'PFT',    url:'https://profootballtalk.nbcsports.com/feed/',              max:4 },
+  { src:'HOOPS',  url:'https://hoopshype.com/feed/',                              max:4 },
+  { src:'MLB',    url:'https://www.mlb.com/feeds/news/rss.xml',                   max:3 },
+  { src:'ROTO',   url:'https://www.rotowire.com/updates/rss.php',                 max:6 },
+  { src:'BR',     url:'https://bleacherreport.com/articles/feed',                 max:3 },
+];
 
-Return ONLY a raw JSON array of 20-25 items. No markdown. No explanation. No code fences. Raw JSON array only.
+const SOURCE_LABELS = ['ESPN (8 FEEDS)','YAHOO SPORTS','CBS SPORTS','PRO FOOTBALL TALK','HOOPSHYPE','MLB.COM','ROTOWIRE','BLEACHER REPORT','ESPN SCOREBOARDS','AP POLLS'];
 
-Each item must follow this exact format:
-{ "badge": "BADGE_TYPE", "line": "TICKER TEXT IN ALL CAPS — MAX 15 WORDS" }
+/* ── CORS proxy fallback chain ── */
+const PROXIES = [
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+];
 
-BADGE OPTIONS (use exactly as written):
-LIVE · FINAL · TONIGHT · BREAKING · PREDICTED · INJURY · ROSTER · VEGAS · WATCH · WEATHER · REVENGE · DFS · ROOKIE · SLUMP · HOT
+async function proxyFetch(url) {
+  for (const make of PROXIES) {
+    try {
+      const r = await fetch(make(url), { signal: AbortSignal.timeout(8000) });
+      if (r.ok) return await r.text();
+    } catch {}
+  }
+  return null;
+}
 
-SCORING & PREDICTIONS:
-- PREDICTED items must cite at minimum TWO of: L5/L10 average, opponent defensive rank, rest days, home/away split, RotoWire projection, ESPN BPI, or Vegas line
-- If Vegas line and stats AGREE → badge: PREDICTED, note HIGH CONFIDENCE
-- If Vegas line and stats DISAGREE → badge: WATCH, flag the conflict explicitly
-- Back to back flag: any player on second night of B2B gets a performance warning
-- Days of rest: 3+ days rest in NBA = scoring upside, flag it
-- Home/away splits: call out players who are drastically different home vs away
-- Pitcher vs batter handedness: flag lefty/lefty or righty/righty mismatches in MLB
-- Barrel rate and exit velocity from Baseball Savant: high barrel % vs soft pitcher = predicted HR
+/* ── Badge keyword detection ── */
+function detectBadge(title, desc) {
+  const t = (title + ' ' + (desc || '')).toLowerCase();
+  if (/breaking|sources say|per sources|report:|sources:|per espn|per nfl|per nba|per mlb/.test(t))         return 'BREAKING';
+  if (/injur|day-to-day|doubtful|questionable|sidelined|placed on il|placed on ir|out for|concussion|hamstring|ankle|knee|shoulder|surgery|activated from|returning from/.test(t)) return 'INJURY';
+  if (/traded?|signed?|waived?|released?|acquired?|free agent|contract|extension|deal\b|claimed|waiver/.test(t)) return 'ROSTER';
+  if (/odds|spread|moneyline|over\/under|line move|sharp money|prop bet|draftkings|fanduel|sportsbook/.test(t)) return 'VEGAS';
+  if (/rain delay|wind advisory|postponed|rescheduled|cancelled|weather/.test(t))                             return 'WEATHER';
+  if (/revenge game|returns? to|faces? former|playing against his former|ex-teammate/.test(t))               return 'REVENGE';
+  if (/career.?high|franchise record|sets record|breaks record|all-time|consecutive|hit streak|on fire/.test(t)) return 'HOT';
+  if (/slump|0-for|hitless|struggling|cold streak|benched|demoted|optioned/.test(t))                         return 'SLUMP';
+  if (/rookie|first career|nfl debut|nba debut|mlb debut|first start\b/.test(t))                             return 'ROOKIE';
+  if (/\bdfs\b|daily fantasy|ownership percentage|fade\b|gpp\b/.test(t))                                     return 'DFS';
+  if (/tonight|today's game|preview|matchup|tip.?off|first pitch|puck drop|game day/.test(t))                return 'TONIGHT';
+  if (/wins\b|defeats|beats\b|beat\b|topped|blanked|shutout|final:/.test(t))                                 return 'FINAL';
+  return 'LIVE';
+}
 
-INJURY INTEL:
-- Pull latest RotoWire injury reports — flag any upgrade or downgrade since morning
-- If a starter is out, identify the replacement and their stats in that role
-- Questionable players get flagged until confirmed in/out
+/* ── Text cleaner ── */
+function clean(str) {
+  if (!str) return '';
+  return str
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&nbsp;/g,' ')
+    .replace(/\s+/g,' ').trim().toUpperCase().slice(0, 120);
+}
 
-VEGAS INTEL:
-- Line movement of 2+ points = VEGAS badge, identify which side sharp money is on
-- If public % and sharp % disagree, flag it
-- Fade the public plays when sharp money is on the other side
-
-CONTEXTUAL BADGES:
-- REVENGE: player facing former team → pull their career stats vs that franchise
-- WEATHER: outdoor stadiums → wind speed and direction, temp below 50°F, rain delay risk
-- ROOKIE: first career game in this stadium or vs this pitcher → note the unknown factor
-- DFS: low ownership + high upside = DFS badge with ownership % and reasoning
-- SLUMP: player in 0-for-15 or sub .200 L10 → call it out, no bias
-
-FORMATTING RULES:
-- ALL CAPS always
-- Score first, context second, source or stat third
-- Max 15 words per line — tight like a real ticker
-- No hype, no bias, no favorite teams — cold numbers only
-- If a player is struggling, say it. If a team is overrated, say it.
-- Cover NBA, MLB, NFL news, and DFS across the 20-25 items`;
-
-    function buildUserPrompt(date) {
-      return `Tonight: ${date}\n\nGenerate the full 20-25 item SportsCenter ticker for tonight based on the most current available data for this date. Use your knowledge of tonight's schedule, injuries, Vegas lines, and player trends.`;
-    }
-
-    /* ── Single ticker item ── */
-    function TickerItem({ badge, line }) {
-      const cfg = BADGE[badge] || DEFAULT_BADGE;
-      return (
-        <div style={{
-          display: 'flex', alignItems: 'center',
-          height: '100%', padding: '0 20px',
-          borderRight: '1px solid #1a1a1a',
-          gap: '12px', flexShrink: 0, whiteSpace: 'nowrap',
-        }}>
-          <span style={{
-            fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px',
-            color: cfg.color, backgroundColor: cfg.color + '1a',
-            border: `1px solid ${cfg.color}55`, padding: '3px 8px', borderRadius: '3px',
-            animation: cfg.flash ? 'flash-badge 1.2s ease-in-out infinite' : 'none',
-            fontFamily: "'Oswald', sans-serif",
-          }}>{badge}</span>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#e8e8e8', letterSpacing: '0.2px' }}>
-            {line}
-          </span>
-          <span style={{ color: '#2a2a2a', fontSize: '16px' }}>·</span>
-        </div>
-      );
-    }
-
-    /* ── Ticker bar ── */
-    function TickerBar({ items, loading }) {
-      const doubled = items.length > 0 ? [...items, ...items] : [];
-      const duration = Math.max(60, items.length * 7);
-      return (
-        <div style={{
-          height: '52px', backgroundColor: '#000',
-          borderBottom: '3px solid #00ff88',
-          display: 'flex', overflow: 'hidden', flexShrink: 0,
-        }}>
-          {/* Brand */}
-          <div style={{
-            width: '110px', flexShrink: 0, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', gap: '8px', backgroundColor: '#000',
-            borderRight: '3px solid #00ff88', boxShadow: '6px 0 20px rgba(0,0,0,0.9)', zIndex: 10,
-          }}>
-            <div style={{
-              width: '7px', height: '7px', borderRadius: '50%',
-              backgroundColor: '#00ff88', animation: 'pulse-dot 2s ease-in-out infinite',
-            }} />
-            <span style={{ fontWeight: 900, fontStyle: 'italic', fontSize: '16px', letterSpacing: '-1px' }}>
-              NSN <span style={{ color: '#00ff88' }}>AI</span>
-            </span>
-          </div>
-          {/* Track */}
-          <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <div style={{
-              position: 'absolute', right: 0, top: 0, bottom: 0, width: '60px',
-              background: 'linear-gradient(to right, transparent, #000)',
-              pointerEvents: 'none', zIndex: 5,
-            }} />
-            {loading && items.length === 0 ? (
-              <div style={{ padding: '0 20px', color: '#444', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontWeight: 600 }}>
-                <div style={{
-                  width: '13px', height: '13px', border: '2px solid #222', borderTopColor: '#00ff88',
-                  borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-                }} />
-                GROK FETCHING LIVE SPORTS DATA...
-              </div>
-            ) : items.length > 0 ? (
-              <div style={{
-                display: 'flex', height: '100%',
-                animation: `ticker-scroll ${duration}s linear infinite`,
-                willChange: 'transform',
-              }}>
-                {doubled.map((item, i) => <TickerItem key={i} badge={item.badge} line={item.line} />)}
-              </div>
-            ) : (
-              <div style={{ padding: '0 20px', color: '#2a2a2a', fontSize: '11px', fontWeight: 700, letterSpacing: '1px' }}>
-                TAP ⚡ REFRESH TO LOAD TICKER
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    /* ── Feed list ── */
-    function FeedList({ items }) {
-      if (!items.length) return null;
-      return (
-        <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a1a' }}>
-          <div style={{
-            padding: '10px 14px', background: '#0d0d0d', borderBottom: '1px solid #1a1a1a',
-            display: 'flex', alignItems: 'center', gap: '8px',
-          }}>
-            <span style={{ color: '#00ff88', fontSize: '10px', fontWeight: 800, letterSpacing: '2px', fontFamily: "'Oswald', sans-serif" }}>
-              LIVE FEED
-            </span>
-            <span style={{
-              background: '#00ff8820', color: '#00ff88', border: '1px solid #00ff8840',
-              fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '10px',
-            }}>{items.length} ITEMS</span>
-          </div>
-          <div style={{ maxHeight: '55vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            {items.map((item, i) => {
-              const cfg = BADGE[item.badge] || DEFAULT_BADGE;
-              return (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: '10px',
-                  padding: '10px 14px', borderLeft: `3px solid ${cfg.color}`,
-                  marginLeft: '4px', marginBottom: '1px',
-                  background: i % 2 === 0 ? '#0a0a0a' : 'transparent',
-                }}>
-                  <span style={{
-                    fontSize: '8px', fontWeight: 800, color: cfg.color,
-                    background: cfg.color + '18', border: `1px solid ${cfg.color}40`,
-                    padding: '2px 5px', borderRadius: '3px', flexShrink: 0, marginTop: '1px',
-                    fontFamily: "'Oswald', sans-serif", letterSpacing: '0.3px',
-                  }}>{item.badge}</span>
-                  <span style={{ color: '#ccc', fontSize: '12px', fontWeight: 500, lineHeight: 1.4 }}>
-                    {item.line}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
-    }
-
-    /* ── Main App ── */
-    function App() {
-      const [apiKey, setApiKey]           = useState(() => localStorage.getItem('nsn_xai_key') || '');
-      const [apiKeyInput, setApiKeyInput] = useState('');
-      const [showKeyPanel, setShowKeyPanel] = useState(false);
-      const [items, setItems]             = useState([]);
-      const [loading, setLoading]         = useState(false);
-      const [error, setError]             = useState('');
-      const [lastUpdate, setLastUpdate]   = useState(null);
-      const [autoRefresh, setAutoRefresh] = useState(false);
-      const intervalRef = useRef(null);
-
-      const today = new Date().toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      });
-
-      const fetchTicker = useCallback(async () => {
-        const key = apiKey || localStorage.getItem('nsn_xai_key');
-        if (!key) { setShowKeyPanel(true); setError('Add your xAI API key first.'); return; }
-        setLoading(true);
-        setError('');
-        try {
-          const res = await fetch('https://api.x.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${key}`,
-            },
-            body: JSON.stringify({
-              model: 'grok-3',
-              max_tokens: 4096,
-              messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user',   content: buildUserPrompt(today) },
-              ],
-            }),
-          });
-
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err?.error?.message || `HTTP ${res.status}`);
-          }
-
-          const data = await res.json();
-          const raw = data?.choices?.[0]?.message?.content || '';
-          const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-          const parsed = JSON.parse(cleaned);
-          if (!Array.isArray(parsed)) throw new Error('Response was not a JSON array');
-
-          const validated = parsed
-            .filter(x => x && typeof x.badge === 'string' && typeof x.line === 'string')
-            .map(x => ({ badge: x.badge.toUpperCase().trim(), line: x.line.toUpperCase().trim() }));
-
-          setItems(validated);
-          setLastUpdate(new Date());
-        } catch (e) {
-          setError(e.message);
-        } finally {
-          setLoading(false);
+/* ── Fetch ESPN scoreboards ── */
+async function fetchScores() {
+  const items = [];
+  await Promise.allSettled(ESPN_SCORES.map(async ({ league, url }) => {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(7000) });
+      if (!r.ok) return;
+      const data = await r.json();
+      for (const ev of (data.events || []).slice(0, 6)) {
+        const comp = ev?.competitions?.[0];
+        const competitors = comp?.competitors || [];
+        const home = competitors.find(c => c.homeAway === 'home');
+        const away = competitors.find(c => c.homeAway === 'away');
+        if (!home || !away) continue;
+        const state  = ev?.status?.type?.state;
+        const detail = (ev?.status?.type?.shortDetail || '').toUpperCase();
+        const aN = (away.team?.abbreviation || away.team?.shortDisplayName || '').toUpperCase();
+        const hN = (home.team?.abbreviation || home.team?.shortDisplayName || '').toUpperCase();
+        const aS = away.score, hS = home.score;
+        if (state === 'post' && aS != null) {
+          const winner = parseInt(aS) > parseInt(hS) ? aN : hN;
+          items.push({ badge:'FINAL',   line:`${league} · ${aN} ${aS} ${hN} ${hS} · ${winner} WIN` });
+        } else if (state === 'in' && aS != null) {
+          items.push({ badge:'LIVE',    line:`${league} · ${aN} ${aS} ${hN} ${hS} · ${detail}` });
+        } else if (state === 'pre') {
+          items.push({ badge:'TONIGHT', line:`${league} · ${aN} @ ${hN} · ${detail}` });
         }
-      }, [apiKey, today]);
-
-      useEffect(() => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        if (autoRefresh) intervalRef.current = setInterval(fetchTicker, 2 * 60 * 1000);
-        return () => clearInterval(intervalRef.current);
-      }, [autoRefresh, fetchTicker]);
-
-      function saveKey() {
-        const k = apiKeyInput.trim();
-        if (!k) return;
-        localStorage.setItem('nsn_xai_key', k);
-        setApiKey(k);
-        setApiKeyInput('');
-        setShowKeyPanel(false);
-        setError('');
       }
+    } catch {}
+  }));
+  return items;
+}
 
-      function clearKey() {
-        localStorage.removeItem('nsn_xai_key');
-        setApiKey('');
-        setShowKeyPanel(false);
+/* ── Fetch AP rankings ── */
+async function fetchRankings() {
+  const items = [];
+  await Promise.allSettled(ESPN_RANKINGS.map(async ({ label, url }) => {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(7000) });
+      if (!r.ok) return;
+      const data = await r.json();
+      const poll = data?.rankings?.[0];
+      if (!poll) return;
+      const top5 = (poll.ranks || []).slice(0, 5)
+        .map(rk => `#${rk.current} ${(rk.team?.abbreviation || rk.team?.shortDisplayName || '').toUpperCase()}`)
+        .join(' · ');
+      if (top5) items.push({ badge:'RANK', line:`${label} ${(poll.name||'AP TOP 25').toUpperCase()} · ${top5}` });
+    } catch {}
+  }));
+  return items;
+}
+
+/* ── Fetch RSS feeds ── */
+async function fetchNews() {
+  const items = [], seen = new Set();
+  await Promise.allSettled(RSS_FEEDS.map(async ({ url, max }) => {
+    try {
+      const text = await proxyFetch(url);
+      if (!text) return;
+      const xml = new DOMParser().parseFromString(text, 'text/xml');
+      for (const node of [...xml.querySelectorAll('item')].slice(0, max)) {
+        const title = clean(node.querySelector('title')?.textContent);
+        const desc  = clean(node.querySelector('description')?.textContent);
+        if (!title || title.length < 10) continue;
+        const key = title.slice(0, 55).replace(/\s+/g,'');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push({ badge: detectBadge(title, desc), line: title });
       }
+    } catch {}
+  }));
+  return items;
+}
 
-      const hasKey = !!apiKey;
+/* ── Sort by priority ── */
+const PRI = { BREAKING:0, LIVE:1, INJURY:2, FINAL:3, ROSTER:4, VEGAS:5, TONIGHT:6, HOT:7, SLUMP:8, WEATHER:9, REVENGE:10, RANK:11, ROOKIE:12, DFS:13, PREDICTED:14, WATCH:15 };
+const sortItems = arr => arr.slice().sort((a,b) => (PRI[a.badge]??99) - (PRI[b.badge]??99));
 
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#050505' }}>
+/* ── Render helpers ── */
+function badgeHTML(badge) {
+  const c = BADGE[badge] || { color:'#888', flash:false };
+  return `<span style="font-size:10px;font-weight:800;letter-spacing:0.4px;color:${c.color};background:${c.color}1a;border:1px solid ${c.color}55;padding:3px 8px;border-radius:3px;white-space:nowrap;font-family:'Oswald',sans-serif;${c.flash?'animation:flash 1.2s ease-in-out infinite;':''}">${badge}</span>`;
+}
 
-          {/* ── HEADER ── */}
-          <div style={{
-            padding: '12px 16px',
-            background: '#000',
-            borderBottom: '1px solid #111',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            flexShrink: 0,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontWeight: 900, fontStyle: 'italic', fontSize: '20px', letterSpacing: '-1px' }}>
-                NSN <span style={{ color: '#00ff88' }}>AI</span>
-              </span>
-              <span style={{ fontSize: '9px', fontWeight: 700, color: '#333', letterSpacing: '1.5px', fontFamily: "'Oswald', sans-serif" }}>
-                TICKER ENGINE
-              </span>
-            </div>
-            {/* Key button */}
-            <button
-              onClick={() => setShowKeyPanel(v => !v)}
-              style={{
-                background: hasKey ? '#00ff8818' : '#ff444418',
-                border: `1px solid ${hasKey ? '#00ff8840' : '#ff444440'}`,
-                color: hasKey ? '#00ff88' : '#ff4444',
-                borderRadius: '6px', padding: '8px 14px',
-                fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px',
-                cursor: 'pointer', fontFamily: "'Oswald', sans-serif",
-                WebkitTapHighlightColor: 'transparent', minHeight: '36px',
-              }}
-            >{hasKey ? '🔑 KEY SET' : '🔑 ADD KEY'}</button>
-          </div>
+function tickerItemHTML(it) {
+  return `<div style="display:flex;align-items:center;height:100%;padding:0 20px;border-right:1px solid #1a1a1a;gap:12px;flex-shrink:0;white-space:nowrap;">${badgeHTML(it.badge)}<span style="font-size:13px;font-weight:600;color:#e8e8e8;">${it.line}</span><span style="color:#252525;font-size:16px;">·</span></div>`;
+}
 
-          {/* ── KEY PANEL ── */}
-          {showKeyPanel && (
-            <div style={{
-              background: '#080808', borderBottom: '1px solid #1a1a1a',
-              padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px',
-              animation: 'slide-down 0.15s ease', flexShrink: 0,
-            }}>
-              <span style={{ fontSize: '11px', color: '#555', fontWeight: 700, letterSpacing: '1px' }}>
-                XAI (GROK) API KEY
-              </span>
-              <input
-                type="password"
-                inputMode="text"
-                value={apiKeyInput}
-                onChange={e => setApiKeyInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && saveKey()}
-                placeholder="xai-..."
-                autoFocus
-                style={{
-                  background: '#111', border: '1px solid #2a2a2a',
-                  color: '#fff', padding: '11px 14px', borderRadius: '6px',
-                  fontSize: '14px', outline: 'none', fontFamily: 'monospace',
-                  width: '100%', WebkitAppearance: 'none',
-                }}
-              />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={saveKey} style={{
-                  flex: 1, background: '#00ff88', color: '#000', border: 'none',
-                  padding: '11px', fontWeight: 800, fontSize: '13px', letterSpacing: '1px',
-                  cursor: 'pointer', borderRadius: '6px', fontFamily: "'Oswald', sans-serif",
-                  minHeight: '44px', WebkitTapHighlightColor: 'transparent',
-                }}>SAVE KEY</button>
-                {hasKey && (
-                  <button onClick={clearKey} style={{
-                    background: '#ff444418', color: '#ff4444', border: '1px solid #ff444430',
-                    padding: '11px 18px', fontWeight: 700, fontSize: '12px',
-                    cursor: 'pointer', borderRadius: '6px', fontFamily: "'Oswald', sans-serif",
-                    minHeight: '44px', WebkitTapHighlightColor: 'transparent',
-                  }}>CLEAR</button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TICKER BAR ── */}
-          <TickerBar items={items} loading={loading} />
-
-          {/* ── BODY ── */}
-          <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-
-            {/* Toolbar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <button
-                onClick={fetchTicker}
-                disabled={loading}
-                style={{
-                  flex: 1, minWidth: '140px', background: loading ? '#1a1a1a' : '#00ff88',
-                  color: loading ? '#444' : '#000', border: 'none',
-                  padding: '13px 20px', fontWeight: 800, fontSize: '13px',
-                  letterSpacing: '1.5px', cursor: loading ? 'not-allowed' : 'pointer',
-                  borderRadius: '6px', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', gap: '8px',
-                  fontFamily: "'Oswald', sans-serif", minHeight: '48px',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                {loading ? (
-                  <>
-                    <span style={{
-                      width: '14px', height: '14px', border: '2px solid #333', borderTopColor: '#555',
-                      borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block',
-                    }} />
-                    UPDATING...
-                  </>
-                ) : '⚡ REFRESH NOW'}
-              </button>
-
-              <label style={{
-                display: 'flex', alignItems: 'center', gap: '8px', color: '#444',
-                fontSize: '11px', fontWeight: 700, cursor: 'pointer', userSelect: 'none',
-                padding: '13px 14px', background: '#0d0d0d', border: '1px solid #1a1a1a',
-                borderRadius: '6px', minHeight: '48px', WebkitTapHighlightColor: 'transparent',
-              }}>
-                <input
-                  type="checkbox"
-                  checked={autoRefresh}
-                  onChange={e => setAutoRefresh(e.target.checked)}
-                  style={{ accentColor: '#00ff88', width: '16px', height: '16px' }}
-                />
-                AUTO (2M)
-              </label>
-            </div>
-
-            {/* Timestamp */}
-            {lastUpdate && (
-              <div style={{ fontSize: '10px', color: '#2a2a2a', fontWeight: 700, letterSpacing: '0.5px' }}>
-                UPDATED {lastUpdate.toLocaleTimeString()}
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div style={{
-                background: '#ff444410', border: '1px solid #ff444430',
-                color: '#ff6666', padding: '12px 14px', fontSize: '12px',
-                borderRadius: '6px', fontWeight: 600, lineHeight: 1.5,
-              }}>{error}</div>
-            )}
-
-            {/* Badge legend */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {Object.entries(BADGE).map(([name, cfg]) => (
-                <span key={name} style={{
-                  fontSize: '8px', fontWeight: 800, color: cfg.color,
-                  background: cfg.color + '12', border: `1px solid ${cfg.color}30`,
-                  padding: '3px 7px', borderRadius: '3px', letterSpacing: '0.3px',
-                  fontFamily: "'Oswald', sans-serif",
-                }}>{name}</span>
-              ))}
-            </div>
-
-            {/* Feed */}
-            <FeedList items={items} />
-          </div>
+/* ── Build page skeleton ── */
+function buildUI() {
+  document.getElementById('app').innerHTML = `
+    <div style="display:flex;flex-direction:column;min-height:100vh;background:#050505;">
+      <div style="padding:12px 16px;background:#000;border-bottom:1px solid #111;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:900;font-style:italic;font-size:20px;letter-spacing:-1px;">NSN <span style="color:#00ff88;">AI</span></span>
+          <span style="font-size:9px;font-weight:700;color:#333;letter-spacing:1.5px;font-family:'Oswald',sans-serif;">LIVE TICKER</span>
         </div>
-      );
-    }
+        <span id="ts" style="font-size:10px;color:#2a2a2a;font-weight:700;"></span>
+      </div>
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+      <div style="height:52px;background:#000;border-bottom:3px solid #00ff88;display:flex;overflow:hidden;flex-shrink:0;">
+        <div style="width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:8px;background:#000;border-right:3px solid #00ff88;box-shadow:6px 0 20px rgba(0,0,0,0.9);z-index:10;">
+          <div style="width:7px;height:7px;border-radius:50%;background:#00ff88;animation:pulse-dot 2s ease-in-out infinite;"></div>
+          <span style="font-weight:900;font-style:italic;font-size:16px;letter-spacing:-1px;">NSN <span style="color:#00ff88;">AI</span></span>
+        </div>
+        <div style="flex:1;overflow:hidden;position:relative;display:flex;align-items:center;">
+          <div style="position:absolute;right:0;top:0;bottom:0;width:60px;background:linear-gradient(to right,transparent,#000);pointer-events:none;z-index:5;"></div>
+          <div id="tl" style="padding:0 20px;color:#444;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;">
+            <div style="width:13px;height:13px;border:2px solid #222;border-top-color:#00ff88;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+            LOADING ${RSS_FEEDS.length + ESPN_SCORES.length} SOURCES...
+          </div>
+          <div id="tt" style="display:none;height:100%;"></div>
+        </div>
+      </div>
+
+      <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button id="btn" onclick="doRefresh()" style="flex:1;min-width:140px;background:#00ff88;color:#000;border:none;padding:13px 20px;font-weight:800;font-size:13px;letter-spacing:1.5px;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Oswald',sans-serif;min-height:48px;-webkit-tap-highlight-color:transparent;">⚡ REFRESH NOW</button>
+          <label style="display:flex;align-items:center;gap:8px;color:#444;font-size:11px;font-weight:700;cursor:pointer;user-select:none;padding:13px 14px;background:#0d0d0d;border:1px solid #1a1a1a;border-radius:6px;min-height:48px;-webkit-tap-highlight-color:transparent;">
+            <input id="chk" type="checkbox" onchange="toggleAuto(this.checked)" style="accent-color:#00ff88;width:16px;height:16px;"> AUTO (2M)
+          </label>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
+          <span style="font-size:9px;color:#2a2a2a;font-weight:700;letter-spacing:1px;margin-right:2px;">SOURCES:</span>
+          ${SOURCE_LABELS.map(s=>`<span style="font-size:8px;font-weight:700;color:#2a2a2a;background:#0d0d0d;border:1px solid #1a1a1a;padding:2px 6px;border-radius:3px;">${s}</span>`).join('')}
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${Object.entries(BADGE).map(([n,c])=>`<span style="font-size:8px;font-weight:800;color:${c.color};background:${c.color}12;border:1px solid ${c.color}30;padding:3px 7px;border-radius:3px;font-family:'Oswald',sans-serif;">${n}</span>`).join('')}
+        </div>
+
+        <div id="err" style="display:none;background:#ff444410;border:1px solid #ff444430;color:#ff6666;padding:12px 14px;font-size:12px;border-radius:6px;font-weight:600;line-height:1.5;"></div>
+
+        <div id="fl" style="display:none;border-radius:8px;overflow:hidden;border:1px solid #1a1a1a;">
+          <div style="padding:10px 14px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:8px;">
+            <span style="color:#00ff88;font-size:10px;font-weight:800;letter-spacing:2px;font-family:'Oswald',sans-serif;">LIVE FEED</span>
+            <span id="fc" style="background:#00ff8820;color:#00ff88;border:1px solid #00ff8840;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+          </div>
+          <div id="fi" style="max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── Start ticker ── */
+function startTicker(items) {
+  const tt = document.getElementById('tt'), tl = document.getElementById('tl');
+  if (!tt) return;
+  const dur = Math.max(60, items.length * 7);
+  tt.innerHTML = [...items,...items].map(tickerItemHTML).join('');
+  tt.style.cssText = `display:flex;height:100%;animation:ticker-scroll ${dur}s linear infinite;will-change:transform;`;
+  tl.style.display = 'none';
+}
+
+/* ── Render feed list ── */
+function renderFeed(items) {
+  document.getElementById('fi').innerHTML = items.map((it,i)=>{
+    const c = BADGE[it.badge]||{color:'#888'};
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-left:3px solid ${c.color};margin-left:4px;margin-bottom:1px;background:${i%2===0?'#0a0a0a':'transparent'};">
+      <span style="font-size:8px;font-weight:800;color:${c.color};background:${c.color}18;border:1px solid ${c.color}40;padding:2px 5px;border-radius:3px;flex-shrink:0;margin-top:1px;font-family:'Oswald',sans-serif;">${it.badge}</span>
+      <span style="color:#ccc;font-size:12px;font-weight:500;line-height:1.4;">${it.line}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('fc').textContent = items.length + ' ITEMS';
+  document.getElementById('fl').style.display = 'block';
+}
+
+/* ── Refresh button state ── */
+function setBtn(loading) {
+  const b = document.getElementById('btn'); if(!b) return;
+  if (loading) {
+    b.style.cssText += ';background:#1a1a1a;color:#444;cursor:not-allowed;';
+    b.innerHTML = '<span style="width:14px;height:14px;border:2px solid #333;border-top-color:#555;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;"></span> UPDATING...';
+    b.disabled = true;
+  } else {
+    b.style.cssText += ';background:#00ff88;color:#000;cursor:pointer;';
+    b.innerHTML = '⚡ REFRESH NOW';
+    b.disabled = false;
+  }
+}
+
+/* ── Main refresh ── */
+let autoTimer = null;
+async function doRefresh() {
+  setBtn(true);
+  const err = document.getElementById('err'); if(err) err.style.display='none';
+  try {
+    const [scores, rankings, news] = await Promise.all([fetchScores(), fetchRankings(), fetchNews()]);
+    const all = sortItems([...scores, ...rankings, ...news]);
+    if (!all.length) { if(err){err.textContent='Could not load data — check your connection.';err.style.display='block';} setBtn(false); return; }
+    startTicker(all);
+    renderFeed(all);
+    const ts = document.getElementById('ts'); if(ts) ts.textContent = 'UPDATED ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    if(err){err.textContent='Error: '+e.message;err.style.display='block';}
+  }
+  setBtn(false);
+}
+
+function toggleAuto(on) {
+  clearInterval(autoTimer);
+  if (on) autoTimer = setInterval(doRefresh, 120000);
+}
+
+buildUI();
+doRefresh();
+</script>
 </body>
 </html>
