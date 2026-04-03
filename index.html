@@ -330,7 +330,7 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
        MAIN APP
     ───────────────────────────────────────── */
     function App() {
-      const [apiKey, setApiKey]         = useState(() => localStorage.getItem('nsn_api_key') || '');
+      const [apiKey, setApiKey]         = useState(() => localStorage.getItem('nsn_xai_key') || '');
       const [apiKeyInput, setApiKeyInput] = useState('');
       const [showKeyInput, setShowKeyInput] = useState(false);
       const [items, setItems]           = useState([]);
@@ -343,24 +343,24 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
       const fetchTicker = useCallback(async () => {
-        const key = apiKey || localStorage.getItem('nsn_api_key');
+        const key = apiKey || localStorage.getItem('nsn_xai_key');
         if (!key) { setError('API key required — click the key icon above.'); return; }
         setLoading(true);
         setError('');
         try {
-          const response = await fetch('https://api.anthropic.com/v1/messages', {
+          const response = await fetch('https://api.x.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-api-key': key,
-              'anthropic-version': '2023-06-01',
-              'anthropic-dangerous-direct-browser-access': 'true',
+              'Authorization': `Bearer ${key}`,
             },
             body: JSON.stringify({
-              model: 'claude-sonnet-4-6',
+              model: 'grok-3',
               max_tokens: 4096,
-              system: SYSTEM_PROMPT,
-              messages: [{ role: 'user', content: buildUserPrompt(today, '', '', '') }],
+              messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: buildUserPrompt(today, '', '', '') },
+              ],
             }),
           });
 
@@ -370,7 +370,7 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
           }
 
           const data = await response.json();
-          const raw = data?.content?.[0]?.text || '';
+          const raw = data?.choices?.[0]?.message?.content || '';
 
           // Strip any accidental markdown fences
           const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
@@ -404,7 +404,7 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
       function saveApiKey() {
         const trimmed = apiKeyInput.trim();
         if (!trimmed) return;
-        localStorage.setItem('nsn_api_key', trimmed);
+        localStorage.setItem('nsn_xai_key', trimmed);
         setApiKey(trimmed);
         setApiKeyInput('');
         setShowKeyInput(false);
@@ -412,7 +412,7 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
       }
 
       function clearApiKey() {
-        localStorage.removeItem('nsn_api_key');
+        localStorage.removeItem('nsn_xai_key');
         setApiKey('');
         setShowKeyInput(false);
       }
@@ -480,13 +480,13 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
               gap: '12px',
               flexWrap: 'wrap',
             }}>
-              <span style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>ANTHROPIC API KEY:</span>
+              <span style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>XAI (GROK) API KEY:</span>
               <input
                 type="password"
                 value={apiKeyInput}
                 onChange={e => setApiKeyInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && saveApiKey()}
-                placeholder="sk-ant-..."
+                placeholder="xai-..."
                 autoFocus
                 style={{
                   flex: 1, minWidth: '260px', background: '#111', border: '1px solid #333',
