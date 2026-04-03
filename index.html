@@ -1,333 +1,614 @@
-  {/* Main Ticker */}
-  <div style={{
-    height: '70px',
-    backgroundColor: '#000',
-    borderTop: '1px solid #333',
-    borderBottom: '3px solid #00ff88',
-    display: 'flex',
-    overflow: 'hidden',
-  }}>
-    {/* Live Label */}
-    <div style={{
-      width: '160px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '10px',
-      backgroundColor: '#000',
-      borderRight: '3px solid #00ff88',
-      boxShadow: '5px 0 20px rgba(0,0,0,0.8)',
-      zIndex: 10,
-      flexShrink: 0,
-    }}>
-      <div style={{
-        width: '10px',
-        height: '10px',
-        backgroundColor: '#00ff88',
-        borderRadius: '50%',
-        boxShadow: '0 0 10px #00ff88',
-        animation: 'pulse 2s infinite',
-      }} />
-      <span style={{
-        fontWeight: 900,
-        fontSize: '20px',
-        fontStyle: 'italic',
-        letterSpacing: '-1px',
-      }}>
-        NSN <span style={{ color: '#00ff88' }}>AI</span>
-      </span>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NSN AI · SportsCenter Ticker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;0,900;1,900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    {/* Ticker Track */}
-    <div style={{
-      flex: 1,
-      overflow: 'hidden',
-      position: 'relative',
-      display: 'flex',
-      alignItems: 'center',
-    }}>
-      {/* Fade mask */}
-      <div style={{
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: '100px',
-        background: 'linear-gradient(to right, transparent, #000)',
-        pointerEvents: 'none',
-        zIndex: 5,
-      }} />
-
-      {loading && items.length === 0 ? (
-        <div style={{
-          padding: '0 30px',
-          color: '#555',
-          fontStyle: 'italic',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}>
-          <div style={{
-            width: '16px',
-            height: '16px',
-            border: '2px solid #333',
-            borderTopColor: '#00ff88',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }} />
-          AI is fetching live sports data...
-        </div>
-      ) : (
-        <div
-          ref={tickerRef}
-          style={{
-            display: 'flex',
-            animation: duplicatedItems.length > 0 ? 'scroll 90s linear infinite' : 'none',
-            willChange: 'transform',
-          }}
-        >
-          {duplicatedItems.map((item, index) => {
-            const config = typeConfig[item.type] || typeConfig.score;
-            return (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '70px',
-                  padding: '0 25px',
-                  borderRight: '1px solid #222',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  gap: '15px',
-                }}
-              >
-                {/* League Badge */}
-                <span style={{
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  backgroundColor: '#222',
-                  color: '#888',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  minWidth: '36px',
-                  textAlign: 'center',
-                }}>
-                  {item.league || 'LIVE'}
-                </span>
-
-                {/* Type Badge */}
-                <span style={{
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  backgroundColor: config.color + '22',
-                  color: config.color,
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}>
-                  {config.icon} {config.label}
-                </span>
-
-                {/* Content */}
-                <span style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#fff',
-                  maxWidth: '400px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>
-                  {item.text}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  </div>
-
-  {/* Control Panel */}
-  <div style={{
-    padding: '30px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  }}>
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      flexWrap: 'wrap',
-      gap: '15px',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <button
-          onClick={fetchSportsUpdates}
-          disabled={loading}
-          style={{
-            background: loading ? '#333' : '#00ff88',
-            color: loading ? '#666' : '#000',
-            border: 'none',
-            padding: '12px 24px',
-            fontWeight: 800,
-            fontSize: '13px',
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          {loading ? (
-            <>
-              <span style={{
-                width: '14px',
-                height: '14px',
-                border: '2px solid #555',
-                borderTopColor: '#888',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }} />
-              UPDATING...
-            </>
-          ) : (
-            <>⚡ REFRESH NOW</>
-          )}
-        </button>
-
-        <label style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          color: '#888',
-          fontSize: '13px',
-          cursor: 'pointer',
-        }}>
-          <input
-            type="checkbox"
-            checked={autoRefresh}
-            onChange={(e) => setAutoRefresh(e.target.checked)}
-            style={{ accentColor: '#00ff88' }}
-          />
-          Auto-refresh (2 min)
-        </label>
-      </div>
-
-      {lastUpdate && (
-        <span style={{
-          color: '#555',
-          fontSize: '12px',
-        }}>
-          Last updated: {lastUpdate.toLocaleTimeString()}
-        </span>
-      )}
-    </div>
-
-    {error && (
-      <div style={{
-        background: '#ff444422',
-        border: '1px solid #ff4444',
-        color: '#ff4444',
-        padding: '12px 16px',
-        fontSize: '13px',
-        borderRadius: '4px',
-      }}>
-        {error}
-      </div>
-    )}
-
-    {/* Current Items Display */}
-    {items.length > 0 && (
-      <div style={{
-        background: '#111',
-        border: '1px solid #222',
-        padding: '20px',
-        borderRadius: '4px',
-      }}>
-        <h3 style={{
-          color: '#00ff88',
-          fontSize: '12px',
-          fontWeight: 800,
-          letterSpacing: '2px',
-          textTransform: 'uppercase',
-          marginBottom: '15px',
-        }}>
-          🤖 AI-GENERATED FEED ({items.length} items)
-        </h3>
-        
-        <div style={{
-          display: 'grid',
-          gap: '8px',
-          maxHeight: '300px',
-          overflowY: 'auto',
-        }}>
-          {items.map((item, index) => {
-            const config = typeConfig[item.type] || typeConfig.score;
-            return (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '10px 12px',
-                  background: '#0a0a0a',
-                  borderLeft: `3px solid ${config.color}`,
-                }}
-              >
-                <span style={{
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  color: '#666',
-                  minWidth: '35px',
-                }}>
-                  {item.league}
-                </span>
-                <span style={{
-                  fontSize: '16px',
-                }}>
-                  {config.icon}
-                </span>
-                <span style={{
-                  color: '#fff',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                }}>
-                  {item.text}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
-  </div>
-
-  <style>{`
-    @keyframes scroll {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-33.33%); }
+    body {
+      background: #050505;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
     }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+
+    /* ── Animations ── */
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
-    
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+      50%       { opacity: 0.35; box-shadow: none; }
+    }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
-    * { box-sizing: border-box; }
-    
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #111; }
-    ::-webkit-scrollbar-thumb { background: #333; }
-    ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
-  `}</style>
-</div>
+    @keyframes flash-badge {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    /* ─────────────────────────────────────────
+       BADGE CONFIG
+    ───────────────────────────────────────── */
+    const BADGE = {
+      LIVE:      { color: '#00ff88', flash: true  },
+      FINAL:     { color: '#aaaaaa', flash: false },
+      TONIGHT:   { color: '#4488ff', flash: false },
+      BREAKING:  { color: '#ff4444', flash: true  },
+      PREDICTED: { color: '#bb44ff', flash: false },
+      INJURY:    { color: '#ff8800', flash: false },
+      ROSTER:    { color: '#00ccaa', flash: false },
+      VEGAS:     { color: '#FFD700', flash: false },
+      WATCH:     { color: '#ffcc00', flash: false },
+      WEATHER:   { color: '#44aaff', flash: false },
+      REVENGE:   { color: '#ff6644', flash: false },
+      DFS:       { color: '#00cc66', flash: false },
+      ROOKIE:    { color: '#00eeff', flash: false },
+      SLUMP:     { color: '#ff3333', flash: false },
+      HOT:       { color: '#ff6600', flash: true  },
+    };
+    const DEFAULT_BADGE = { color: '#888888', flash: false };
+
+    /* ─────────────────────────────────────────
+       SYSTEM PROMPT
+    ───────────────────────────────────────── */
+    const SYSTEM_PROMPT = `You are the ESPN SportsCenter bottom ticker — an elite, unbiased sports intelligence engine. You think like a Vegas sharp, analyze like a quant, and deliver like a broadcaster. You pull data from RotoWire, ESPN, CBS Sports, Baseball Savant, Baseball Reference, DraftKings, and FanDuel to generate the most informed ticker in sports.
+
+Return ONLY a raw JSON array of 20-25 items. No markdown. No explanation. No code fences. Raw JSON array only.
+
+Each item must follow this exact format:
+{ "badge": "BADGE_TYPE", "line": "TICKER TEXT IN ALL CAPS — MAX 15 WORDS" }
+
+BADGE OPTIONS (use exactly as written):
+LIVE · FINAL · TONIGHT · BREAKING · PREDICTED · INJURY · ROSTER · VEGAS · WATCH · WEATHER · REVENGE · DFS · ROOKIE · SLUMP · HOT
+
+SCORING & PREDICTIONS:
+- PREDICTED items must cite at minimum TWO of: L5/L10 average, opponent defensive rank, rest days, home/away split, RotoWire projection, ESPN BPI, or Vegas line
+- If Vegas line and stats AGREE → badge: PREDICTED, note HIGH CONFIDENCE
+- If Vegas line and stats DISAGREE → badge: WATCH, flag the conflict explicitly
+- Back to back flag: any player on second night of B2B gets a performance warning
+- Days of rest: 3+ days rest in NBA = scoring upside, flag it
+- Home/away splits: call out players who are drastically different home vs away
+- Pitcher vs batter handedness: flag lefty/lefty or righty/righty mismatches in MLB
+- Barrel rate and exit velocity from Baseball Savant: high barrel % vs soft pitcher = predicted HR
+
+INJURY INTEL:
+- Pull latest RotoWire injury reports — flag any upgrade or downgrade since morning
+- If a starter is out, identify the replacement and their stats in that role
+- Questionable players get flagged until confirmed in/out
+
+VEGAS INTEL:
+- Line movement of 2+ points = VEGAS badge, identify which side sharp money is on
+- If public % and sharp % disagree, flag it
+- Fade the public plays when sharp money is on the other side
+
+CONTEXTUAL BADGES:
+- REVENGE: player facing former team → pull their career stats vs that franchise
+- WEATHER: outdoor stadiums → wind speed and direction, temp below 50°F, rain delay risk
+- ROOKIE: first career game in this stadium or vs this pitcher → note the unknown factor
+- DFS: low ownership + high upside = DFS badge with ownership % and reasoning
+- SLUMP: player in 0-for-15 or sub .200 L10 → call it out, no bias
+
+FORMATTING RULES:
+- ALL CAPS always
+- Score first, context second, source or stat third
+- Max 15 words per line — tight like a real ticker
+- No hype, no bias, no favorite teams — cold numbers only
+- If a player is struggling, say it. If a team is overrated, say it.
+- Cover NBA, MLB, NFL news, and DFS across the 20-25 items`;
+
+    /* ─────────────────────────────────────────
+       USER PROMPT (nightly data template)
+    ───────────────────────────────────────── */
+    function buildUserPrompt(date, scores, injuries, lines) {
+      return `Tonight: ${date} · Scores: ${scores || 'FETCH LIVE'} · Injuries: ${injuries || 'FETCH LATEST'} · Lines: ${lines || 'FETCH CURRENT'}
+
+Generate the full 20-25 item SportsCenter ticker for tonight based on the most current available data for this date. Use your knowledge of tonight's schedule, injuries, Vegas lines, and player trends.`;
+    }
+
+    /* ─────────────────────────────────────────
+       TICKER ITEM COMPONENT
+    ───────────────────────────────────────── */
+    function TickerItem({ badge, line }) {
+      const cfg = BADGE[badge] || DEFAULT_BADGE;
+      return (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          height: '100%',
+          padding: '0 28px',
+          borderRight: '1px solid #1a1a1a',
+          gap: '14px',
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+        }}>
+          {/* Badge pill */}
+          <span style={{
+            fontSize: '10px',
+            fontWeight: 800,
+            letterSpacing: '0.5px',
+            color: cfg.color,
+            backgroundColor: cfg.color + '1a',
+            border: `1px solid ${cfg.color}55`,
+            padding: '3px 9px',
+            borderRadius: '3px',
+            animation: cfg.flash ? 'flash-badge 1.2s ease-in-out infinite' : 'none',
+            fontFamily: "'Oswald', sans-serif",
+          }}>
+            {badge}
+          </span>
+          {/* Line text */}
+          <span style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: '#e8e8e8',
+            letterSpacing: '0.3px',
+          }}>
+            {line}
+          </span>
+          {/* Separator dot */}
+          <span style={{ color: '#333', fontSize: '18px', marginLeft: '4px' }}>·</span>
+        </div>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       TICKER BAR
+    ───────────────────────────────────────── */
+    function TickerBar({ items, loading }) {
+      // Duplicate for seamless loop
+      const doubled = items.length > 0 ? [...items, ...items] : [];
+      // Estimate scroll duration: ~120px per item, 80px/s
+      const duration = Math.max(60, items.length * 7);
+
+      return (
+        <div style={{
+          position: 'relative',
+          height: '56px',
+          backgroundColor: '#000',
+          borderTop: '1px solid #1a1a1a',
+          borderBottom: '3px solid #00ff88',
+          display: 'flex',
+          overflow: 'hidden',
+        }}>
+          {/* NSN AI brand panel */}
+          <div style={{
+            width: '140px',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '9px',
+            backgroundColor: '#000',
+            borderRight: '3px solid #00ff88',
+            boxShadow: '6px 0 24px rgba(0,0,0,0.9)',
+            zIndex: 10,
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#00ff88',
+              color: '#00ff88',
+              animation: 'pulse-dot 2s ease-in-out infinite',
+            }} />
+            <span style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 900,
+              fontStyle: 'italic',
+              fontSize: '18px',
+              letterSpacing: '-1px',
+            }}>
+              NSN <span style={{ color: '#00ff88' }}>AI</span>
+            </span>
+          </div>
+
+          {/* Scrolling track */}
+          <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center' }}>
+            {/* Right fade */}
+            <div style={{
+              position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px',
+              background: 'linear-gradient(to right, transparent, #000)',
+              pointerEvents: 'none', zIndex: 5,
+            }} />
+
+            {loading && items.length === 0 ? (
+              <div style={{ padding: '0 28px', color: '#444', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+                <div style={{
+                  width: '14px', height: '14px',
+                  border: '2px solid #222', borderTopColor: '#00ff88',
+                  borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                }} />
+                AI FETCHING LIVE SPORTS DATA...
+              </div>
+            ) : items.length > 0 ? (
+              <div style={{
+                display: 'flex',
+                height: '100%',
+                animation: `ticker-scroll ${duration}s linear infinite`,
+                willChange: 'transform',
+              }}>
+                {doubled.map((item, i) => (
+                  <TickerItem key={i} badge={item.badge} line={item.line} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '0 28px', color: '#333', fontSize: '13px', fontWeight: 600, letterSpacing: '1px' }}>
+                ENTER API KEY AND PRESS REFRESH TO LOAD TICKER
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       ITEM LIST (control panel feed)
+    ───────────────────────────────────────── */
+    function ItemList({ items }) {
+      if (!items.length) return null;
+      return (
+        <div style={{
+          background: '#0d0d0d',
+          border: '1px solid #1e1e1e',
+          borderRadius: '6px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid #1e1e1e',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <span style={{ color: '#00ff88', fontSize: '11px', fontWeight: 800, letterSpacing: '2px', fontFamily: "'Oswald', sans-serif" }}>
+              AI-GENERATED FEED
+            </span>
+            <span style={{
+              background: '#00ff8822', color: '#00ff88', border: '1px solid #00ff8844',
+              fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '10px',
+            }}>
+              {items.length} ITEMS
+            </span>
+          </div>
+          <div style={{ maxHeight: '320px', overflowY: 'auto', padding: '8px 0' }}>
+            {items.map((item, i) => {
+              const cfg = BADGE[item.badge] || DEFAULT_BADGE;
+              return (
+                <div key={i} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '9px 16px',
+                  borderLeft: `3px solid ${cfg.color}`,
+                  marginLeft: '6px',
+                  marginBottom: '2px',
+                  background: i % 2 === 0 ? '#0a0a0a' : 'transparent',
+                }}>
+                  <span style={{
+                    fontSize: '9px', fontWeight: 800, color: cfg.color,
+                    background: cfg.color + '1a', border: `1px solid ${cfg.color}44`,
+                    padding: '2px 6px', borderRadius: '3px', flexShrink: 0,
+                    fontFamily: "'Oswald', sans-serif", letterSpacing: '0.5px',
+                  }}>
+                    {item.badge}
+                  </span>
+                  <span style={{ color: '#ccc', fontSize: '12px', fontWeight: 500 }}>
+                    {item.line}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       MAIN APP
+    ───────────────────────────────────────── */
+    function App() {
+      const [apiKey, setApiKey]         = useState(() => localStorage.getItem('nsn_api_key') || '');
+      const [apiKeyInput, setApiKeyInput] = useState('');
+      const [showKeyInput, setShowKeyInput] = useState(false);
+      const [items, setItems]           = useState([]);
+      const [loading, setLoading]       = useState(false);
+      const [error, setError]           = useState('');
+      const [lastUpdate, setLastUpdate] = useState(null);
+      const [autoRefresh, setAutoRefresh] = useState(false);
+      const intervalRef = useRef(null);
+
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      const fetchTicker = useCallback(async () => {
+        const key = apiKey || localStorage.getItem('nsn_api_key');
+        if (!key) { setError('API key required — click the key icon above.'); return; }
+        setLoading(true);
+        setError('');
+        try {
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': key,
+              'anthropic-version': '2023-06-01',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-6',
+              max_tokens: 4096,
+              system: SYSTEM_PROMPT,
+              messages: [{ role: 'user', content: buildUserPrompt(today, '', '', '') }],
+            }),
+          });
+
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err?.error?.message || `HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          const raw = data?.content?.[0]?.text || '';
+
+          // Strip any accidental markdown fences
+          const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+
+          if (!Array.isArray(parsed)) throw new Error('Response was not a JSON array');
+
+          // Validate each item has badge + line, uppercase line
+          const validated = parsed
+            .filter(x => x && typeof x.badge === 'string' && typeof x.line === 'string')
+            .map(x => ({ badge: x.badge.toUpperCase().trim(), line: x.line.toUpperCase().trim() }));
+
+          setItems(validated);
+          setLastUpdate(new Date());
+        } catch (e) {
+          setError(`Error: ${e.message}`);
+        } finally {
+          setLoading(false);
+        }
+      }, [apiKey, today]);
+
+      // Auto-refresh every 2 minutes
+      useEffect(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        if (autoRefresh) {
+          intervalRef.current = setInterval(fetchTicker, 2 * 60 * 1000);
+        }
+        return () => clearInterval(intervalRef.current);
+      }, [autoRefresh, fetchTicker]);
+
+      function saveApiKey() {
+        const trimmed = apiKeyInput.trim();
+        if (!trimmed) return;
+        localStorage.setItem('nsn_api_key', trimmed);
+        setApiKey(trimmed);
+        setApiKeyInput('');
+        setShowKeyInput(false);
+        setError('');
+      }
+
+      function clearApiKey() {
+        localStorage.removeItem('nsn_api_key');
+        setApiKey('');
+        setShowKeyInput(false);
+      }
+
+      const hasKey = !!apiKey;
+
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#050505' }}>
+
+          {/* ── HEADER ── */}
+          <div style={{
+            padding: '18px 28px',
+            borderBottom: '1px solid #111',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#000',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 900, fontStyle: 'italic', fontSize: '22px', letterSpacing: '-1px',
+              }}>
+                NSN <span style={{ color: '#00ff88' }}>AI</span>
+              </span>
+              <span style={{
+                fontSize: '11px', fontWeight: 700, color: '#444', letterSpacing: '2px',
+                fontFamily: "'Oswald', sans-serif",
+              }}>
+                SPORTSCENTER TICKER ENGINE
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '12px', color: '#444' }}>{today}</span>
+              {/* API Key button */}
+              <button
+                onClick={() => setShowKeyInput(v => !v)}
+                title={hasKey ? 'API key set — click to change' : 'Set API key'}
+                style={{
+                  background: hasKey ? '#00ff8822' : '#ff444422',
+                  border: `1px solid ${hasKey ? '#00ff8844' : '#ff444444'}`,
+                  color: hasKey ? '#00ff88' : '#ff4444',
+                  borderRadius: '6px',
+                  padding: '7px 14px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  letterSpacing: '1px',
+                  cursor: 'pointer',
+                  fontFamily: "'Oswald', sans-serif",
+                }}
+              >
+                {hasKey ? '🔑 KEY SET' : '🔑 ADD KEY'}
+              </button>
+            </div>
+          </div>
+
+          {/* ── API KEY PANEL ── */}
+          {showKeyInput && (
+            <div style={{
+              background: '#0a0a0a',
+              borderBottom: '1px solid #1a1a1a',
+              padding: '16px 28px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+            }}>
+              <span style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>ANTHROPIC API KEY:</span>
+              <input
+                type="password"
+                value={apiKeyInput}
+                onChange={e => setApiKeyInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveApiKey()}
+                placeholder="sk-ant-..."
+                autoFocus
+                style={{
+                  flex: 1, minWidth: '260px', background: '#111', border: '1px solid #333',
+                  color: '#fff', padding: '8px 14px', borderRadius: '4px', fontSize: '13px',
+                  outline: 'none', fontFamily: 'monospace',
+                }}
+              />
+              <button onClick={saveApiKey} style={{
+                background: '#00ff88', color: '#000', border: 'none', padding: '8px 18px',
+                fontWeight: 800, fontSize: '12px', letterSpacing: '1px', cursor: 'pointer', borderRadius: '4px',
+                fontFamily: "'Oswald', sans-serif",
+              }}>SAVE</button>
+              {hasKey && (
+                <button onClick={clearApiKey} style={{
+                  background: '#ff444422', color: '#ff4444', border: '1px solid #ff444444',
+                  padding: '8px 14px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', borderRadius: '4px',
+                  fontFamily: "'Oswald', sans-serif",
+                }}>CLEAR</button>
+              )}
+            </div>
+          )}
+
+          {/* ── TICKER BAR ── */}
+          <TickerBar items={items} loading={loading} />
+
+          {/* ── CONTROL PANEL ── */}
+          <div style={{ flex: 1, padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+            {/* Toolbar */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                {/* Refresh button */}
+                <button
+                  onClick={fetchTicker}
+                  disabled={loading}
+                  style={{
+                    background: loading ? '#1a1a1a' : '#00ff88',
+                    color: loading ? '#555' : '#000',
+                    border: 'none',
+                    padding: '11px 22px',
+                    fontWeight: 800,
+                    fontSize: '12px',
+                    letterSpacing: '1.5px',
+                    textTransform: 'uppercase',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontFamily: "'Oswald', sans-serif",
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <span style={{
+                        width: '13px', height: '13px',
+                        border: '2px solid #333', borderTopColor: '#555',
+                        borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                        display: 'inline-block',
+                      }} />
+                      UPDATING...
+                    </>
+                  ) : '⚡ REFRESH NOW'}
+                </button>
+
+                {/* Auto-refresh toggle */}
+                <label style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  color: '#555', fontSize: '12px', cursor: 'pointer', fontWeight: 600,
+                  userSelect: 'none',
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={autoRefresh}
+                    onChange={e => setAutoRefresh(e.target.checked)}
+                    style={{ accentColor: '#00ff88', width: '14px', height: '14px' }}
+                  />
+                  AUTO-REFRESH (2 MIN)
+                </label>
+              </div>
+
+              {/* Last updated */}
+              {lastUpdate && (
+                <span style={{ color: '#333', fontSize: '11px', fontWeight: 600 }}>
+                  LAST UPDATED {lastUpdate.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div style={{
+                background: '#ff444410', border: '1px solid #ff444433',
+                color: '#ff6666', padding: '11px 16px', fontSize: '12px',
+                borderRadius: '4px', fontWeight: 600,
+              }}>
+                {error}
+              </div>
+            )}
+
+            {/* Badge legend */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {Object.entries(BADGE).map(([name, cfg]) => (
+                <span key={name} style={{
+                  fontSize: '9px', fontWeight: 800, color: cfg.color,
+                  background: cfg.color + '15', border: `1px solid ${cfg.color}33`,
+                  padding: '3px 8px', borderRadius: '3px', letterSpacing: '0.5px',
+                  fontFamily: "'Oswald', sans-serif",
+                }}>
+                  {name}
+                </span>
+              ))}
+            </div>
+
+            {/* Item list */}
+            <ItemList items={items} />
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
