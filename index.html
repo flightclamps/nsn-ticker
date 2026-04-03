@@ -57,6 +57,7 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
+    /* ── Badge config ── */
     const BADGE = {
       LIVE:      { color: '#00ff88', flash: true  },
       FINAL:     { color: '#aaaaaa', flash: false },
@@ -76,6 +77,7 @@
     };
     const DEFAULT_BADGE = { color: '#888', flash: false };
 
+    /* ── System prompt ── */
     const SYSTEM_PROMPT = `You are the ESPN SportsCenter bottom ticker — an elite, unbiased sports intelligence engine. You think like a Vegas sharp, analyze like a quant, and deliver like a broadcaster. You pull data from RotoWire, ESPN, CBS Sports, Baseball Savant, Baseball Reference, DraftKings, and FanDuel to generate the most informed ticker in sports.
 
 Return ONLY a raw JSON array of 20-25 items. No markdown. No explanation. No code fences. Raw JSON array only.
@@ -125,6 +127,7 @@ FORMATTING RULES:
       return `Tonight: ${date}\n\nGenerate the full 20-25 item SportsCenter ticker for tonight based on the most current available data for this date. Use your knowledge of tonight's schedule, injuries, Vegas lines, and player trends.`;
     }
 
+    /* ── Single ticker item ── */
     function TickerItem({ badge, line }) {
       const cfg = BADGE[badge] || DEFAULT_BADGE;
       return (
@@ -149,6 +152,7 @@ FORMATTING RULES:
       );
     }
 
+    /* ── Ticker bar ── */
     function TickerBar({ items, loading }) {
       const doubled = items.length > 0 ? [...items, ...items] : [];
       const duration = Math.max(60, items.length * 7);
@@ -158,6 +162,7 @@ FORMATTING RULES:
           borderBottom: '3px solid #00ff88',
           display: 'flex', overflow: 'hidden', flexShrink: 0,
         }}>
+          {/* Brand */}
           <div style={{
             width: '110px', flexShrink: 0, display: 'flex', alignItems: 'center',
             justifyContent: 'center', gap: '8px', backgroundColor: '#000',
@@ -171,6 +176,7 @@ FORMATTING RULES:
               NSN <span style={{ color: '#00ff88' }}>AI</span>
             </span>
           </div>
+          {/* Track */}
           <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center' }}>
             <div style={{
               position: 'absolute', right: 0, top: 0, bottom: 0, width: '60px',
@@ -203,6 +209,7 @@ FORMATTING RULES:
       );
     }
 
+    /* ── Feed list ── */
     function FeedList({ items }) {
       if (!items.length) return null;
       return (
@@ -246,6 +253,7 @@ FORMATTING RULES:
       );
     }
 
+    /* ── Main App ── */
     function App() {
       const [apiKey, setApiKey]           = useState(() => localStorage.getItem('nsn_xai_key') || '');
       const [apiKeyInput, setApiKeyInput] = useState('');
@@ -333,9 +341,14 @@ FORMATTING RULES:
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#050505' }}>
+
+          {/* ── HEADER ── */}
           <div style={{
-            padding: '12px 16px', background: '#000', borderBottom: '1px solid #111',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+            padding: '12px 16px',
+            background: '#000',
+            borderBottom: '1px solid #111',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontWeight: 900, fontStyle: 'italic', fontSize: '20px', letterSpacing: '-1px' }}>
@@ -345,6 +358,7 @@ FORMATTING RULES:
                 TICKER ENGINE
               </span>
             </div>
+            {/* Key button */}
             <button
               onClick={() => setShowKeyPanel(v => !v)}
               style={{
@@ -359,22 +373,29 @@ FORMATTING RULES:
             >{hasKey ? '🔑 KEY SET' : '🔑 ADD KEY'}</button>
           </div>
 
+          {/* ── KEY PANEL ── */}
           {showKeyPanel && (
             <div style={{
               background: '#080808', borderBottom: '1px solid #1a1a1a',
               padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px',
               animation: 'slide-down 0.15s ease', flexShrink: 0,
             }}>
-              <span style={{ fontSize: '11px', color: '#555', fontWeight: 700, letterSpacing: '1px' }}>XAI (GROK) API KEY</span>
+              <span style={{ fontSize: '11px', color: '#555', fontWeight: 700, letterSpacing: '1px' }}>
+                XAI (GROK) API KEY
+              </span>
               <input
-                type="password" inputMode="text" value={apiKeyInput}
+                type="password"
+                inputMode="text"
+                value={apiKeyInput}
                 onChange={e => setApiKeyInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && saveKey()}
-                placeholder="xai-..." autoFocus
+                placeholder="xai-..."
+                autoFocus
                 style={{
-                  background: '#111', border: '1px solid #2a2a2a', color: '#fff',
-                  padding: '11px 14px', borderRadius: '6px', fontSize: '14px',
-                  outline: 'none', fontFamily: 'monospace', width: '100%', WebkitAppearance: 'none',
+                  background: '#111', border: '1px solid #2a2a2a',
+                  color: '#fff', padding: '11px 14px', borderRadius: '6px',
+                  fontSize: '14px', outline: 'none', fontFamily: 'monospace',
+                  width: '100%', WebkitAppearance: 'none',
                 }}
               />
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -396,51 +417,72 @@ FORMATTING RULES:
             </div>
           )}
 
+          {/* ── TICKER BAR ── */}
           <TickerBar items={items} loading={loading} />
 
+          {/* ── BODY ── */}
           <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+
+            {/* Toolbar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <button onClick={fetchTicker} disabled={loading} style={{
-                flex: 1, minWidth: '140px', background: loading ? '#1a1a1a' : '#00ff88',
-                color: loading ? '#444' : '#000', border: 'none', padding: '13px 20px',
-                fontWeight: 800, fontSize: '13px', letterSpacing: '1.5px',
-                cursor: loading ? 'not-allowed' : 'pointer', borderRadius: '6px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                fontFamily: "'Oswald', sans-serif", minHeight: '48px',
-                WebkitTapHighlightColor: 'transparent',
-              }}>
+              <button
+                onClick={fetchTicker}
+                disabled={loading}
+                style={{
+                  flex: 1, minWidth: '140px', background: loading ? '#1a1a1a' : '#00ff88',
+                  color: loading ? '#444' : '#000', border: 'none',
+                  padding: '13px 20px', fontWeight: 800, fontSize: '13px',
+                  letterSpacing: '1.5px', cursor: loading ? 'not-allowed' : 'pointer',
+                  borderRadius: '6px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: '8px',
+                  fontFamily: "'Oswald', sans-serif", minHeight: '48px',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
                 {loading ? (
-                  <><span style={{
-                    width: '14px', height: '14px', border: '2px solid #333', borderTopColor: '#555',
-                    borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block',
-                  }} />UPDATING...</>
+                  <>
+                    <span style={{
+                      width: '14px', height: '14px', border: '2px solid #333', borderTopColor: '#555',
+                      borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block',
+                    }} />
+                    UPDATING...
+                  </>
                 ) : '⚡ REFRESH NOW'}
               </button>
+
               <label style={{
                 display: 'flex', alignItems: 'center', gap: '8px', color: '#444',
                 fontSize: '11px', fontWeight: 700, cursor: 'pointer', userSelect: 'none',
                 padding: '13px 14px', background: '#0d0d0d', border: '1px solid #1a1a1a',
                 borderRadius: '6px', minHeight: '48px', WebkitTapHighlightColor: 'transparent',
               }}>
-                <input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)}
-                  style={{ accentColor: '#00ff88', width: '16px', height: '16px' }} />
+                <input
+                  type="checkbox"
+                  checked={autoRefresh}
+                  onChange={e => setAutoRefresh(e.target.checked)}
+                  style={{ accentColor: '#00ff88', width: '16px', height: '16px' }}
+                />
                 AUTO (2M)
               </label>
             </div>
 
+            {/* Timestamp */}
             {lastUpdate && (
               <div style={{ fontSize: '10px', color: '#2a2a2a', fontWeight: 700, letterSpacing: '0.5px' }}>
                 UPDATED {lastUpdate.toLocaleTimeString()}
               </div>
             )}
 
+            {/* Error */}
             {error && (
               <div style={{
-                background: '#ff444410', border: '1px solid #ff444430', color: '#ff6666',
-                padding: '12px 14px', fontSize: '12px', borderRadius: '6px', fontWeight: 600, lineHeight: 1.5,
+                background: '#ff444410', border: '1px solid #ff444430',
+                color: '#ff6666', padding: '12px 14px', fontSize: '12px',
+                borderRadius: '6px', fontWeight: 600, lineHeight: 1.5,
               }}>{error}</div>
             )}
 
+            {/* Badge legend */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {Object.entries(BADGE).map(([name, cfg]) => (
                 <span key={name} style={{
@@ -452,6 +494,7 @@ FORMATTING RULES:
               ))}
             </div>
 
+            {/* Feed */}
             <FeedList items={items} />
           </div>
         </div>
