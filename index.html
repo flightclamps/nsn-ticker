@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
   <title>NSN AI · SportsCenter Ticker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;0,900;1,900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
@@ -11,27 +15,27 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
 
     body {
       background: #050505;
       color: #fff;
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
+      min-height: -webkit-fill-available;
+      -webkit-text-size-adjust: 100%;
     }
 
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: #111; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-    /* ── Animations ── */
     @keyframes ticker-scroll {
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
     @keyframes pulse-dot {
-      0%, 100% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px #00ff88; }
       50%       { opacity: 0.35; box-shadow: none; }
     }
     @keyframes spin {
@@ -39,7 +43,11 @@
     }
     @keyframes flash-badge {
       0%, 100% { opacity: 1; }
-      50%       { opacity: 0.6; }
+      50%       { opacity: 0.55; }
+    }
+    @keyframes slide-down {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -49,9 +57,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
-    /* ─────────────────────────────────────────
-       BADGE CONFIG
-    ───────────────────────────────────────── */
     const BADGE = {
       LIVE:      { color: '#00ff88', flash: true  },
       FINAL:     { color: '#aaaaaa', flash: false },
@@ -69,11 +74,8 @@
       SLUMP:     { color: '#ff3333', flash: false },
       HOT:       { color: '#ff6600', flash: true  },
     };
-    const DEFAULT_BADGE = { color: '#888888', flash: false };
+    const DEFAULT_BADGE = { color: '#888', flash: false };
 
-    /* ─────────────────────────────────────────
-       SYSTEM PROMPT
-    ───────────────────────────────────────── */
     const SYSTEM_PROMPT = `You are the ESPN SportsCenter bottom ticker — an elite, unbiased sports intelligence engine. You think like a Vegas sharp, analyze like a quant, and deliver like a broadcaster. You pull data from RotoWire, ESPN, CBS Sports, Baseball Savant, Baseball Reference, DraftKings, and FanDuel to generate the most informed ticker in sports.
 
 Return ONLY a raw JSON array of 20-25 items. No markdown. No explanation. No code fences. Raw JSON array only.
@@ -119,144 +121,81 @@ FORMATTING RULES:
 - If a player is struggling, say it. If a team is overrated, say it.
 - Cover NBA, MLB, NFL news, and DFS across the 20-25 items`;
 
-    /* ─────────────────────────────────────────
-       USER PROMPT (nightly data template)
-    ───────────────────────────────────────── */
-    function buildUserPrompt(date, scores, injuries, lines) {
-      return `Tonight: ${date} · Scores: ${scores || 'FETCH LIVE'} · Injuries: ${injuries || 'FETCH LATEST'} · Lines: ${lines || 'FETCH CURRENT'}
-
-Generate the full 20-25 item SportsCenter ticker for tonight based on the most current available data for this date. Use your knowledge of tonight's schedule, injuries, Vegas lines, and player trends.`;
+    function buildUserPrompt(date) {
+      return `Tonight: ${date}\n\nGenerate the full 20-25 item SportsCenter ticker for tonight based on the most current available data for this date. Use your knowledge of tonight's schedule, injuries, Vegas lines, and player trends.`;
     }
 
-    /* ─────────────────────────────────────────
-       TICKER ITEM COMPONENT
-    ───────────────────────────────────────── */
     function TickerItem({ badge, line }) {
       const cfg = BADGE[badge] || DEFAULT_BADGE;
       return (
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          height: '100%',
-          padding: '0 28px',
+          display: 'flex', alignItems: 'center',
+          height: '100%', padding: '0 20px',
           borderRight: '1px solid #1a1a1a',
-          gap: '14px',
-          flexShrink: 0,
-          whiteSpace: 'nowrap',
+          gap: '12px', flexShrink: 0, whiteSpace: 'nowrap',
         }}>
-          {/* Badge pill */}
           <span style={{
-            fontSize: '10px',
-            fontWeight: 800,
-            letterSpacing: '0.5px',
-            color: cfg.color,
-            backgroundColor: cfg.color + '1a',
-            border: `1px solid ${cfg.color}55`,
-            padding: '3px 9px',
-            borderRadius: '3px',
+            fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px',
+            color: cfg.color, backgroundColor: cfg.color + '1a',
+            border: `1px solid ${cfg.color}55`, padding: '3px 8px', borderRadius: '3px',
             animation: cfg.flash ? 'flash-badge 1.2s ease-in-out infinite' : 'none',
             fontFamily: "'Oswald', sans-serif",
-          }}>
-            {badge}
-          </span>
-          {/* Line text */}
-          <span style={{
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#e8e8e8',
-            letterSpacing: '0.3px',
-          }}>
+          }}>{badge}</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#e8e8e8', letterSpacing: '0.2px' }}>
             {line}
           </span>
-          {/* Separator dot */}
-          <span style={{ color: '#333', fontSize: '18px', marginLeft: '4px' }}>·</span>
+          <span style={{ color: '#2a2a2a', fontSize: '16px' }}>·</span>
         </div>
       );
     }
 
-    /* ─────────────────────────────────────────
-       TICKER BAR
-    ───────────────────────────────────────── */
     function TickerBar({ items, loading }) {
-      // Duplicate for seamless loop
       const doubled = items.length > 0 ? [...items, ...items] : [];
-      // Estimate scroll duration: ~120px per item, 80px/s
       const duration = Math.max(60, items.length * 7);
-
       return (
         <div style={{
-          position: 'relative',
-          height: '56px',
-          backgroundColor: '#000',
-          borderTop: '1px solid #1a1a1a',
+          height: '52px', backgroundColor: '#000',
           borderBottom: '3px solid #00ff88',
-          display: 'flex',
-          overflow: 'hidden',
+          display: 'flex', overflow: 'hidden', flexShrink: 0,
         }}>
-          {/* NSN AI brand panel */}
           <div style={{
-            width: '140px',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '9px',
-            backgroundColor: '#000',
-            borderRight: '3px solid #00ff88',
-            boxShadow: '6px 0 24px rgba(0,0,0,0.9)',
-            zIndex: 10,
+            width: '110px', flexShrink: 0, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', gap: '8px', backgroundColor: '#000',
+            borderRight: '3px solid #00ff88', boxShadow: '6px 0 20px rgba(0,0,0,0.9)', zIndex: 10,
           }}>
             <div style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: '#00ff88',
-              color: '#00ff88',
-              animation: 'pulse-dot 2s ease-in-out infinite',
+              width: '7px', height: '7px', borderRadius: '50%',
+              backgroundColor: '#00ff88', animation: 'pulse-dot 2s ease-in-out infinite',
             }} />
-            <span style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 900,
-              fontStyle: 'italic',
-              fontSize: '18px',
-              letterSpacing: '-1px',
-            }}>
+            <span style={{ fontWeight: 900, fontStyle: 'italic', fontSize: '16px', letterSpacing: '-1px' }}>
               NSN <span style={{ color: '#00ff88' }}>AI</span>
             </span>
           </div>
-
-          {/* Scrolling track */}
           <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center' }}>
-            {/* Right fade */}
             <div style={{
-              position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px',
+              position: 'absolute', right: 0, top: 0, bottom: 0, width: '60px',
               background: 'linear-gradient(to right, transparent, #000)',
               pointerEvents: 'none', zIndex: 5,
             }} />
-
             {loading && items.length === 0 ? (
-              <div style={{ padding: '0 28px', color: '#444', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+              <div style={{ padding: '0 20px', color: '#444', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontWeight: 600 }}>
                 <div style={{
-                  width: '14px', height: '14px',
-                  border: '2px solid #222', borderTopColor: '#00ff88',
+                  width: '13px', height: '13px', border: '2px solid #222', borderTopColor: '#00ff88',
                   borderRadius: '50%', animation: 'spin 0.8s linear infinite',
                 }} />
-                AI FETCHING LIVE SPORTS DATA...
+                GROK FETCHING LIVE SPORTS DATA...
               </div>
             ) : items.length > 0 ? (
               <div style={{
-                display: 'flex',
-                height: '100%',
+                display: 'flex', height: '100%',
                 animation: `ticker-scroll ${duration}s linear infinite`,
                 willChange: 'transform',
               }}>
-                {doubled.map((item, i) => (
-                  <TickerItem key={i} badge={item.badge} line={item.line} />
-                ))}
+                {doubled.map((item, i) => <TickerItem key={i} badge={item.badge} line={item.line} />)}
               </div>
             ) : (
-              <div style={{ padding: '0 28px', color: '#333', fontSize: '13px', fontWeight: 600, letterSpacing: '1px' }}>
-                ENTER API KEY AND PRESS REFRESH TO LOAD TICKER
+              <div style={{ padding: '0 20px', color: '#2a2a2a', fontSize: '11px', fontWeight: 700, letterSpacing: '1px' }}>
+                TAP ⚡ REFRESH TO LOAD TICKER
               </div>
             )}
           </div>
@@ -264,58 +203,39 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
       );
     }
 
-    /* ─────────────────────────────────────────
-       ITEM LIST (control panel feed)
-    ───────────────────────────────────────── */
-    function ItemList({ items }) {
+    function FeedList({ items }) {
       if (!items.length) return null;
       return (
-        <div style={{
-          background: '#0d0d0d',
-          border: '1px solid #1e1e1e',
-          borderRadius: '6px',
-          overflow: 'hidden',
-        }}>
+        <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a1a' }}>
           <div style={{
-            padding: '12px 16px',
-            borderBottom: '1px solid #1e1e1e',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
+            padding: '10px 14px', background: '#0d0d0d', borderBottom: '1px solid #1a1a1a',
+            display: 'flex', alignItems: 'center', gap: '8px',
           }}>
-            <span style={{ color: '#00ff88', fontSize: '11px', fontWeight: 800, letterSpacing: '2px', fontFamily: "'Oswald', sans-serif" }}>
-              AI-GENERATED FEED
+            <span style={{ color: '#00ff88', fontSize: '10px', fontWeight: 800, letterSpacing: '2px', fontFamily: "'Oswald', sans-serif" }}>
+              LIVE FEED
             </span>
             <span style={{
-              background: '#00ff8822', color: '#00ff88', border: '1px solid #00ff8844',
-              fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '10px',
-            }}>
-              {items.length} ITEMS
-            </span>
+              background: '#00ff8820', color: '#00ff88', border: '1px solid #00ff8840',
+              fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '10px',
+            }}>{items.length} ITEMS</span>
           </div>
-          <div style={{ maxHeight: '320px', overflowY: 'auto', padding: '8px 0' }}>
+          <div style={{ maxHeight: '55vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {items.map((item, i) => {
               const cfg = BADGE[item.badge] || DEFAULT_BADGE;
               return (
                 <div key={i} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '9px 16px',
-                  borderLeft: `3px solid ${cfg.color}`,
-                  marginLeft: '6px',
-                  marginBottom: '2px',
+                  display: 'flex', alignItems: 'flex-start', gap: '10px',
+                  padding: '10px 14px', borderLeft: `3px solid ${cfg.color}`,
+                  marginLeft: '4px', marginBottom: '1px',
                   background: i % 2 === 0 ? '#0a0a0a' : 'transparent',
                 }}>
                   <span style={{
-                    fontSize: '9px', fontWeight: 800, color: cfg.color,
-                    background: cfg.color + '1a', border: `1px solid ${cfg.color}44`,
-                    padding: '2px 6px', borderRadius: '3px', flexShrink: 0,
-                    fontFamily: "'Oswald', sans-serif", letterSpacing: '0.5px',
-                  }}>
-                    {item.badge}
-                  </span>
-                  <span style={{ color: '#ccc', fontSize: '12px', fontWeight: 500 }}>
+                    fontSize: '8px', fontWeight: 800, color: cfg.color,
+                    background: cfg.color + '18', border: `1px solid ${cfg.color}40`,
+                    padding: '2px 5px', borderRadius: '3px', flexShrink: 0, marginTop: '1px',
+                    fontFamily: "'Oswald', sans-serif", letterSpacing: '0.3px',
+                  }}>{item.badge}</span>
+                  <span style={{ color: '#ccc', fontSize: '12px', fontWeight: 500, lineHeight: 1.4 }}>
                     {item.line}
                   </span>
                 </div>
@@ -326,29 +246,28 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
       );
     }
 
-    /* ─────────────────────────────────────────
-       MAIN APP
-    ───────────────────────────────────────── */
     function App() {
-      const [apiKey, setApiKey]         = useState(() => localStorage.getItem('nsn_xai_key') || '');
+      const [apiKey, setApiKey]           = useState(() => localStorage.getItem('nsn_xai_key') || '');
       const [apiKeyInput, setApiKeyInput] = useState('');
-      const [showKeyInput, setShowKeyInput] = useState(false);
-      const [items, setItems]           = useState([]);
-      const [loading, setLoading]       = useState(false);
-      const [error, setError]           = useState('');
-      const [lastUpdate, setLastUpdate] = useState(null);
+      const [showKeyPanel, setShowKeyPanel] = useState(false);
+      const [items, setItems]             = useState([]);
+      const [loading, setLoading]         = useState(false);
+      const [error, setError]             = useState('');
+      const [lastUpdate, setLastUpdate]   = useState(null);
       const [autoRefresh, setAutoRefresh] = useState(false);
       const intervalRef = useRef(null);
 
-      const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const today = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      });
 
       const fetchTicker = useCallback(async () => {
         const key = apiKey || localStorage.getItem('nsn_xai_key');
-        if (!key) { setError('API key required — click the key icon above.'); return; }
+        if (!key) { setShowKeyPanel(true); setError('Add your xAI API key first.'); return; }
         setLoading(true);
         setError('');
         try {
-          const response = await fetch('https://api.x.ai/v1/chat/completions', {
+          const res = await fetch('https://api.x.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -359,26 +278,22 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
               max_tokens: 4096,
               messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: buildUserPrompt(today, '', '', '') },
+                { role: 'user',   content: buildUserPrompt(today) },
               ],
             }),
           });
 
-          if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err?.error?.message || `HTTP ${response.status}`);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err?.error?.message || `HTTP ${res.status}`);
           }
 
-          const data = await response.json();
+          const data = await res.json();
           const raw = data?.choices?.[0]?.message?.content || '';
-
-          // Strip any accidental markdown fences
           const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
           const parsed = JSON.parse(cleaned);
-
           if (!Array.isArray(parsed)) throw new Error('Response was not a JSON array');
 
-          // Validate each item has badge + line, uppercase line
           const validated = parsed
             .filter(x => x && typeof x.badge === 'string' && typeof x.line === 'string')
             .map(x => ({ badge: x.badge.toUpperCase().trim(), line: x.line.toUpperCase().trim() }));
@@ -386,223 +301,158 @@ Generate the full 20-25 item SportsCenter ticker for tonight based on the most c
           setItems(validated);
           setLastUpdate(new Date());
         } catch (e) {
-          setError(`Error: ${e.message}`);
+          setError(e.message);
         } finally {
           setLoading(false);
         }
       }, [apiKey, today]);
 
-      // Auto-refresh every 2 minutes
       useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
-        if (autoRefresh) {
-          intervalRef.current = setInterval(fetchTicker, 2 * 60 * 1000);
-        }
+        if (autoRefresh) intervalRef.current = setInterval(fetchTicker, 2 * 60 * 1000);
         return () => clearInterval(intervalRef.current);
       }, [autoRefresh, fetchTicker]);
 
-      function saveApiKey() {
-        const trimmed = apiKeyInput.trim();
-        if (!trimmed) return;
-        localStorage.setItem('nsn_xai_key', trimmed);
-        setApiKey(trimmed);
+      function saveKey() {
+        const k = apiKeyInput.trim();
+        if (!k) return;
+        localStorage.setItem('nsn_xai_key', k);
+        setApiKey(k);
         setApiKeyInput('');
-        setShowKeyInput(false);
+        setShowKeyPanel(false);
         setError('');
       }
 
-      function clearApiKey() {
+      function clearKey() {
         localStorage.removeItem('nsn_xai_key');
         setApiKey('');
-        setShowKeyInput(false);
+        setShowKeyPanel(false);
       }
 
       const hasKey = !!apiKey;
 
       return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#050505' }}>
-
-          {/* ── HEADER ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#050505' }}>
           <div style={{
-            padding: '18px 28px',
-            borderBottom: '1px solid #111',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: '#000',
+            padding: '12px 16px', background: '#000', borderBottom: '1px solid #111',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 900, fontStyle: 'italic', fontSize: '22px', letterSpacing: '-1px',
-              }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontWeight: 900, fontStyle: 'italic', fontSize: '20px', letterSpacing: '-1px' }}>
                 NSN <span style={{ color: '#00ff88' }}>AI</span>
               </span>
-              <span style={{
-                fontSize: '11px', fontWeight: 700, color: '#444', letterSpacing: '2px',
-                fontFamily: "'Oswald', sans-serif",
-              }}>
-                SPORTSCENTER TICKER ENGINE
+              <span style={{ fontSize: '9px', fontWeight: 700, color: '#333', letterSpacing: '1.5px', fontFamily: "'Oswald', sans-serif" }}>
+                TICKER ENGINE
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '12px', color: '#444' }}>{today}</span>
-              {/* API Key button */}
-              <button
-                onClick={() => setShowKeyInput(v => !v)}
-                title={hasKey ? 'API key set — click to change' : 'Set API key'}
-                style={{
-                  background: hasKey ? '#00ff8822' : '#ff444422',
-                  border: `1px solid ${hasKey ? '#00ff8844' : '#ff444444'}`,
-                  color: hasKey ? '#00ff88' : '#ff4444',
-                  borderRadius: '6px',
-                  padding: '7px 14px',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  letterSpacing: '1px',
-                  cursor: 'pointer',
-                  fontFamily: "'Oswald', sans-serif",
-                }}
-              >
-                {hasKey ? '🔑 KEY SET' : '🔑 ADD KEY'}
-              </button>
-            </div>
+            <button
+              onClick={() => setShowKeyPanel(v => !v)}
+              style={{
+                background: hasKey ? '#00ff8818' : '#ff444418',
+                border: `1px solid ${hasKey ? '#00ff8840' : '#ff444440'}`,
+                color: hasKey ? '#00ff88' : '#ff4444',
+                borderRadius: '6px', padding: '8px 14px',
+                fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px',
+                cursor: 'pointer', fontFamily: "'Oswald', sans-serif",
+                WebkitTapHighlightColor: 'transparent', minHeight: '36px',
+              }}
+            >{hasKey ? '🔑 KEY SET' : '🔑 ADD KEY'}</button>
           </div>
 
-          {/* ── API KEY PANEL ── */}
-          {showKeyInput && (
+          {showKeyPanel && (
             <div style={{
-              background: '#0a0a0a',
-              borderBottom: '1px solid #1a1a1a',
-              padding: '16px 28px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              flexWrap: 'wrap',
+              background: '#080808', borderBottom: '1px solid #1a1a1a',
+              padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px',
+              animation: 'slide-down 0.15s ease', flexShrink: 0,
             }}>
-              <span style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>XAI (GROK) API KEY:</span>
+              <span style={{ fontSize: '11px', color: '#555', fontWeight: 700, letterSpacing: '1px' }}>XAI (GROK) API KEY</span>
               <input
-                type="password"
-                value={apiKeyInput}
+                type="password" inputMode="text" value={apiKeyInput}
                 onChange={e => setApiKeyInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && saveApiKey()}
-                placeholder="xai-..."
-                autoFocus
+                onKeyDown={e => e.key === 'Enter' && saveKey()}
+                placeholder="xai-..." autoFocus
                 style={{
-                  flex: 1, minWidth: '260px', background: '#111', border: '1px solid #333',
-                  color: '#fff', padding: '8px 14px', borderRadius: '4px', fontSize: '13px',
-                  outline: 'none', fontFamily: 'monospace',
+                  background: '#111', border: '1px solid #2a2a2a', color: '#fff',
+                  padding: '11px 14px', borderRadius: '6px', fontSize: '14px',
+                  outline: 'none', fontFamily: 'monospace', width: '100%', WebkitAppearance: 'none',
                 }}
               />
-              <button onClick={saveApiKey} style={{
-                background: '#00ff88', color: '#000', border: 'none', padding: '8px 18px',
-                fontWeight: 800, fontSize: '12px', letterSpacing: '1px', cursor: 'pointer', borderRadius: '4px',
-                fontFamily: "'Oswald', sans-serif",
-              }}>SAVE</button>
-              {hasKey && (
-                <button onClick={clearApiKey} style={{
-                  background: '#ff444422', color: '#ff4444', border: '1px solid #ff444444',
-                  padding: '8px 14px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', borderRadius: '4px',
-                  fontFamily: "'Oswald', sans-serif",
-                }}>CLEAR</button>
-              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={saveKey} style={{
+                  flex: 1, background: '#00ff88', color: '#000', border: 'none',
+                  padding: '11px', fontWeight: 800, fontSize: '13px', letterSpacing: '1px',
+                  cursor: 'pointer', borderRadius: '6px', fontFamily: "'Oswald', sans-serif",
+                  minHeight: '44px', WebkitTapHighlightColor: 'transparent',
+                }}>SAVE KEY</button>
+                {hasKey && (
+                  <button onClick={clearKey} style={{
+                    background: '#ff444418', color: '#ff4444', border: '1px solid #ff444430',
+                    padding: '11px 18px', fontWeight: 700, fontSize: '12px',
+                    cursor: 'pointer', borderRadius: '6px', fontFamily: "'Oswald', sans-serif",
+                    minHeight: '44px', WebkitTapHighlightColor: 'transparent',
+                  }}>CLEAR</button>
+                )}
+              </div>
             </div>
           )}
 
-          {/* ── TICKER BAR ── */}
           <TickerBar items={items} loading={loading} />
 
-          {/* ── CONTROL PANEL ── */}
-          <div style={{ flex: 1, padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-            {/* Toolbar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-                {/* Refresh button */}
-                <button
-                  onClick={fetchTicker}
-                  disabled={loading}
-                  style={{
-                    background: loading ? '#1a1a1a' : '#00ff88',
-                    color: loading ? '#555' : '#000',
-                    border: 'none',
-                    padding: '11px 22px',
-                    fontWeight: 800,
-                    fontSize: '12px',
-                    letterSpacing: '1.5px',
-                    textTransform: 'uppercase',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontFamily: "'Oswald', sans-serif",
-                  }}
-                >
-                  {loading ? (
-                    <>
-                      <span style={{
-                        width: '13px', height: '13px',
-                        border: '2px solid #333', borderTopColor: '#555',
-                        borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-                        display: 'inline-block',
-                      }} />
-                      UPDATING...
-                    </>
-                  ) : '⚡ REFRESH NOW'}
-                </button>
-
-                {/* Auto-refresh toggle */}
-                <label style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  color: '#555', fontSize: '12px', cursor: 'pointer', fontWeight: 600,
-                  userSelect: 'none',
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={autoRefresh}
-                    onChange={e => setAutoRefresh(e.target.checked)}
-                    style={{ accentColor: '#00ff88', width: '14px', height: '14px' }}
-                  />
-                  AUTO-REFRESH (2 MIN)
-                </label>
-              </div>
-
-              {/* Last updated */}
-              {lastUpdate && (
-                <span style={{ color: '#333', fontSize: '11px', fontWeight: 600 }}>
-                  LAST UPDATED {lastUpdate.toLocaleTimeString()}
-                </span>
-              )}
+          <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button onClick={fetchTicker} disabled={loading} style={{
+                flex: 1, minWidth: '140px', background: loading ? '#1a1a1a' : '#00ff88',
+                color: loading ? '#444' : '#000', border: 'none', padding: '13px 20px',
+                fontWeight: 800, fontSize: '13px', letterSpacing: '1.5px',
+                cursor: loading ? 'not-allowed' : 'pointer', borderRadius: '6px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontFamily: "'Oswald', sans-serif", minHeight: '48px',
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+                {loading ? (
+                  <><span style={{
+                    width: '14px', height: '14px', border: '2px solid #333', borderTopColor: '#555',
+                    borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block',
+                  }} />UPDATING...</>
+                ) : '⚡ REFRESH NOW'}
+              </button>
+              <label style={{
+                display: 'flex', alignItems: 'center', gap: '8px', color: '#444',
+                fontSize: '11px', fontWeight: 700, cursor: 'pointer', userSelect: 'none',
+                padding: '13px 14px', background: '#0d0d0d', border: '1px solid #1a1a1a',
+                borderRadius: '6px', minHeight: '48px', WebkitTapHighlightColor: 'transparent',
+              }}>
+                <input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)}
+                  style={{ accentColor: '#00ff88', width: '16px', height: '16px' }} />
+                AUTO (2M)
+              </label>
             </div>
 
-            {/* Error */}
-            {error && (
-              <div style={{
-                background: '#ff444410', border: '1px solid #ff444433',
-                color: '#ff6666', padding: '11px 16px', fontSize: '12px',
-                borderRadius: '4px', fontWeight: 600,
-              }}>
-                {error}
+            {lastUpdate && (
+              <div style={{ fontSize: '10px', color: '#2a2a2a', fontWeight: 700, letterSpacing: '0.5px' }}>
+                UPDATED {lastUpdate.toLocaleTimeString()}
               </div>
             )}
 
-            {/* Badge legend */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {error && (
+              <div style={{
+                background: '#ff444410', border: '1px solid #ff444430', color: '#ff6666',
+                padding: '12px 14px', fontSize: '12px', borderRadius: '6px', fontWeight: 600, lineHeight: 1.5,
+              }}>{error}</div>
+            )}
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {Object.entries(BADGE).map(([name, cfg]) => (
                 <span key={name} style={{
-                  fontSize: '9px', fontWeight: 800, color: cfg.color,
-                  background: cfg.color + '15', border: `1px solid ${cfg.color}33`,
-                  padding: '3px 8px', borderRadius: '3px', letterSpacing: '0.5px',
+                  fontSize: '8px', fontWeight: 800, color: cfg.color,
+                  background: cfg.color + '12', border: `1px solid ${cfg.color}30`,
+                  padding: '3px 7px', borderRadius: '3px', letterSpacing: '0.3px',
                   fontFamily: "'Oswald', sans-serif",
-                }}>
-                  {name}
-                </span>
+                }}>{name}</span>
               ))}
             </div>
 
-            {/* Item list */}
-            <ItemList items={items} />
+            <FeedList items={items} />
           </div>
         </div>
       );
